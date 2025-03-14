@@ -50,7 +50,7 @@
     </div>
 
 
-    <el-dialog title="管理员" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" destroy-on-close>
+    <el-dialog title="管理员" :visible.sync="formVisible" width="40%" :close-on-click-modal="false" destroy-on-close :modal-append-to-body="true" :append-to-body="true">
       <el-form :model="form" label-width="100px" style="padding-right: 50px" :rules="rules" ref="formRef">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" placeholder="用户名"></el-input>
@@ -78,7 +78,7 @@
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button @click="fromVisible = false">取 消</el-button>
+        <el-button @click="formVisible = false">取 消</el-button>
         <el-button type="primary" @click="save">确 定</el-button>
       </div>
     </el-dialog>
@@ -97,7 +97,7 @@ export default {
       pageSize: 10,  // 每页显示的个数
       total: 0,
       username: null,
-      fromVisible: false,
+      formVisible: false,
       form: {},
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
       rules: {
@@ -114,11 +114,11 @@ export default {
   methods: {
     handleAdd() {   // 新增数据
       this.form = {}  // 新增数据的时候清空数据
-      this.fromVisible = true   // 打开弹窗
+      this.formVisible = true   // 打开弹窗
     },
     handleEdit(row) {   // 编辑数据
       this.form = JSON.parse(JSON.stringify(row))  // 给form对象赋值  注意要深拷贝数据
-      this.fromVisible = true   // 打开弹窗
+      this.formVisible = true   // 打开弹窗
     },
     save() {   // 保存按钮触发的逻辑  它会触发新增或者更新
       this.$refs.formRef.validate((valid) => {
@@ -131,7 +131,7 @@ export default {
             if (res.code === '200') {  // 表示成功保存
               this.$message.success('保存成功')
               this.load(1)
-              this.fromVisible = false
+              this.formVisible = false
             } else {
               this.$message.error(res.msg)  // 弹出错误的信息
             }
@@ -201,5 +201,13 @@ export default {
 </script>
 
 <style scoped>
-
+::v-deep .el-dialog {
+  z-index: 3000 !important;
+}
+::v-deep .el-dialog__wrapper {
+  z-index: 2999 !important;
+}
+::v-deep .v-modal {
+  z-index: 2998 !important;
+}
 </style>
