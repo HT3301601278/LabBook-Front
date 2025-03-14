@@ -22,16 +22,15 @@
         </div>
         <div v-else>
           <el-dropdown>
-            <div class="front-header-dropdown">
+            <div class="front-header-dropdown" @click="$router.push('/front/person')">
               <img :src="user.avatar" alt="">
               <div style="margin-left: 10px">
                 <span>{{ user.name }}</span><i class="el-icon-arrow-down" style="margin-left: 5px"></i>
               </div>
             </div>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>
-                <div style="text-decoration: none" @click="logout">退出</div>
-              </el-dropdown-item>
+              <el-dropdown-item @click.native="$router.push('/front/person')">个人信息</el-dropdown-item>
+              <el-dropdown-item @click.native="logout">退出</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </div>
