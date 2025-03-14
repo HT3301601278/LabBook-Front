@@ -1,7 +1,7 @@
 <template>
   <div class="admin-person-container">
-    <el-card style="width: 50%">
-      <el-form :model="user" label-width="100px" style="padding-right: 50px">
+    <el-card class="person-card">
+      <el-form :model="user" label-width="100px">
         <div style="margin: 15px; text-align: center">
           <el-upload
               class="avatar-uploader"
@@ -77,6 +77,29 @@ export default {
   justify-content: center;
   align-items: center;
   padding: 20px;
+}
+
+.person-card {
+  width: 715px;
+}
+
+.person-card :deep(.el-form) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+:deep(.el-form-item) {
+  width: 100%;
+  padding: 0 20px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 20px 0;
 }
 
 :deep(.el-form-item__label) {

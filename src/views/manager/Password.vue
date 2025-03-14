@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="password-container">
     <el-card style="width: 50%">
       <el-form ref="formRef" :model="user" :rules="rules" label-width="100px" style="padding-right: 50px">
         <el-form-item label="原始密码" prop="password">
@@ -73,7 +73,14 @@ export default {
 </script>
 
 <style scoped>
-/deep/.el-form-item__label {
+.password-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 60px);
+}
+
+:deep(.el-form-item__label) {
   font-weight: bold;
 }
 </style>
