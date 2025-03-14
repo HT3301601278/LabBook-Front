@@ -2,7 +2,7 @@
   <div class="login-container">
     <div class="login-box">
       <div class="login-header">
-        <img src="@/assets/imgs/logo.png" alt="logo" class="logo">
+        <img src="@/assets/imgs/沈阳化工大学校徽.svg" alt="logo" class="logo">
         <h2>实验室预约管理系统登录</h2>
       </div>
       <el-form :model="form" :rules="rules" ref="formRef" class="login-form">

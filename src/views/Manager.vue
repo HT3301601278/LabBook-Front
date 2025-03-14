@@ -3,7 +3,7 @@
     <!--  头部  -->
     <div class="manager-header">
       <div class="manager-header-left">
-        <img src="@/assets/imgs/logo.png" />
+        <img src="@/assets/imgs/沈阳化工大学校徽.svg" />
         <div class="title">实验室预约系统</div>
       </div>
 
