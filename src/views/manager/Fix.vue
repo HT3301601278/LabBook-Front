@@ -111,6 +111,9 @@ export default {
     this.load(1)
   },
   methods: {
+    handleSelectionChange(rows) {   // 当前选中的所有的行数据
+      this.ids = rows.map(v => v.id)   //  [1,2]
+    },
     submit() {
       this.$request.post('/checks/add', this.form).then(res => {
         if (res.code === '200') {

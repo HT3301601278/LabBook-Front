@@ -114,9 +114,23 @@
 .manager-main-left {
     width: 220px;
     min-height: calc(100vh - 60px);
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+    padding: 10px 0;
+    position: relative;
+    z-index: 1;
+}
+
+.manager-main-left::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: linear-gradient(180deg, rgba(64, 158, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+    z-index: -1;
 }
 
 .manager-main-right {
@@ -195,6 +209,7 @@
     height: 100%;
     background: transparent !important;
     border: none !important;
+    padding-top: 10px;
 }
 
 .el-submenu__title {
@@ -204,6 +219,9 @@
     position: relative;
     z-index: 1;
     transition: all 0.3s !important;
+    margin: 4px 0;
+    border-radius: 8px;
+    margin-right: 16px;
 }
 
 .el-menu-item {
@@ -214,19 +232,32 @@
     position: relative;
     z-index: 1;
     transition: all 0.3s !important;
+    margin: 4px 0;
+    border-radius: 8px;
+    margin-right: 16px;
 }
 
 .el-submenu__title i, .el-menu-item i {
     color: #2c3e50;
+    margin-right: 12px;
+    font-size: 18px;
+    transition: all 0.3s;
+}
+
+.el-menu--inline {
+    padding-left: 10px;
 }
 
 .el-menu--inline .el-menu-item {
-    padding-left: 50px !important;
+    padding-left: 45px !important;
+    font-size: 13px;
 }
 
 .el-menu-item.is-active {
     background: linear-gradient(135deg, #409EFF 0%, #3a8ee6 100%) !important;
     color: #fff !important;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
 }
 
 .el-menu-item.is-active i {
@@ -240,11 +271,13 @@
 .el-submenu__title:hover {
     background: rgba(64, 158, 255, 0.1) !important;
     color: #409EFF !important;
+    padding-left: 25px;
 }
 
 .el-menu-item:not(.is-active):hover {
     background: rgba(64, 158, 255, 0.1) !important;
     color: #409EFF !important;
+    padding-left: 25px;
 }
 
 .el-submenu__title:hover i {
@@ -257,6 +290,12 @@
 
 .el-submenu__icon-arrow {
     margin-top: -5px;
+    font-size: 12px;
+    transition: all 0.3s;
+}
+
+.el-submenu.is-opened > .el-submenu__title .el-submenu__icon-arrow {
+    transform: rotateZ(-180deg);
 }
 
 /* Breadcrumb Styles */
