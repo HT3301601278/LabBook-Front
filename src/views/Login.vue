@@ -66,7 +66,7 @@ export default {
   },
   created() {
     // 进入登录页面时清除旧的 token
-    localStorage.removeItem('user')
+    localStorage.removeItem('labuser')
     // 初始化表单数据
     this.form = {
       username: '',
@@ -81,7 +81,7 @@ export default {
           // 验证通过
           this.$request.post('/login', this.form).then(res => {
             if (res.code === '200') {
-              localStorage.setItem("user", JSON.stringify(res.data))  // 存储用户数据
+              localStorage.setItem("labuser", JSON.stringify(res.data))  // 存储用户数据
               this.$router.push('/')  // 跳转主页
               this.$message.success('登录成功')
             } else {

@@ -9,3 +9,14 @@ body {
 a {
     text-decoration: none;
 }
+
+.el-message {
+    min-width: 180px !important;
+    max-width: 300px !important;
+    padding: 10px 15px !important;
+}
+
+.el-message__content {
+    text-align: center !important;
+    width: 100% !important;
+}
