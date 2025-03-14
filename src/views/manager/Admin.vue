@@ -50,7 +50,16 @@
     </div>
 
 
-    <el-dialog title="管理员" :visible.sync="formVisible" width="40%" :close-on-click-modal="false" destroy-on-close :modal-append-to-body="true" :append-to-body="true">
+    <el-dialog 
+      title="管理员" 
+      :visible.sync="formVisible" 
+      width="40%" 
+      :close-on-click-modal="false"
+      :modal="true"
+      :append-to-body="true"
+      :lock-scroll="false"
+      custom-class="admin-dialog"
+    >
       <el-form :model="form" label-width="100px" style="padding-right: 50px" :rules="rules" ref="formRef">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" placeholder="用户名"></el-input>
@@ -201,13 +210,39 @@ export default {
 </script>
 
 <style scoped>
+.admin-dialog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 ::v-deep .el-dialog {
-  z-index: 3000 !important;
+  margin-top: 15vh !important;
 }
-::v-deep .el-dialog__wrapper {
-  z-index: 2999 !important;
+
+::v-deep .el-dialog__body {
+  padding: 20px;
 }
-::v-deep .v-modal {
-  z-index: 2998 !important;
+
+::v-deep .el-dialog__header {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+::v-deep .el-dialog__footer {
+  padding: 20px;
+  border-top: 1px solid #eee;
+}
+
+::v-deep .el-form-item {
+  margin-bottom: 20px;
+}
+
+::v-deep .el-input__inner {
+  border-radius: 4px;
+}
+
+::v-deep .el-button {
+  border-radius: 4px;
 }
 </style>
