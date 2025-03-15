@@ -80,7 +80,7 @@ export default {
 }
 
 .person-card {
-  width: 715px;
+  width: 730px;
 }
 
 .person-card :deep(.el-form) {
