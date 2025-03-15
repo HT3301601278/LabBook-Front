@@ -1,7 +1,7 @@
 <template>
-  <div>
-    <el-card style="width: 50%">
-      <el-form :model="user" label-width="100px" style="padding-right: 50px">
+  <div class="admin-person-container">
+    <el-card class="person-card">
+      <el-form :model="user" label-width="100px">
         <div style="margin: 15px; text-align: center">
           <el-upload
               class="avatar-uploader"
@@ -71,20 +71,51 @@ export default {
 </script>
 
 <style scoped>
-/deep/.el-form-item__label {
+.admin-person-container {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.person-card {
+  width: 730px;
+}
+
+.person-card :deep(.el-form) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+:deep(.el-form-item) {
+  width: 100%;
+  padding: 0 20px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 20px 0;
+}
+
+:deep(.el-form-item__label) {
   font-weight: bold;
 }
-/deep/.el-upload {
+:deep(.el-upload) {
   border-radius: 50%;
 }
-/deep/.avatar-uploader .el-upload {
+:deep(.avatar-uploader .el-upload) {
   border: 1px dashed #d9d9d9;
   cursor: pointer;
   position: relative;
   overflow: hidden;
   border-radius: 50%;
 }
-/deep/.avatar-uploader .el-upload:hover {
+:deep(.avatar-uploader .el-upload:hover) {
   border-color: #409EFF;
 }
 .avatar-uploader-icon {
