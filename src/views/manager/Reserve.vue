@@ -49,7 +49,7 @@
       </div>
     </div>
 
-    <el-dialog title="报修反馈信息" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" destroy-on-close>
+    <el-dialog title="报修反馈信息" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" destroy-on-close :append-to-body="true">
       <el-form label-width="100px" style="padding-right: 50px" :model="form" :rules="rules" ref="formRef">
         <el-form-item prop="name" label="报修说明">
           <el-input type="textarea" :rows="5" v-model="form.name" autocomplete="off"></el-input>
