@@ -16,7 +16,7 @@
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="id" label="序号" width="80" align="center" sortable></el-table-column>
         <el-table-column prop="name" label="实验室编号" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="descr" label="实验室介绍" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="descr" label="实验室名称" show-overflow-tooltip></el-table-column>
         <el-table-column prop="start" label="开始时间" show-overflow-tooltip></el-table-column>
         <el-table-column prop="end" label="关闭时间" show-overflow-tooltip></el-table-column>
         <el-table-column prop="status" label="使用状态" show-overflow-tooltip></el-table-column>
@@ -47,10 +47,10 @@
 
     <el-dialog title="信息" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close>
       <el-form label-width="100px" style="padding-right: 50px" :model="form" :rules="rules" ref="formRef">
-        <el-form-item prop="name" label="实验室名称">
+        <el-form-item prop="name" label="实验室编号">
           <el-input v-model="form.name" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item prop="descr" label="实验室介绍">
+        <el-form-item prop="descr" label="实验室名称">
           <el-input type="textarea" :rows="3" v-model="form.descr" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item prop="start" label="开始时间">
@@ -99,6 +99,9 @@ export default {
       rules: {
         name: [
           {required: true, message: '请输入分类名称', trigger: 'blur'},
+        ],
+        descr: [
+          {required: true, message: '请输入实验室名称', trigger: 'blur'},
         ],
         start: [
           {required: true, message: '请选择开始时间', trigger: 'blur'},
