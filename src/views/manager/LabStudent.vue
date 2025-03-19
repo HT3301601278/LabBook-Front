@@ -22,8 +22,21 @@
                 <span style="font-weight: 550; color: #3c9e25" v-if="item.status === '空闲中'">{{ item.status }}</span>
                 <span style="font-weight: 550; color: #ea8282" v-else>{{ item.status }}</span>
               </div>
-              <div style="color: #474849; margin-top: 10px">开放时间：{{ item.start }} - {{ item.end }}</div>
-              <div style="margin-top: 15px">
+              <div style="color: #474849; margin-top: 5px">开放时间：{{ item.openStartTime }} - {{ item.openEndTime }}</div>
+              <div style="color: #474849; margin-top: 5px">最大预约时长：{{ item.maxReservationHours }} 小时</div>
+              <div style="margin-top: 10px; display: flex; justify-content: space-between">
+                <div v-if="item.manual">
+                  <el-button type="text" size="mini" @click="openManual(item.manual)">
+                    <i class="el-icon-document"></i> 使用手册
+                  </el-button>
+                </div>
+                <div v-if="item.modelFile">
+                  <el-button type="text" size="mini" disabled>
+                    <i class="el-icon-view"></i> 3D模型(开发中)
+                  </el-button>
+                </div>
+              </div>
+              <div style="margin-top: 10px">
                 <el-button type="primary" size="mini" @click="reserve(item)" :disabled="item.status === '使用中'">预约</el-button>
               </div>
             </div>
@@ -41,6 +54,13 @@
             :total="total">
         </el-pagination>
       </div>
+      
+      <!-- 使用手册弹窗 -->
+      <el-dialog title="使用手册" :visible.sync="manualDialogVisible" width="80%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close>
+        <div style="height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <iframe :src="currentManual" style="width: 100%; height: 100%; border: none;"></iframe>
+        </div>
+      </el-dialog>
     </div>
   </div>
 </template>
@@ -59,7 +79,9 @@ export default {
       form: {},
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
       rules: {},
-      typeData: []
+      typeData: [],
+      manualDialogVisible: false,
+      currentManual: ''
     }
   },
   created() {
@@ -114,6 +136,26 @@ export default {
     },
     handleCurrentChange(pageNum) {
       this.load(pageNum)
+    },
+    openManual(manual) {
+      // 添加PDF.js查看器前缀，确保PDF在浏览器中预览而不是下载
+      this.currentManual = manual.startsWith('http') ? 
+        `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(manual)}` : 
+        manual
+      this.manualDialogVisible = true
+    },
+    downloadManual() {
+      if (this.currentManual) {
+        // 创建一个临时链接元素
+        const link = document.createElement('a')
+        link.href = this.currentManual
+        link.setAttribute('download', '实验室使用手册.pdf') // 设置下载文件名
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      } else {
+        this.$message.warning('没有可下载的使用手册')
+      }
     },
   }
 }
