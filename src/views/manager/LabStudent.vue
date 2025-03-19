@@ -61,21 +61,21 @@
             :total="total">
         </el-pagination>
       </div>
-      
+
       <!-- 使用手册弹窗 -->
       <el-dialog title="使用手册" :visible.sync="manualDialogVisible" width="80%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close>
         <div style="height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
           <iframe :src="currentManual" style="width: 100%; height: 100%; border: none;"></iframe>
         </div>
       </el-dialog>
-      
+
       <!-- 3D模型查看弹窗 -->
       <el-dialog title="3D模型查看器" :visible.sync="modelDialogVisible" width="90%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close>
         <div style="height: 80vh;">
           <model-viewer :model-path="currentModel"></model-viewer>
         </div>
       </el-dialog>
-      
+
       <!-- 预约表单弹窗 -->
       <reserve-form :visible.sync="reserveFormVisible" :lab-info="currentLabInfo" @success="load(1)"></reserve-form>
     </div>
@@ -154,8 +154,8 @@ export default {
     },
     openManual(manual) {
       // 添加PDF.js查看器前缀，确保PDF在浏览器中预览而不是下载
-      this.currentManual = manual.startsWith('http') ? 
-        `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(manual)}` : 
+      this.currentManual = manual.startsWith('http') ?
+        `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(manual)}` :
         manual
       this.manualDialogVisible = true
     },
@@ -191,13 +191,13 @@ export default {
   padding: 10px 10px;
 }
 
-/deep/ .el-dialog__body {
+::v-deep .el-dialog__body {
   padding: 10px;
   height: calc(100% - 55px);
   overflow: hidden;
 }
 
-/deep/ .el-dialog {
+::v-deep .el-dialog {
   display: flex;
   flex-direction: column;
   margin: 0 !important;
