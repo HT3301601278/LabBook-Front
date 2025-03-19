@@ -167,4 +167,22 @@ export default {
   max-width: 20%;
   padding: 10px 10px;
 }
+
+/deep/ .el-dialog__body {
+  padding: 10px;
+  height: calc(100% - 55px);
+  overflow: hidden;
+}
+
+/deep/ .el-dialog {
+  display: flex;
+  flex-direction: column;
+  margin: 0 !important;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-height: 90%;
+  max-width: 90%;
+}
 </style>
