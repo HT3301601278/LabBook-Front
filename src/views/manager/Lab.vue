@@ -20,7 +20,6 @@
         <el-table-column prop="openStartTime" label="开始时间" show-overflow-tooltip></el-table-column>
         <el-table-column prop="openEndTime" label="关闭时间" show-overflow-tooltip></el-table-column>
         <el-table-column prop="maxReservationHours" label="最大预约时长(小时)" width="140" align="center"></el-table-column>
-        <el-table-column prop="maxDailyReservations" label="每日最大预约次数" width="140" align="center"></el-table-column>
         <el-table-column prop="status" label="使用状态" show-overflow-tooltip></el-table-column>
         <el-table-column prop="typeName" label="所属分类" show-overflow-tooltip></el-table-column>
         <el-table-column prop="labadminName" label="实验室管理员"></el-table-column>
@@ -74,9 +73,6 @@
         </el-form-item>
         <el-form-item prop="maxReservationHours" label="最大预约时长">
           <el-input-number v-model="form.maxReservationHours" :min="1" :max="24" style="width: 100%"></el-input-number>
-        </el-form-item>
-        <el-form-item prop="maxDailyReservations" label="每日最大预约次数">
-          <el-input-number v-model="form.maxDailyReservations" :min="1" :max="10" style="width: 100%"></el-input-number>
         </el-form-item>
         <el-form-item prop="typeId" label="实验室分类">
           <el-select v-model="form.typeId" placeholder="请选择实验室分类" style="width: 100%">
@@ -146,9 +142,6 @@ export default {
         maxReservationHours: [
           {required: true, message: '请设置最大预约时长', trigger: 'blur'},
         ],
-        maxDailyReservations: [
-          {required: true, message: '请设置每日最大预约次数', trigger: 'blur'},
-        ],
       },
       ids: [],
       typeData: [],
@@ -172,8 +165,7 @@ export default {
     },
     handleAdd() {   // 新增数据
       this.form = {  // 新增数据的时候清空数据并设置默认值
-        maxReservationHours: 2,
-        maxDailyReservations: 1
+        maxReservationHours: 2
       }  
       this.manualFileList = []
       this.modelFileList = []
