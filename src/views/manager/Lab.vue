@@ -60,7 +60,7 @@
           <el-date-picker style="width: 100%"
               v-model="form.openStartTime"
               type="datetime"
-              value-format="yyyy-MM-dd HH:mm:ss"
+              value-format="yyyy-MM-dd HH:mm"
               placeholder="请选择开始时间">
           </el-date-picker>
         </el-form-item>
@@ -68,7 +68,7 @@
           <el-date-picker style="width: 100%"
               v-model="form.openEndTime"
               type="datetime"
-              value-format="yyyy-MM-dd HH:mm:ss"
+              value-format="yyyy-MM-dd HH:mm"
               placeholder="请选择结束时间">
           </el-date-picker>
         </el-form-item>
