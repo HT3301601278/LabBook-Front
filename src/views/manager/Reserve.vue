@@ -13,17 +13,17 @@
     <div class="table">
       <el-table :data="tableData" stripe>
         <el-table-column prop="id" label="序号" width="80" align="center" sortable></el-table-column>
-        <el-table-column prop="labName" label="实验室" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="labadminName" label="实验室管理员" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="studentName" label="预约人" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="time" label="操作时间"></el-table-column>
-        <el-table-column prop="start" label="使用时间段">
+        <el-table-column prop="labName" label="实验室" min-width="15%" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="labadminName" label="实验室管理员" min-width="15%" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="studentName" label="预约人" min-width="10%" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="time" label="操作时间" min-width="15%"></el-table-column>
+        <el-table-column prop="start" label="使用时间段" min-width="20%">
           <template v-slot="scope">
             {{scope.row.start}} ~ {{scope.row.end}}
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="预约状态"></el-table-column>
-        <el-table-column prop="dostatus" label="使用状态"></el-table-column>
+        <el-table-column prop="status" label="预约状态" min-width="10%"></el-table-column>
+        <el-table-column prop="dostatus" label="使用状态" min-width="10%"></el-table-column>
 
         <el-table-column label="操作" width="180" align="center">
           <template v-slot="scope">
