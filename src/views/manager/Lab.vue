@@ -17,8 +17,10 @@
         <el-table-column prop="id" label="序号" width="80" align="center" sortable></el-table-column>
         <el-table-column prop="name" label="实验室编号" show-overflow-tooltip></el-table-column>
         <el-table-column prop="descr" label="实验室名称" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="start" label="开始时间" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="end" label="关闭时间" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="openStartTime" label="开始时间" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="openEndTime" label="关闭时间" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="maxReservationHours" label="最大预约时长(小时)" width="140" align="center"></el-table-column>
+        <el-table-column prop="maxDailyReservations" label="每日最大预约次数" width="140" align="center"></el-table-column>
         <el-table-column prop="status" label="使用状态" show-overflow-tooltip></el-table-column>
         <el-table-column prop="typeName" label="所属分类" show-overflow-tooltip></el-table-column>
         <el-table-column prop="labadminName" label="实验室管理员"></el-table-column>
@@ -35,10 +37,11 @@
         <el-pagination
             background
             @current-change="handleCurrentChange"
+            @size-change="handleSizeChange"
             :current-page="pageNum"
-            :page-sizes="[5, 10, 20]"
+            :page-sizes="[10, 30, 50]"
             :page-size="pageSize"
-            layout="total, prev, pager, next"
+            layout="total, sizes, prev, pager, next"
             :total="total">
         </el-pagination>
       </div>
@@ -51,26 +54,54 @@
           <el-input v-model="form.name" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item prop="descr" label="实验室名称">
-          <el-input type="textarea" :rows="3" v-model="form.descr" autocomplete="off"></el-input>
+          <el-input v-model="form.descr" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item prop="start" label="开始时间">
-          <el-time-picker style="width: 100%"
-              v-model="form.start"
-              value-format="HH:mm:ss"
-              placeholder="请选择时间">
-          </el-time-picker>
+        <el-form-item prop="openStartTime" label="开始时间">
+          <el-date-picker style="width: 100%"
+              v-model="form.openStartTime"
+              type="datetime"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              placeholder="请选择开始时间">
+          </el-date-picker>
         </el-form-item>
-        <el-form-item prop="start" label="开始时间">
-          <el-time-picker style="width: 100%"
-              v-model="form.end"
-              value-format="HH:mm:ss"
-              placeholder="请选择时间">
-          </el-time-picker>
+        <el-form-item prop="openEndTime" label="结束时间">
+          <el-date-picker style="width: 100%"
+              v-model="form.openEndTime"
+              type="datetime"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              placeholder="请选择结束时间">
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item prop="maxReservationHours" label="最大预约时长">
+          <el-input-number v-model="form.maxReservationHours" :min="1" :max="24" style="width: 100%"></el-input-number>
+        </el-form-item>
+        <el-form-item prop="maxDailyReservations" label="每日最大预约次数">
+          <el-input-number v-model="form.maxDailyReservations" :min="1" :max="10" style="width: 100%"></el-input-number>
         </el-form-item>
         <el-form-item prop="typeId" label="实验室分类">
           <el-select v-model="form.typeId" placeholder="请选择实验室分类" style="width: 100%">
             <el-option v-for="item in typeData" :key="item.id" :label="item.name" :value="item.id"></el-option>
           </el-select>
+        </el-form-item>
+        <el-form-item prop="manual" label="使用手册">
+          <el-upload
+            class="upload-demo"
+            :action="$baseUrl + '/files/upload'"
+            :on-success="handleManualSuccess"
+            :file-list="manualFileList">
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip">只能上传pdf文件</div>
+          </el-upload>
+        </el-form-item>
+        <el-form-item prop="modelFile" label="3D模型文件">
+          <el-upload
+            class="upload-demo"
+            :action="$baseUrl + '/files/upload'"
+            :on-success="handleModelSuccess"
+            :file-list="modelFileList">
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip">只能上传glb文件</div>
+          </el-upload>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -103,18 +134,26 @@ export default {
         descr: [
           {required: true, message: '请输入实验室名称', trigger: 'blur'},
         ],
-        start: [
+        openStartTime: [
           {required: true, message: '请选择开始时间', trigger: 'blur'},
         ],
-        end: [
+        openEndTime: [
           {required: true, message: '请选择关闭时间', trigger: 'blur'},
         ],
         typeId: [
           {required: true, message: '请选择实验室分类', trigger: 'blur'},
         ],
+        maxReservationHours: [
+          {required: true, message: '请设置最大预约时长', trigger: 'blur'},
+        ],
+        maxDailyReservations: [
+          {required: true, message: '请设置每日最大预约次数', trigger: 'blur'},
+        ],
       },
       ids: [],
-      typeData: []
+      typeData: [],
+      manualFileList: [],
+      modelFileList: []
     }
   },
   created() {
@@ -132,12 +171,50 @@ export default {
       })
     },
     handleAdd() {   // 新增数据
-      this.form = {}  // 新增数据的时候清空数据
+      this.form = {  // 新增数据的时候清空数据并设置默认值
+        maxReservationHours: 2,
+        maxDailyReservations: 1
+      }  
+      this.manualFileList = []
+      this.modelFileList = []
       this.fromVisible = true   // 打开弹窗
     },
     handleEdit(row) {   // 编辑数据
       this.form = JSON.parse(JSON.stringify(row))  // 给form对象赋值  注意要深拷贝数据
+      
+      // 处理文件列表显示
+      this.manualFileList = []
+      this.modelFileList = []
+      if (this.form.manual) {
+        this.manualFileList = [{
+          name: '使用手册',
+          url: this.form.manual
+        }]
+      }
+      if (this.form.modelFile) {
+        this.modelFileList = [{
+          name: '3D模型文件',
+          url: this.form.modelFile
+        }]
+      }
+      
       this.fromVisible = true   // 打开弹窗
+    },
+    handleManualSuccess(response) {
+      if (response.code === '200') {
+        this.form.manual = response.data
+        this.$message.success('使用手册上传成功')
+      } else {
+        this.$message.error(response.msg || '上传失败')
+      }
+    },
+    handleModelSuccess(response) {
+      if (response.code === '200') {
+        this.form.modelFile = response.data
+        this.$message.success('3D模型文件上传成功')
+      } else {
+        this.$message.error(response.msg || '上传失败')
+      }
     },
     save() {   // 保存按钮触发的逻辑  它会触发新增或者更新
       this.$refs.formRef.validate((valid) => {
@@ -210,6 +287,10 @@ export default {
     },
     handleCurrentChange(pageNum) {
       this.load(pageNum)
+    },
+    handleSizeChange(pageSize) {
+      this.pageSize = pageSize
+      this.load(1)
     },
   }
 }
