@@ -38,8 +38,8 @@
                   </el-button>
                 </div>
                 <div v-if="item.modelFile">
-                  <el-button type="text" size="mini" disabled>
-                    <i class="el-icon-view"></i> 3D模型(开发中)
+                  <el-button type="text" size="mini" @click="openModel(item.modelFile)">
+                    <i class="el-icon-view"></i> 3D模型
                   </el-button>
                 </div>
               </div>
@@ -68,13 +68,25 @@
           <iframe :src="currentManual" style="width: 100%; height: 100%; border: none;"></iframe>
         </div>
       </el-dialog>
+      
+      <!-- 3D模型查看弹窗 -->
+      <el-dialog title="3D模型查看器" :visible.sync="modelDialogVisible" width="90%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close>
+        <div style="height: 80vh;">
+          <model-viewer :model-path="currentModel"></model-viewer>
+        </div>
+      </el-dialog>
     </div>
   </div>
 </template>
 
 <script>
+import ModelViewer from './ModelViewer.vue';
+
 export default {
   name: "Lab",
+  components: {
+    ModelViewer
+  },
   data() {
     return {
       tableData: [],  // 所有的数据
@@ -88,7 +100,9 @@ export default {
       rules: {},
       typeData: [],
       manualDialogVisible: false,
-      currentManual: ''
+      currentManual: '',
+      modelDialogVisible: false,
+      currentModel: ''
     }
   },
   created() {
@@ -162,6 +176,14 @@ export default {
         document.body.removeChild(link)
       } else {
         this.$message.warning('没有可下载的使用手册')
+      }
+    },
+    openModel(modelFile) {
+      if (modelFile) {
+        this.currentModel = modelFile
+        this.modelDialogVisible = true
+      } else {
+        this.$message.warning('没有可查看的3D模型')
       }
     },
   }
