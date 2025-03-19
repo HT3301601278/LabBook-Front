@@ -44,7 +44,7 @@
                 </div>
               </div>
               <div style="margin-top: 10px">
-                <el-button type="primary" size="mini" @click="reserve(item)" :disabled="item.status === '使用中'">预约</el-button>
+                <el-button type="primary" size="mini" @click="openReserveForm(item)" :disabled="item.status === '使用中'">预约</el-button>
               </div>
             </div>
           </el-col>
@@ -75,17 +75,22 @@
           <model-viewer :model-path="currentModel"></model-viewer>
         </div>
       </el-dialog>
+      
+      <!-- 预约表单弹窗 -->
+      <reserve-form :visible.sync="reserveFormVisible" :lab-info="currentLabInfo" @success="load(1)"></reserve-form>
     </div>
   </div>
 </template>
 
 <script>
 import ModelViewer from './ModelViewer.vue';
+import ReserveForm from './ReserveForm.vue';
 
 export default {
   name: "Lab",
   components: {
-    ModelViewer
+    ModelViewer,
+    ReserveForm
   },
   data() {
     return {
@@ -102,7 +107,9 @@ export default {
       manualDialogVisible: false,
       currentManual: '',
       modelDialogVisible: false,
-      currentModel: ''
+      currentModel: '',
+      reserveFormVisible: false,
+      currentLabInfo: null
     }
   },
   created() {
@@ -110,22 +117,9 @@ export default {
     this.loadType()
   },
   methods: {
-    reserve(item) {
-      let data = {
-        labId: item.id,
-        labadminId: item.labadminId,
-        studentId: this.user.id,
-        status: '待审核',
-        dostatus: '待审核'
-      }
-      this.$request.post('/reserve/add', data).then(res => {
-        if (res.code === '200') {
-          this.$message.success('操作成功，等待管理员审核')
-          this.load(1)
-        } else {
-          this.$message.error(res.msg)
-        }
-      })
+    openReserveForm(item) {
+      this.currentLabInfo = item;
+      this.reserveFormVisible = true;
     },
     loadType() {
       this.$request.get('/type/selectAll').then(res => {
