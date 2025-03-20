@@ -9,7 +9,7 @@
         <div style="margin-bottom: 30px; font-size: 20px; font-weight: bold">公告列表</div>
         <div >
           <el-timeline  reverse slot="reference">
-            <el-timeline-item v-for="item in notices" :key="item.id" :timestamp="item.time">
+            <el-timeline-item v-for="item in notices" :key="item.id" :timestamp="item.createTime ? item.createTime.split('T')[0] : ''">
               <el-popover
                   placement="right"
                   width="200"

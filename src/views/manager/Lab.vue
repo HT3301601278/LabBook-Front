@@ -15,10 +15,10 @@
       <el-table :data="tableData" stripe  @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="id" label="序号" width="80" align="center" sortable></el-table-column>
-        <el-table-column prop="name" label="实验室编号" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="descr" label="实验室名称" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="openStartTime" label="开始时间" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="openEndTime" label="关闭时间" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="labNumber" label="实验室编号" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="labName" label="实验室名称" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="startTime" label="开始时间" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="endTime" label="结束时间" show-overflow-tooltip></el-table-column>
         <el-table-column prop="maxReservationHours" label="最大预约时长(小时)" width="140" align="center"></el-table-column>
         <el-table-column prop="status" label="使用状态" show-overflow-tooltip></el-table-column>
         <el-table-column prop="typeName" label="所属分类" show-overflow-tooltip></el-table-column>
@@ -49,27 +49,27 @@
 
     <el-dialog title="信息" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close>
       <el-form label-width="100px" style="padding-right: 50px" :model="form" :rules="rules" ref="formRef">
-        <el-form-item prop="name" label="实验室编号">
-          <el-input v-model="form.name" autocomplete="off"></el-input>
+        <el-form-item prop="labNumber" label="实验室编号">
+          <el-input v-model="form.labNumber" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item prop="descr" label="实验室名称">
-          <el-input v-model="form.descr" autocomplete="off"></el-input>
+        <el-form-item prop="labName" label="实验室名称">
+          <el-input v-model="form.labName" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item prop="openStartTime" label="开始时间">
           <el-date-picker style="width: 100%"
               v-model="form.openStartTime"
               type="datetime"
               value-format="yyyy-MM-dd HH:mm"
               placeholder="请选择开始时间">
           </el-date-picker>
+        <el-form-item prop="startTime" label="开始时间">
         </el-form-item>
-        <el-form-item prop="openEndTime" label="结束时间">
           <el-date-picker style="width: 100%"
               v-model="form.openEndTime"
               type="datetime"
               value-format="yyyy-MM-dd HH:mm"
               placeholder="请选择结束时间">
           </el-date-picker>
+        <el-form-item prop="endTime" label="结束时间">
         </el-form-item>
         <el-form-item prop="maxReservationHours" label="最大预约时长">
           <el-input-number v-model="form.maxReservationHours" :min="1" :max="24" style="width: 100%"></el-input-number>
@@ -124,17 +124,17 @@ export default {
       form: {},
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
       rules: {
-        name: [
-          {required: true, message: '请输入分类名称', trigger: 'blur'},
+        labNumber: [
+          {required: true, message: '请输入实验室编号', trigger: 'blur'},
         ],
-        descr: [
+        labName: [
           {required: true, message: '请输入实验室名称', trigger: 'blur'},
         ],
-        openStartTime: [
+        startTime: [
           {required: true, message: '请选择开始时间', trigger: 'blur'},
         ],
-        openEndTime: [
-          {required: true, message: '请选择关闭时间', trigger: 'blur'},
+        endTime: [
+          {required: true, message: '请选择结束时间', trigger: 'blur'},
         ],
         typeId: [
           {required: true, message: '请选择实验室分类', trigger: 'blur'},
