@@ -14,21 +14,21 @@
           <el-col :span="5" v-for="item in tableData" :key="item.id">
             <div style="background-color: #ecf7fc" class="card">
               <div style="color: #474849">实验室编号：
-                <span style="font-size: 16px; font-weight: 550; color: #0376bf">{{ item.name }}</span>
+                <span style="font-size: 16px; font-weight: 550; color: #0376bf">{{ item.labNumber }}</span>
               </div>
-              <div style="color: #474849; margin-top: 10px">名称：{{ item.descr }}</div>
+              <div style="color: #474849; margin-top: 10px">名称：{{ item.labName }}</div>
               <div style="color: #474849; margin-top: 5px">类型：{{ item.typeName }}</div>
               <div style="color: #474849; margin-top: 5px">状态：
-                <span style="font-weight: 550; color: #3c9e25" v-if="item.status === '空闲中'">{{ item.status }}</span>
-                <span style="font-weight: 550; color: #ea8282" v-else>{{ item.status }}</span>
+                <span style="font-weight: 550; color: #3c9e25" v-if="item.usageStatus === '空闲中'">{{ item.usageStatus }}</span>
+                <span style="font-weight: 550; color: #ea8282" v-else>{{ item.usageStatus }}</span>
               </div>
               <div style="color: #474849; margin-top: 5px">
                 <span style="font-weight: 550">开放时间：</span>
-                <span style="color: #0376bf">{{ item.openStartTime }}</span>
+                <span style="color: #0376bf">{{ item.startTime }}</span>
               </div>
               <div style="color: #474849; margin-top: 5px">
                 <span style="font-weight: 550">关闭时间：</span>
-                <span style="color: #0376bf">{{ item.openEndTime }}</span>
+                <span style="color: #0376bf">{{ item.endTime }}</span>
               </div>
               <div style="color: #474849; margin-top: 5px">最大预约时长：{{ item.maxReservationHours }} 小时</div>
               <div style="margin-top: 10px; display: flex; justify-content: space-between">
@@ -44,7 +44,7 @@
                 </div>
               </div>
               <div style="margin-top: 10px">
-                <el-button type="primary" size="mini" @click="openReserveForm(item)" :disabled="item.status === '使用中'">预约</el-button>
+                <el-button type="primary" size="mini" @click="openReserveForm(item)" :disabled="item.usageStatus === '使用中'">预约</el-button>
               </div>
             </div>
           </el-col>
