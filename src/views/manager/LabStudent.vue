@@ -12,39 +12,59 @@
       <div>
         <el-row :gutter="20">
           <el-col :span="5" v-for="item in tableData" :key="item.id">
-            <div style="background-color: #ecf7fc" class="card">
-              <div style="color: #474849">实验室编号：
-                <span style="font-size: 16px; font-weight: 550; color: #0376bf">{{ item.labNumber }}</span>
+            <div class="lab-card">
+              <div class="lab-header">
+                <div class="lab-number">实验室名称：
+                  <span>{{ item.labName }}</span>
+                </div>
               </div>
-              <div style="color: #474849; margin-top: 10px">名称：{{ item.labName }}</div>
-              <div style="color: #474849; margin-top: 5px">类型：{{ item.typeName }}</div>
-              <div style="color: #474849; margin-top: 5px">状态：
-                <span style="font-weight: 550; color: #3c9e25" v-if="item.usageStatus === '空闲中'">{{ item.usageStatus }}</span>
-                <span style="font-weight: 550; color: #ea8282" v-else>{{ item.usageStatus }}</span>
+              <div class="lab-content">
+                <div class="lab-item">
+                  <i class="el-icon-office-building"></i>
+                  <span class="label">编号：</span>
+                  <span class="value">{{ item.labNumber }}</span>
+                </div>
+                <div class="lab-item">
+                  <i class="el-icon-collection-tag"></i>
+                  <span class="label">类型：</span>
+                  <span class="value">{{ item.typeName }}</span>
+                </div>
+                <div class="lab-item">
+                  <i class="el-icon-circle-check"></i>
+                  <span class="label">状态：</span>
+                  <span class="value" :class="{'status-free': item.usageStatus === '空闲中', 'status-busy': item.usageStatus !== '空闲中'}">
+                    {{ item.usageStatus }}
+                  </span>
+                </div>
+                <div class="lab-item">
+                  <i class="el-icon-time"></i>
+                  <span class="label">开放时间：</span>
+                  <span class="value time">{{ item.startTime }}</span>
+                </div>
+                <div class="lab-item">
+                  <i class="el-icon-time"></i>
+                  <span class="label">关闭时间：</span>
+                  <span class="value time">{{ item.endTime }}</span>
+                </div>
+                <div class="lab-item">
+                  <i class="el-icon-timer"></i>
+                  <span class="label">最大预约时长：</span>
+                  <span class="value">{{ item.maxReservationHours }} 小时</span>
+                </div>
               </div>
-              <div style="color: #474849; margin-top: 5px">
-                <span style="font-weight: 550">开放时间：</span>
-                <span style="color: #0376bf">{{ item.startTime }}</span>
-              </div>
-              <div style="color: #474849; margin-top: 5px">
-                <span style="font-weight: 550">关闭时间：</span>
-                <span style="color: #0376bf">{{ item.endTime }}</span>
-              </div>
-              <div style="color: #474849; margin-top: 5px">最大预约时长：{{ item.maxReservationHours }} 小时</div>
-              <div style="margin-top: 10px; display: flex; justify-content: space-between">
-                <div v-if="item.manual">
-                  <el-button type="text" size="mini" @click="openManual(item.manual)">
+              <div class="lab-footer">
+                <div class="doc-buttons">
+                  <el-button v-if="item.manual" type="text" size="mini" @click="openManual(item.manual)">
                     <i class="el-icon-document"></i> 使用手册
                   </el-button>
-                </div>
-                <div v-if="item.modelFile">
-                  <el-button type="text" size="mini" @click="openModel(item.modelFile)">
+                  <el-button v-if="item.modelFile" type="text" size="mini" @click="openModel(item.modelFile)">
                     <i class="el-icon-view"></i> 3D模型
                   </el-button>
                 </div>
-              </div>
-              <div style="margin-top: 10px">
-                <el-button type="primary" size="mini" @click="openReserveForm(item)" :disabled="item.usageStatus === '使用中'">预约</el-button>
+                <div class="reserve-button">
+                  <el-button type="primary" size="mini" @click="openReserveForm(item)" 
+                    :disabled="item.usageStatus === '使用中'">预约</el-button>
+                </div>
               </div>
             </div>
           </el-col>
@@ -185,16 +205,112 @@ export default {
 </script>
 
 <style scoped>
-.el-col-5{
+.el-col-5 {
   width: 20%;
   max-width: 20%;
-  padding: 10px 10px;
+  padding: 10px;
 }
 
-::v-deep .el-dialog__body {
-  padding: 10px;
-  height: calc(100% - 55px);
-  overflow: hidden;
+.lab-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  padding: 16px;
+  transition: all 0.3s ease;
+}
+
+.lab-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.lab-header {
+  border-bottom: 1px solid #ebeef5;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+.lab-number {
+  color: #606266;
+  font-size: 14px;
+}
+
+.lab-number span {
+  color: #0376bf;
+  font-size: 16px;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.lab-content {
+  padding: 8px 0;
+}
+
+.lab-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  color: #606266;
+}
+
+.lab-item i {
+  font-size: 16px;
+  margin-right: 8px;
+  color: #909399;
+}
+
+.lab-item .label {
+  font-size: 14px;
+  color: #606266;
+  min-width: 90px;
+}
+
+.lab-item .value {
+  flex: 1;
+  color: #303133;
+}
+
+.lab-item .value.time {
+  color: #0376bf;
+}
+
+.status-free {
+  color: #67c23a !important;
+  font-weight: 600;
+}
+
+.status-busy {
+  color: #f56c6c !important;
+  font-weight: 600;
+}
+
+.lab-footer {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #ebeef5;
+}
+
+.doc-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.doc-buttons .el-button {
+  padding: 0;
+  font-size: 13px;
+}
+
+.doc-buttons .el-button i {
+  margin-right: 4px;
+}
+
+.reserve-button {
+  text-align: center;
+}
+
+.reserve-button .el-button {
+  width: 100%;
 }
 
 ::v-deep .el-dialog {
@@ -207,5 +323,11 @@ export default {
   transform: translate(-50%, -50%);
   max-height: 90%;
   max-width: 90%;
+}
+
+::v-deep .el-dialog__body {
+  padding: 10px;
+  height: calc(100% - 55px);
+  overflow: hidden;
 }
 </style>
