@@ -166,14 +166,14 @@ export default {
     handleAdd() {   // 新增数据
       this.form = {  // 新增数据的时候清空数据并设置默认值
         maxReservationHours: 2
-      }  
+      }
       this.manualFileList = []
       this.modelFileList = []
       this.fromVisible = true   // 打开弹窗
     },
     handleEdit(row) {   // 编辑数据
       this.form = JSON.parse(JSON.stringify(row))  // 给form对象赋值  注意要深拷贝数据
-      
+
       // 处理文件列表显示
       this.manualFileList = []
       this.modelFileList = []
@@ -189,7 +189,7 @@ export default {
           url: this.form.modelFile
         }]
       }
-      
+
       this.fromVisible = true   // 打开弹窗
     },
     handleManualSuccess(response) {
