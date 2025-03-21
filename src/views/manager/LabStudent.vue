@@ -30,6 +30,11 @@
                   <span class="value">{{ item.typeName }}</span>
                 </div>
                 <div class="lab-item">
+                  <i class="el-icon-location"></i>
+                  <span class="label">位置：</span>
+                  <span class="value">{{ item.location }}</span>
+                </div>  
+                <div class="lab-item">
                   <i class="el-icon-circle-check"></i>
                   <span class="label">状态：</span>
                   <span class="value" :class="{'status-free': item.usageStatus === '空闲中', 'status-busy': item.usageStatus !== '空闲中'}">
@@ -54,10 +59,10 @@
               </div>
               <div class="lab-footer">
                 <div class="doc-buttons">
-                  <el-button v-if="item.manual" type="text" size="mini" @click="openManual(item.manual)">
+                  <el-button type="text" size="mini" :class="{'disabled-button': !item.manual}" @click="item.manual && openManual(item.manual)">
                     <i class="el-icon-document"></i> 使用手册
                   </el-button>
-                  <el-button v-if="item.modelFile" type="text" size="mini" @click="openModel(item.modelFile)">
+                  <el-button type="text" size="mini" :class="{'disabled-button': !item.modelFile}" @click="item.modelFile && openModel(item.modelFile)">
                     <i class="el-icon-view"></i> 3D模型
                   </el-button>
                 </div>
@@ -253,6 +258,10 @@ export default {
   color: #606266;
 }
 
+.lab-content .lab-item:last-child {
+  margin-bottom: 0;
+}
+
 .lab-item i {
   font-size: 16px;
   margin-right: 8px;
@@ -303,6 +312,15 @@ export default {
 
 .doc-buttons .el-button i {
   margin-right: 4px;
+}
+
+.doc-buttons .el-button.disabled-button {
+  cursor: not-allowed;
+  color: #c0c4cc;
+}
+
+.doc-buttons .el-button.disabled-button:hover {
+  color: #c0c4cc;
 }
 
 .reserve-button {
