@@ -22,7 +22,7 @@
         <el-table-column prop="maxReservationHours" label="最大预约时长(小时)" width="140" align="center"></el-table-column>
         <el-table-column prop="usageStatus" label="使用状态" show-overflow-tooltip></el-table-column>
         <el-table-column prop="typeName" label="所属分类" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="labAdminName" label="实验室管理员"></el-table-column>
+        <el-table-column prop="labadminName" label="实验室管理员"></el-table-column>
 
         <el-table-column label="操作" width="180" align="center">
           <template v-slot="scope">
