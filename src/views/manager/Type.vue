@@ -16,7 +16,7 @@
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="id" label="序号" width="80" align="center" sortable></el-table-column>
         <el-table-column prop="name" label="分类名称" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="descr" label="分类描述" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="description" label="分类描述" show-overflow-tooltip></el-table-column>
         <el-table-column prop="labadminName" label="实验室管理员"></el-table-column>
 
         <el-table-column label="操作" width="180" align="center">
@@ -46,8 +46,8 @@
         <el-form-item prop="name" label="分类名称">
           <el-input v-model="form.name" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item prop="descr" label="分类描述">
-          <el-input type="textarea" :rows="5" v-model="form.descr" autocomplete="off"></el-input>
+        <el-form-item prop="description" label="分类描述">
+          <el-input type="textarea" :rows="5" v-model="form.description" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item prop="labadminId" label="选择管理员">
           <el-select v-model="form.labadminId" placeholder="请选择实验室管理员" style="width: 100%">
@@ -81,6 +81,9 @@ export default {
       rules: {
         name: [
           {required: true, message: '请输入分类名称', trigger: 'blur'},
+        ],
+        description: [
+          {required: true, message: '请输入分类描述', trigger: 'blur'},
         ],
         labadminId: [
           {required: true, message: '请选择实验室管理员', trigger: 'blur'},
