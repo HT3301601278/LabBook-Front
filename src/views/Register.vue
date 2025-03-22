@@ -32,6 +32,73 @@
             class="custom-input">
           </el-input>
         </el-form-item>
+        <el-form-item prop="name">
+          <el-input
+            prefix-icon="el-icon-user"
+            placeholder="请输入姓名"
+            v-model="form.name"
+            class="custom-input">
+          </el-input>
+        </el-form-item>
+        <el-form-item prop="studentNumber">
+          <el-input
+            prefix-icon="el-icon-notebook-2"
+            placeholder="请输入学号"
+            v-model="form.studentNumber"
+            class="custom-input">
+          </el-input>
+        </el-form-item>
+        <el-form-item prop="college">
+          <el-select 
+            v-model="form.college" 
+            placeholder="请选择学院"
+            class="custom-input">
+            <el-option
+              v-for="item in colleges"
+              :key="item"
+              :label="item"
+              :value="item">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="major">
+          <el-select 
+            v-model="form.major" 
+            placeholder="请选择专业"
+            class="custom-input">
+            <el-option
+              v-for="item in majors"
+              :key="item"
+              :label="item"
+              :value="item">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="phone">
+          <el-input
+            prefix-icon="el-icon-phone"
+            placeholder="请输入手机号"
+            v-model="form.phone"
+            class="custom-input">
+          </el-input>
+        </el-form-item>
+        <el-form-item prop="studentCardPhoto">
+          <el-upload
+            class="upload-box"
+            action="/files/upload"
+            :show-file-list="false"
+            :on-success="handleStudentCardSuccess"
+            :before-upload="beforeStudentCardUpload">
+            <el-button type="primary" class="upload-button">
+              <i class="el-icon-upload"></i> 
+              {{ form.studentCardPhoto ? '重新上传学生证照片' : '上传学生证照片' }}
+            </el-button>
+            <div class="upload-tip" v-if="!form.studentCardPhoto">请上传清晰的学生证照片</div>
+            <div class="upload-success" v-else>
+              <i class="el-icon-check"></i> 已上传
+            </div>
+          </el-upload>
+        </el-form-item>
         <el-form-item>
           <el-button
             class="login-button"
@@ -51,7 +118,7 @@
 export default {
   name: "Register",
   data() {
-    // 验证码校验
+    // 验证密码
     const validatePassword = (rule, confirmPass, callback) => {
       if (confirmPass === '') {
         callback(new Error('请确认密码'))
@@ -61,17 +128,70 @@ export default {
         callback()
       }
     }
+    // 验证手机号
+    const validatePhone = (rule, value, callback) => {
+      if (value && !/^1[3-9]\d{9}$/.test(value)) {
+        callback(new Error('请输入正确的手机号'))
+      } else {
+        callback()
+      }
+    }
     return {
-      form: { role: 'STUDENT' },
+      form: { 
+        role: 'STUDENT',
+        studentCardPhoto: ''
+      },
+      // 学院列表
+      colleges: [
+        '化工学院',
+        '材料学院',
+        '机械学院',
+        '信息学院',
+        '经济管理学院',
+        '文法学院',
+        '理学院'
+      ],
+      // 专业列表
+      majors: [
+        '化学工程与工艺',
+        '应用化学',
+        '高分子材料与工程',
+        '机械设计制造及其自动化',
+        '计算机科学与技术',
+        '软件工程',
+        '信息管理与信息系统'
+      ],
       rules: {
         username: [
           { required: true, message: '请输入账号', trigger: 'blur' },
+          { min: 3, max: 20, message: '账号长度在3-20个字符之间', trigger: 'blur' }
         ],
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' },
+          { min: 6, max: 20, message: '密码长度在6-20个字符之间', trigger: 'blur' }
         ],
         confirmPass: [
           { validator: validatePassword, trigger: 'blur' }
+        ],
+        name: [
+          { required: true, message: '请输入姓名', trigger: 'blur' }
+        ],
+        studentNumber: [
+          { required: true, message: '请输入学号', trigger: 'blur' },
+          { pattern: /^\d{8,12}$/, message: '请输入正确的学号格式', trigger: 'blur' }
+        ],
+        college: [
+          { required: true, message: '请选择学院', trigger: 'change' }
+        ],
+        major: [
+          { required: true, message: '请选择专业', trigger: 'change' }
+        ],
+        phone: [
+          { required: true, message: '请输入手机号', trigger: 'blur' },
+          { validator: validatePhone, trigger: 'blur' }
+        ],
+        studentCardPhoto: [
+          { required: true, message: '请上传学生证照片', trigger: 'change' }
         ]
       }
     }
@@ -80,9 +200,38 @@ export default {
 
   },
   methods: {
+    // 上传学生证照片前的验证
+    beforeStudentCardUpload(file) {
+      const isImage = file.type.startsWith('image/')
+      const isLt5M = file.size / 1024 / 1024 < 5
+
+      if (!isImage) {
+        this.$message.error('只能上传图片文件！')
+        return false
+      }
+      if (!isLt5M) {
+        this.$message.error('图片大小不能超过 5MB！')
+        return false
+      }
+      return true
+    },
+    // 学生证照片上传成功的回调
+    handleStudentCardSuccess(res) {
+      if (res.code === '200') {
+        this.form.studentCardPhoto = res.data
+        this.$message.success('上传成功')
+      } else {
+        this.$message.error('上传失败')
+      }
+    },
+    // 注册
     register() {
       this.$refs['formRef'].validate((valid) => {
         if (valid) {
+          if (!this.form.studentCardPhoto) {
+            this.$message.error('请上传学生证照片')
+            return
+          }
           // 验证通过
           this.$request.post('/register', this.form).then(res => {
             if (res.code === '200') {
@@ -172,6 +321,43 @@ export default {
 .custom-input :deep(.el-input__inner):focus {
   border-color: #409EFF;
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+}
+
+.upload-box {
+  width: 100%;
+  text-align: center;
+}
+
+.upload-button {
+  width: 100%;
+  height: 45px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #409EFF 0%, #3a8ee6 100%);
+  border: none;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.upload-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+}
+
+.upload-button:active {
+  transform: translateY(0);
+}
+
+.upload-tip {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 8px;
+}
+
+.upload-success {
+  color: #67C23A;
+  margin-top: 8px;
 }
 
 .login-button {
