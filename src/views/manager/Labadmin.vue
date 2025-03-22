@@ -2,6 +2,7 @@
   <div>
     <div class="search">
       <el-input placeholder="请输入账号查询" style="width: 200px" v-model="username"></el-input>
+      <el-input placeholder="请输入姓名查询" style="width: 200px; margin-left: 10px" v-model="name"></el-input>
       <el-button type="info" plain style="margin-left: 10px" @click="load(1)">查询</el-button>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
     </div>
@@ -27,7 +28,6 @@
         <el-table-column prop="name" label="姓名"></el-table-column>
         <el-table-column prop="phone" label="电话"></el-table-column>
         <el-table-column prop="email" label="邮箱"></el-table-column>
-        <el-table-column prop="role" label="角色"></el-table-column>
         <el-table-column label="操作" align="center" width="180">
           <template v-slot="scope">
             <el-button size="mini" type="primary" plain @click="handleEdit(scope.row)">编辑</el-button>
@@ -97,6 +97,7 @@ export default {
       pageSize: 10,  // 每页显示的个数
       total: 0,
       username: null,
+      name: null,
       fromVisible: false,
       form: {},
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
@@ -179,6 +180,7 @@ export default {
           pageNum: this.pageNum,
           pageSize: this.pageSize,
           username: this.username,
+          name: this.name,
         }
       }).then(res => {
         this.tableData = res.data?.list
@@ -187,6 +189,7 @@ export default {
     },
     reset() {
       this.username = null
+      this.name = null
       this.load(1)
     },
     handleCurrentChange(pageNum) {
