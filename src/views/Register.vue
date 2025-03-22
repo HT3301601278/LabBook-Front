@@ -249,11 +249,12 @@ export default {
           { validator: validatePassword, trigger: 'blur' }
         ],
         name: [
-          { required: true, message: '请输入姓名', trigger: 'blur' }
+          { required: true, message: '请输入姓名', trigger: 'blur' },
+          { pattern: /^[\u4e00-\u9fa5]+$/, message: '姓名只能输入汉字', trigger: 'blur' }
         ],
         studentNumber: [
           { required: true, message: '请输入学号', trigger: 'blur' },
-          { pattern: /^\d{8,12}$/, message: '请输入正确的学号格式', trigger: 'blur' }
+          { pattern: /^(21|22|23|24)\d{8}$/, message: '请输入正确的学号', trigger: 'blur' }
         ],
         college: [
           { required: true, message: '请选择学院', trigger: 'change' }
@@ -263,7 +264,7 @@ export default {
         ],
         phone: [
           { required: true, message: '请输入手机号', trigger: 'blur' },
-          { validator: validatePhone, trigger: 'blur' }
+          { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号格式', trigger: 'blur' }
         ],
         studentCardPhoto: [
           { required: true, message: '请上传学生证照片', trigger: 'change' }
