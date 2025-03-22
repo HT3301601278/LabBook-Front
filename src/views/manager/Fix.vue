@@ -44,10 +44,11 @@
         <el-pagination
             background
             @current-change="handleCurrentChange"
+            @size-change="handleSizeChange"
             :current-page="pageNum"
-            :page-sizes="[5, 10, 20]"
+            :page-sizes="[10, 30, 50]"
             :page-size="pageSize"
-            layout="total, prev, pager, next"
+            layout="total, sizes, prev, pager, next"
             :total="total">
         </el-pagination>
       </div>
@@ -219,6 +220,10 @@ export default {
     },
     handleCurrentChange(pageNum) {
       this.load(pageNum)
+    },
+    handleSizeChange(pageSize) {
+      this.pageSize = pageSize
+      this.load(1)
     },
   }
 }
