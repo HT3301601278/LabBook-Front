@@ -35,9 +35,9 @@
             class="custom-select"
             @focus="handleFocus"
             @blur="handleBlur">
-            <el-option label="系统管理员" value="ADMIN"></el-option>
-            <el-option label="实验室管理员" value="LABADMIN"></el-option>
-            <el-option label="学生" value="STUDENT"></el-option>
+            <el-option label="系统管理员" value="ADMIN" style="text-align: center"></el-option>
+            <el-option label="实验室管理员" value="LABADMIN" style="text-align: center"></el-option>
+            <el-option label="学生" value="STUDENT" style="text-align: center"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item>
