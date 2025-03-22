@@ -98,14 +98,16 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 60px);
+  height: 100%;
   background-color: #f5f7fa;
   background-image: linear-gradient(135deg, #f5f7fa 0%, #e4ecfb 100%);
   padding: 20px;
+  box-sizing: border-box;
 }
 
 .password-card {
-  width: 600px;
+  width: 90%;
+  max-width: 600px;
   border-radius: 16px;
   overflow: hidden;
   transition: all 0.3s ease;
@@ -142,6 +144,7 @@ export default {
   align-items: center;
   width: 100%;
   padding: 0 20px 20px;
+  box-sizing: border-box;
 }
 
 :deep(.el-form-item) {
