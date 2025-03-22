@@ -6,86 +6,93 @@
         <h2>实验室预约管理系统注册</h2>
       </div>
       <el-form :model="form" :rules="rules" ref="formRef" class="login-form">
-        <el-form-item prop="username">
-          <el-input
-            prefix-icon="el-icon-user"
-            placeholder="请输入账号"
-            v-model="form.username"
-            class="custom-input">
-          </el-input>
-        </el-form-item>
-        <el-form-item prop="password">
-          <el-input
-            prefix-icon="el-icon-lock"
-            placeholder="请输入密码"
-            show-password
-            v-model="form.password"
-            class="custom-input">
-          </el-input>
-        </el-form-item>
-        <el-form-item prop="confirmPass">
-          <el-input
-            prefix-icon="el-icon-lock"
-            placeholder="请确认密码"
-            show-password
-            v-model="form.confirmPass"
-            class="custom-input">
-          </el-input>
-        </el-form-item>
-        <el-form-item prop="name">
-          <el-input
-            prefix-icon="el-icon-user"
-            placeholder="请输入姓名"
-            v-model="form.name"
-            class="custom-input">
-          </el-input>
-        </el-form-item>
-        <el-form-item prop="studentNumber">
-          <el-input
-            prefix-icon="el-icon-notebook-2"
-            placeholder="请输入学号"
-            v-model="form.studentNumber"
-            class="custom-input">
-          </el-input>
-        </el-form-item>
-        <el-form-item prop="college">
-          <el-select 
-            v-model="form.college" 
-            placeholder="请选择学院"
-            class="custom-input">
-            <el-option
-              v-for="item in colleges"
-              :key="item"
-              :label="item"
-              :value="item">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item prop="major">
-          <el-select 
-            v-model="form.major" 
-            placeholder="请选择专业"
-            class="custom-input">
-            <el-option
-              v-for="item in majors"
-              :key="item"
-              :label="item"
-              :value="item">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item prop="phone">
-          <el-input
-            prefix-icon="el-icon-phone"
-            placeholder="请输入手机号"
-            v-model="form.phone"
-            class="custom-input">
-          </el-input>
-        </el-form-item>
+        <div class="form-row">
+          <div class="form-col">
+            <el-form-item prop="username">
+              <el-input
+                prefix-icon="el-icon-user"
+                placeholder="请输入账号"
+                v-model="form.username"
+                class="custom-input">
+              </el-input>
+            </el-form-item>
+            <el-form-item prop="password">
+              <el-input
+                prefix-icon="el-icon-lock"
+                placeholder="请输入密码"
+                show-password
+                v-model="form.password"
+                class="custom-input">
+              </el-input>
+            </el-form-item>
+            <el-form-item prop="confirmPass">
+              <el-input
+                prefix-icon="el-icon-lock"
+                placeholder="请确认密码"
+                show-password
+                v-model="form.confirmPass"
+                class="custom-input">
+              </el-input>
+            </el-form-item>
+            <el-form-item prop="studentNumber">
+              <el-input
+                prefix-icon="el-icon-notebook-2"
+                placeholder="请输入学号"
+                v-model="form.studentNumber"
+                class="custom-input">
+              </el-input>
+            </el-form-item>
+          </div>
+          <div class="form-col">
+            <el-form-item prop="name">
+              <el-input
+                prefix-icon="el-icon-user"
+                placeholder="请输入姓名"
+                v-model="form.name"
+                class="custom-input">
+              </el-input>
+            </el-form-item>
+            <el-form-item prop="college">
+              <el-select 
+                v-model="form.college" 
+                placeholder="请选择学院"
+                @change="handleCollegeChange"
+                class="custom-input">
+                <el-option
+                  v-for="item in colleges"
+                  :key="item"
+                  :label="item"
+                  :value="item">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item prop="major">
+              <el-select 
+                v-model="form.major" 
+                placeholder="请选择专业"
+                class="custom-input">
+                <el-option
+                  v-for="item in majors"
+                  :key="item"
+                  :label="item"
+                  :value="item">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item prop="phone">
+              <el-input
+                prefix-icon="el-icon-phone"
+                placeholder="请输入手机号"
+                v-model="form.phone"
+                class="custom-input">
+              </el-input>
+            </el-form-item>
+          </div>
+        </div>
         <el-form-item prop="studentCardPhoto">
           <el-upload
             class="upload-box"
-            action="/files/upload"
+            action="http://localhost:8080/files/upload"
             :show-file-list="false"
             :on-success="handleStudentCardSuccess"
             :before-upload="beforeStudentCardUpload">
@@ -149,26 +156,82 @@ export default {
         phone: '',
         studentCardPhoto: ''
       },
-      // 学院列表
-      colleges: [
-        '化工学院',
-        '材料学院',
-        '机械学院',
-        '信息学院',
-        '经济管理学院',
-        '文法学院',
-        '理学院'
-      ],
-      // 专业列表
-      majors: [
-        '化学工程与工艺',
-        '应用化学',
-        '高分子材料与工程',
-        '机械设计制造及其自动化',
-        '计算机科学与技术',
-        '软件工程',
-        '信息管理与信息系统'
-      ],
+      // 学院和专业的映射关系
+      collegeToMajors: {
+        '化学工程学院': [
+          '化学工程与工艺',
+          '化学工程与工艺（卓越工程师班）',
+          '化学工程与工艺（菱镁产业学院）',
+          '应用化学',
+          '能源化学工程',
+          '制药工程'
+        ],
+        '材料科学与工程学院': [
+          '高分子材料与工程',
+          '高分子材料与工程（卓越工程师班）',
+          '材料化学',
+          '无机非金属材料工程',
+          '金属材料工程',
+          '新能源材料与器件'
+        ],
+        '机械与动力工程学院': [
+          '过程装备与控制工程专业',
+          '机械设计制造及其自动化专业',
+          '能源与动力工程专业',
+          '能源与动力工程专业（中外合作办学）',
+          '金属材料工程',
+          '油气储运工程专业'
+        ],
+        '信息工程学院': [
+          '自动化专业',
+          '电气工程及其自动化专业',
+          '测控技术与仪器专业',
+          '电子信息工程专业',
+          '电子科学与技术专业',
+          '物联网工程专业',
+          '人工智能专业'
+        ],
+        '计算机科学与技术学院': [
+          '计算机科学与技术专业',
+          '网络工程专业',
+          '软件工程专业',
+          '数据科学与大数据技术专业'
+        ],
+        '环境与安全工程学院': [
+          '水质科学与技术专业',
+          '环境工程专业',
+          '安全工程专业'
+        ],
+        '理学院': [
+          '应用物理学专业',
+          '化学专业'
+        ],
+        '经济与管理学院': [
+          '工商管理专业',
+          '工程管理专业',
+          '国际经济与贸易专业',
+          '金融学专业',
+          '会计学专业',
+          '大数据管理与应用专业',
+          '应急管理专业'
+        ],
+        '外国语学院': [
+          '英语专业',
+          '国际经济与贸易专业（对俄贸易方向）'
+        ],
+        '人文与艺术学院': [
+          '社会工作专业',
+          '产品设计专业',
+          '环境设计专业'
+        ],
+        '体育部': [
+          '社会体育指导与管理专业'
+        ]
+      },
+      // 获取所有学院列表
+      colleges: [],
+      // 当前可选的专业列表
+      majors: [],
       rules: {
         username: [
           { required: true, message: '请输入账号', trigger: 'blur' },
@@ -204,7 +267,16 @@ export default {
       }
     }
   },
+  created() {
+    // 初始化学院列表
+    this.colleges = Object.keys(this.collegeToMajors)
+  },
   methods: {
+    // 处理学院选择变化
+    handleCollegeChange(value) {
+      this.form.major = '' // 清空专业选择
+      this.majors = this.collegeToMajors[value] || [] // 更新专业列表
+    },
     // 上传学生证照片前的验证
     beforeStudentCardUpload(file) {
       const isImage = file.type.startsWith('image/')
@@ -274,7 +346,7 @@ export default {
 }
 
 .login-box {
-  width: 480px;
+  width: 800px;
   padding: 30px 40px;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 15px;
@@ -418,5 +490,16 @@ export default {
 
 :deep(.el-form-item__error) {
   padding-top: 2px;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.form-col {
+  flex: 1;
+  min-width: 0;
 }
 </style>
