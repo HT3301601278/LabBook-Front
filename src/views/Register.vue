@@ -139,6 +139,14 @@ export default {
     return {
       form: { 
         role: 'STUDENT',
+        username: '',
+        password: '',
+        confirmPass: '',
+        name: '',
+        studentNumber: '',
+        college: '',
+        major: '',
+        phone: '',
         studentCardPhoto: ''
       },
       // 学院列表
@@ -217,6 +225,8 @@ export default {
       if (res.code === '200') {
         this.form.studentCardPhoto = res.data
         this.$message.success('上传成功')
+        // 手动触发表单验证
+        this.$refs['formRef'].validateField('studentCardPhoto')
       } else {
         this.$message.error('上传失败')
       }
@@ -225,10 +235,6 @@ export default {
     register() {
       this.$refs['formRef'].validate((valid) => {
         if (valid) {
-          if (!this.form.studentCardPhoto) {
-            this.$message.error('请上传学生证照片')
-            return
-          }
           // 验证通过
           this.$request.post('/register', this.form).then(res => {
             if (res.code === '200') {
@@ -268,48 +274,47 @@ export default {
 }
 
 .login-box {
-  width: 420px;
-  padding: 40px;
+  width: 480px;
+  padding: 30px 40px;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 15px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 1;
   backdrop-filter: blur(10px);
-  max-height: 90vh;
-  overflow-y: auto;
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 .logo {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 15px;
+  width: 70px;
+  height: 70px;
+  margin-bottom: 12px;
 }
 
 .login-header h2 {
   color: #2c3e50;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
   margin: 0;
 }
 
 .login-form {
-  margin-top: 30px;
+  margin-top: 20px;
 }
 
 .custom-input {
   width: 100%;
+  margin-bottom: 5px;
 }
 
 .custom-input :deep(.el-input__inner),
 .custom-input :deep(.el-select .el-input__inner) {
-  height: 45px;
-  line-height: 45px;
+  height: 42px;
+  line-height: 42px;
   border-radius: 8px;
   border: 1px solid #dcdfe6;
   transition: all 0.3s;
@@ -324,16 +329,17 @@ export default {
 .upload-box {
   width: 100%;
   text-align: center;
+  margin: 5px 0;
 }
 
 .upload-button {
   width: 100%;
-  height: 45px;
+  height: 42px;
   border-radius: 8px;
   background: linear-gradient(135deg, #409EFF 0%, #3a8ee6 100%);
   border: none;
   color: white;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   transition: all 0.3s;
 }
@@ -350,17 +356,17 @@ export default {
 .upload-tip {
   font-size: 12px;
   color: #909399;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .upload-success {
   color: #67C23A;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .login-button {
   width: 100%;
-  height: 45px;
+  height: 42px;
   font-size: 16px;
   font-weight: 500;
   background: linear-gradient(135deg, #409EFF 0%, #3a8ee6 100%);
@@ -368,6 +374,7 @@ export default {
   border-radius: 8px;
   color: white;
   transition: all 0.3s;
+  margin-top: 10px;
 }
 
 .login-button:hover {
@@ -381,7 +388,7 @@ export default {
 
 .register-link {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 15px;
   color: #606266;
 }
 
@@ -403,5 +410,13 @@ export default {
   to {
     transform: rotate(360deg);
   }
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 18px;
+}
+
+:deep(.el-form-item__error) {
+  padding-top: 2px;
 }
 </style>
