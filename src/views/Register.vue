@@ -196,9 +196,6 @@ export default {
       }
     }
   },
-  created() {
-
-  },
   methods: {
     // 上传学生证照片前的验证
     beforeStudentCardUpload(file) {
@@ -279,6 +276,8 @@ export default {
   position: relative;
   z-index: 1;
   backdrop-filter: blur(10px);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .login-header {
@@ -297,20 +296,18 @@ export default {
   font-size: 24px;
   font-weight: 600;
   margin: 0;
-  margin-bottom: 8px;
-}
-
-.sub-title {
-  color: #606266;
-  font-size: 16px;
-  margin: 0;
 }
 
 .login-form {
   margin-top: 30px;
 }
 
-.custom-input :deep(.el-input__inner) {
+.custom-input {
+  width: 100%;
+}
+
+.custom-input :deep(.el-input__inner),
+.custom-input :deep(.el-select .el-input__inner) {
   height: 45px;
   line-height: 45px;
   border-radius: 8px;
@@ -318,7 +315,8 @@ export default {
   transition: all 0.3s;
 }
 
-.custom-input :deep(.el-input__inner):focus {
+.custom-input :deep(.el-input__inner):focus,
+.custom-input :deep(.el-select .el-input__inner):focus {
   border-color: #409EFF;
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
