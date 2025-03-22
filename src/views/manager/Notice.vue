@@ -16,8 +16,8 @@
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="id" label="序号" width="80" align="center" sortable></el-table-column>
         <el-table-column prop="title" label="标题" min-width="20%" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="content" label="内容" min-width="60%" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="createTime" label="创建时间" min-width="10%">
+        <el-table-column prop="content" label="内容" min-width="55%" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="createTime" label="创建时间" min-width="15%">
           <template v-slot="scope">
             {{ scope.row.createTime ? scope.row.createTime.split('T')[0] : '' }}
           </template>

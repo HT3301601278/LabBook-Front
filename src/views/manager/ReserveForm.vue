@@ -156,4 +156,30 @@ export default {
 </script>
 
 <style scoped>
+::v-deep .el-dialog {
+  display: flex;
+  flex-direction: column;
+  margin: 0 !important;
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-height: 90%;
+  max-width: 90%;
+}
+
+::v-deep .el-dialog__body {
+  flex: 1;
+  overflow: auto;
+}
+
+::v-deep .el-dialog__header {
+  padding: 20px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+::v-deep .el-dialog__footer {
+  padding: 20px;
+  border-top: 1px solid #ebeef5;
+}
 </style>
