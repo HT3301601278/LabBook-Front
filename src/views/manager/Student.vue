@@ -2,6 +2,7 @@
   <div>
     <div class="search">
       <el-input placeholder="请输入账号查询" style="width: 200px" v-model="username"></el-input>
+      <el-input placeholder="请输入姓名查询" style="width: 200px; margin-left: 5px" v-model="name"></el-input>
       <el-button type="info" plain style="margin-left: 10px" @click="load(1)">查询</el-button>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
     </div>
@@ -25,8 +26,18 @@
         </el-table-column>
         <el-table-column prop="username" label="账号"></el-table-column>
         <el-table-column prop="name" label="姓名"></el-table-column>
+        <el-table-column prop="studentNumber" label="学号"></el-table-column>
+        <el-table-column prop="college" label="学院"></el-table-column>
+        <el-table-column prop="major" label="专业"></el-table-column>
         <el-table-column prop="phone" label="电话"></el-table-column>
-        <el-table-column prop="email" label="邮箱"></el-table-column>
+        <el-table-column label="学生证照片">
+          <template v-slot="scope">
+            <div style="display: flex; align-items: center">
+              <el-image style="width: 40px; height: 40px;" v-if="scope.row.studentCardPhoto"
+                        :src="scope.row.studentCardPhoto" :preview-src-list="[scope.row.studentCardPhoto]"></el-image>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" align="center" width="180">
           <template v-slot="scope">
             <el-button size="mini" type="primary" plain @click="handleEdit(scope.row)">编辑</el-button>
@@ -39,10 +50,11 @@
         <el-pagination
             background
             @current-change="handleCurrentChange"
+            @size-change="handleSizeChange"
             :current-page="pageNum"
-            :page-sizes="[5, 10, 20]"
+            :page-sizes="[10, 30, 50]"
             :page-size="pageSize"
-            layout="total, prev, pager, next"
+            layout="total, sizes, prev, pager, next"
             :total="total">
         </el-pagination>
       </div>
@@ -57,11 +69,21 @@
         <el-form-item label="姓名" prop="name">
           <el-input v-model="form.name" placeholder="姓名"></el-input>
         </el-form-item>
+        <el-form-item label="学号" prop="studentNumber">
+          <el-input v-model="form.studentNumber" placeholder="学号"></el-input>
+        </el-form-item>
+        <el-form-item label="学院" prop="college">
+          <el-select v-model="form.college" placeholder="请选择学院" @change="handleCollegeChange" style="width: 100%">
+            <el-option v-for="item in colleges" :key="item" :label="item" :value="item"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="专业" prop="major">
+          <el-select v-model="form.major" placeholder="请选择专业" style="width: 100%">
+            <el-option v-for="item in majors" :key="item" :label="item" :value="item"></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="电话" prop="phone">
           <el-input v-model="form.phone" placeholder="电话"></el-input>
-        </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="form.email" placeholder="邮箱"></el-input>
         </el-form-item>
         <el-form-item label="头像">
           <el-upload
@@ -72,6 +94,17 @@
               :on-success="handleAvatarSuccess"
           >
             <el-button type="primary">上传头像</el-button>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="学生证照片">
+          <el-upload
+              class="avatar-uploader"
+              :action="$baseUrl + '/files/upload'"
+              :headers="{ token: user.token }"
+              list-type="picture"
+              :on-success="handleStudentCardPhotoSuccess"
+          >
+            <el-button type="primary">上传学生证照片</el-button>
           </el-upload>
         </el-form-item>
       </el-form>
@@ -90,25 +123,98 @@
 export default {
   name: "Student",
   data() {
+    // 验证手机号
+    const validatePhone = (rule, value, callback) => {
+      if (value && !/^1[3-9]\d{9}$/.test(value)) {
+        callback(new Error('请输入正确的手机号'))
+      } else {
+        callback()
+      }
+    }
     return {
       tableData: [],  // 所有的数据
       pageNum: 1,   // 当前的页码
       pageSize: 10,  // 每页显示的个数
       total: 0,
       username: null,
+      name: null,  // 添加姓名查询参数
       fromVisible: false,
       form: {},
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
       rules: {
         username: [
           {required: true, message: '请输入账号', trigger: 'blur'},
+        ],
+        name: [
+          {required: true, message: '请输入姓名', trigger: 'blur'},
+        ],
+        studentNumber: [
+          {required: true, message: '请输入学号', trigger: 'blur'},
+          {pattern: /^\d{8,12}$/, message: '请输入正确的学号格式', trigger: 'blur'}
+        ],
+        college: [
+          {required: true, message: '请选择学院', trigger: 'change'}
+        ],
+        major: [
+          {required: true, message: '请选择专业', trigger: 'change'}
+        ],
+        phone: [
+          {required: true, message: '请输入手机号', trigger: 'blur'},
+          {validator: validatePhone, trigger: 'blur'}
         ]
       },
-      ids: []
+      ids: [],
+      colleges: [],
+      majors: [],
+      // 学院和专业的映射关系
+      collegeToMajors: {
+        '信息工程学院': [
+          '计算机科学与技术专业',
+          '软件工程专业',
+          '物联网工程专业',
+          '网络工程专业',
+          '数据科学与大数据技术专业',
+          '人工智能专业'
+        ],
+        '机械工程学院': [
+          '机械设计制造及其自动化专业',
+          '机械电子工程专业',
+          '工业设计专业',
+          '智能制造工程专业'
+        ],
+        '电气工程学院': [
+          '电气工程及其自动化专业',
+          '自动化专业',
+          '电子信息工程专业',
+          '通信工程专业'
+        ],
+        '经济与管理学院': [
+          '工商管理专业',
+          '工程管理专业',
+          '国际经济与贸易专业',
+          '金融学专业',
+          '会计学专业',
+          '大数据管理与应用专业',
+          '应急管理专业'
+        ],
+        '外国语学院': [
+          '英语专业',
+          '国际经济与贸易专业（对俄贸易方向）'
+        ],
+        '人文与艺术学院': [
+          '社会工作专业',
+          '产品设计专业',
+          '环境设计专业'
+        ],
+        '体育部': [
+          '社会体育指导与管理专业'
+        ]
+      }
     }
   },
   created() {
     this.load(1)
+    this.colleges = Object.keys(this.collegeToMajors)
   },
   methods: {
     handleAdd() {   // 新增数据
@@ -178,6 +284,7 @@ export default {
           pageNum: this.pageNum,
           pageSize: this.pageSize,
           username: this.username,
+          name: this.name,  // 添加姓名参数
         }
       }).then(res => {
         this.tableData = res.data?.list
@@ -186,14 +293,27 @@ export default {
     },
     reset() {
       this.username = null
+      this.name = null  // 重置姓名参数
       this.load(1)
     },
     handleCurrentChange(pageNum) {
       this.load(pageNum)
     },
+    handleSizeChange(pageSize) {
+      this.pageSize = pageSize
+      this.load(1)
+    },
     handleAvatarSuccess(response, file, fileList) {
       // 把头像属性换成上传的图片的链接
       this.form.avatar = response.data
+    },
+    handleStudentCardPhotoSuccess(response, file, fileList) {
+      // 把学生证照片属性换成上传的图片的链接
+      this.form.studentCardPhoto = response.data
+    },
+    handleCollegeChange(value) {
+      this.form.major = ''  // 清空专业选择
+      this.majors = this.collegeToMajors[value] || []  // 更新专业列表
     },
   }
 }
