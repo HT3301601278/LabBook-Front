@@ -90,21 +90,25 @@
           </div>
         </div>
         <el-form-item prop="studentCardPhoto">
-          <el-upload
-            class="upload-box"
-            action="http://localhost:8080/files/upload"
-            :show-file-list="false"
-            :on-success="handleStudentCardSuccess"
-            :before-upload="beforeStudentCardUpload">
-            <el-button type="primary" class="upload-button">
-              <i class="el-icon-upload"></i> 
-              {{ form.studentCardPhoto ? '重新上传学生证照片' : '上传学生证照片' }}
-            </el-button>
-            <div class="upload-tip" v-if="!form.studentCardPhoto">请上传清晰的学生证照片</div>
-            <div class="upload-success" v-else>
-              <i class="el-icon-check"></i> 已上传
-            </div>
-          </el-upload>
+          <div class="upload-container">
+            <el-upload
+              class="upload-box"
+              action="http://localhost:8080/files/upload"
+              :show-file-list="false"
+              :on-success="handleStudentCardSuccess"
+              :before-upload="beforeStudentCardUpload">
+              <div class="upload-area" :class="{'has-file': form.studentCardPhoto}">
+                <i class="el-icon-upload upload-icon"></i>
+                <div class="upload-text">
+                  {{ form.studentCardPhoto ? '重新上传学生证照片' : '上传学生证照片' }}
+                </div>
+                <div class="upload-tip" v-if="!form.studentCardPhoto">请上传清晰的学生证照片（JPG/PNG格式，小于5MB）</div>
+                <div class="upload-success" v-if="form.studentCardPhoto">
+                  <i class="el-icon-check"></i> 已成功上传学生证照片
+                </div>
+              </div>
+            </el-upload>
+          </div>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -325,13 +329,14 @@ export default {
 
 <style scoped>
 .login-container {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   position: relative;
   overflow: hidden;
+  padding: 30px 15px;
 }
 
 .login-container::before {
@@ -346,14 +351,16 @@ export default {
 }
 
 .login-box {
-  width: 800px;
+  width: 100%;
+  max-width: 800px;
   padding: 30px 40px;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 15px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 1;
   backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
 }
 
 .login-header {
@@ -371,7 +378,14 @@ export default {
   color: #2c3e50;
   font-size: 22px;
   font-weight: 600;
-  margin: 0;
+  margin: 0 0 5px 0;
+}
+
+.subtitle {
+  color: #606266;
+  font-size: 16px;
+  margin-top: 5px;
+  font-weight: normal;
 }
 
 .login-form {
@@ -398,42 +412,72 @@ export default {
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 
+.upload-container {
+  width: 100%;
+  margin: 10px 0;
+}
+
 .upload-box {
   width: 100%;
   text-align: center;
-  margin: 5px 0;
 }
 
-.upload-button {
+.upload-area {
   width: 100%;
-  height: 42px;
+  height: 120px;
+  border: 2px dashed #dcdfe6;
   border-radius: 8px;
-  background: linear-gradient(135deg, #409EFF 0%, #3a8ee6 100%);
-  border: none;
-  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background-color: #f8f9fa;
+  padding: 15px;
+}
+
+.upload-area:hover {
+  border-color: #409EFF;
+  background-color: #f0f7ff;
+}
+
+.upload-area.has-file {
+  border-color: #67C23A;
+  background-color: #f0f9eb;
+}
+
+.upload-icon {
+  font-size: 28px;
+  color: #409EFF;
+  margin-bottom: 8px;
+}
+
+.upload-text {
   font-size: 15px;
   font-weight: 500;
-  transition: all 0.3s;
-}
-
-.upload-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
-}
-
-.upload-button:active {
-  transform: translateY(0);
+  color: #409EFF;
+  margin-bottom: 5px;
 }
 
 .upload-tip {
   font-size: 12px;
   color: #909399;
-  margin-top: 6px;
+  text-align: center;
+  margin-top: 5px;
 }
 
 .upload-success {
   color: #67C23A;
-  margin-top: 6px;
+  font-size: 14px;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-success i {
+  margin-right: 5px;
 }
 
 .login-button {
@@ -501,5 +545,40 @@ export default {
 .form-col {
   flex: 1;
   min-width: 0;
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .login-box {
+    padding: 25px 20px;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .logo {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .login-header h2 {
+    font-size: 20px;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+  }
+}
+
+/* 添加过渡动画 */
+.login-form :deep(.el-form-item) {
+  transition: all 0.3s ease;
+}
+
+.login-form :deep(.el-input),
+.login-form :deep(.el-select) {
+  transition: all 0.3s ease;
 }
 </style>
