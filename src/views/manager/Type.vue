@@ -17,7 +17,7 @@
         <el-table-column prop="id" label="序号" width="80" align="center" sortable></el-table-column>
         <el-table-column prop="name" label="分类名称" min-width="10%" show-overflow-tooltip></el-table-column>
         <el-table-column prop="description" label="分类描述" min-width="80%" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="labadminName" label="实验室管理员" min-width="10%" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="labadminName" label="类型管理员" min-width="10%" show-overflow-tooltip></el-table-column>
 
         <el-table-column label="操作" width="180" align="center">
           <template v-slot="scope">

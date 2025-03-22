@@ -15,8 +15,8 @@
       <el-table :data="tableData" stripe  @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="id" label="序号" width="80" align="center" sortable></el-table-column>
-        <el-table-column prop="labNumber" label="实验室编号" show-overflow-tooltip></el-table-column>
         <el-table-column prop="labName" label="实验室名称" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="labNumber" label="实验室编号" show-overflow-tooltip></el-table-column>
         <el-table-column prop="startTime" label="开始时间" show-overflow-tooltip></el-table-column>
         <el-table-column prop="endTime" label="结束时间" show-overflow-tooltip></el-table-column>
         <el-table-column prop="maxReservationHours" label="最大预约时长(小时)" width="140" align="center"></el-table-column>

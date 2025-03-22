@@ -17,21 +17,21 @@
       <el-table :data="tableData" stripe  @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="id" label="序号" width="80" align="center" sortable></el-table-column>
-        <el-table-column prop="studentName" label="报修人" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="description" label="报修说明" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="createTime" label="报修时间"></el-table-column>
-        <el-table-column prop="labName" label="实验室">
+        <el-table-column prop="studentName" label="报修人" min-width="10%" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="description" label="报修说明" min-width="20%" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="createTime" label="报修时间" min-width="15%" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="labName" label="实验室" min-width="15%" show-overflow-tooltip>
           <template v-slot="scope">
             {{scope.row.typeName}} - {{scope.row.labName}}
           </template>
         </el-table-column>
-        <el-table-column prop="labadminName" label="实验室管理员"></el-table-column>
-        <el-table-column prop="status" label="处理状态">
+        <el-table-column prop="labadminName" label="实验室管理员" min-width="12%" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="status" label="处理状态" min-width="8%" show-overflow-tooltip>
           <template v-slot="scope">
             <el-tag :type="getStatusType(scope.row.status)">{{ scope.row.status }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="fixTime" label="处理时间"></el-table-column>
+        <el-table-column prop="fixTime" label="处理时间" min-width="15%" show-overflow-tooltip></el-table-column>
 
         <el-table-column label="操作" width="180" align="center">
           <template v-slot="scope">
@@ -54,25 +54,28 @@
     </div>
     <el-dialog title="填写检修信息" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close>
       <el-form label-width="100px" style="padding-right: 50px" :model="form" :rules="rules" ref="formRef">
-        <el-form-item prop="username" label="检修人">
-          <el-input v-model="form.username" autocomplete="off"></el-input>
+        <el-form-item prop="inspectorName" label="检修人">
+          <el-input v-model="form.inspectorName" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item prop="phone" label="联系电话">
           <el-input v-model="form.phone" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item prop="content" label="检修说明">
-          <el-input v-model="form.content" autocomplete="off"></el-input>
+        <el-form-item prop="department" label="检修部门">
+          <el-input v-model="form.department" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item prop="time" label="检修时间">
+        <el-form-item prop="content" label="检修内容">
+          <el-input type="textarea" :rows="3" v-model="form.content" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item prop="description" label="处理说明">
+          <el-input type="textarea" :rows="3" v-model="form.description" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item prop="fixTime" label="处理时间">
           <el-date-picker style="width: 100%"
-              v-model="form.time"
+              v-model="form.fixTime"
               type="datetime"
               value-format="yyyy-MM-dd HH:mm"
-              placeholder="选择日期时间">
+              placeholder="选择处理时间">
           </el-date-picker>
-        </el-form-item>
-        <el-form-item prop="department" label="检修单位">
-          <el-input v-model="form.department" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -100,25 +103,26 @@ export default {
       form: {},
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
       rules: {
-        username: [
-          {required: true, message: '请输入检修人', trigger: 'blur'},
+        inspectorName: [
+          {required: true, message: '请输入检修人姓名', trigger: 'blur'},
         ],
         phone: [
           {required: true, message: '请输入联系电话', trigger: 'blur'},
         ],
         content: [
-          {required: true, message: '请输入检修说明', trigger: 'blur'},
-        ],
-        time: [
-          {required: true, message: '请输入检修时间', trigger: 'blur'},
+          {required: true, message: '请输入检修内容', trigger: 'blur'},
         ],
         department: [
-          {required: true, message: '请输入检修单位', trigger: 'blur'},
+          {required: true, message: '请输入检修部门', trigger: 'blur'},
+        ],
+        description: [
+          {required: true, message: '请输入处理说明', trigger: 'blur'},
+        ],
+        fixTime: [
+          {required: true, message: '请选择处理时间', trigger: 'blur'},
         ],
       },
       ids: [],
-      id: null,
-      time: null,
     }
   },
   created() {
@@ -137,34 +141,58 @@ export default {
       this.ids = rows.map(v => v.id)   //  [1,2]
     },
     submit() {
-      this.$request.post('/checks/add', this.form).then(res => {
-        if (res.code === '200') {
-          this.$message.success('操作成功')
-          this.fromVisible = false
+      this.$refs.formRef.validate((valid) => {
+        if (valid) {
+          // 先添加检修记录
+          const checksData = {
+            labId: this.form.labId,
+            fixId: this.form.fixId,
+            inspectorName: this.form.inspectorName,
+            phone: this.form.phone,
+            content: this.form.content,
+            department: this.form.department,
+            inspectionTime: this.form.fixTime
+          }
 
-          this.form.id = this.id
-          this.form.time = this.time
-          this.form.status = '已处理'
-          this.$request.put('/fix/update', this.form).then(res => {
+          this.$request.post('/checks/add', checksData).then(res => {
             if (res.code === '200') {
-              this.id = null
-              this.time = null
-              this.load(1)
+              // 更新报修记录状态
+              const fixData = {
+                id: this.form.fixId,
+                status: '已完成',
+                fixTime: this.form.fixTime,
+                labadminId: this.user.id,
+                description: this.form.description
+              }
+
+              this.$request.put('/fix/update', fixData).then(res => {
+                if (res.code === '200') {
+                  this.$message.success('操作成功')
+                  this.fromVisible = false
+                  this.load(1)
+                } else {
+                  this.$message.error(res.msg)
+                }
+              })
             } else {
               this.$message.error(res.msg)
             }
           })
-        } else {
-          this.$message.error(res.msg)
         }
       })
     },
     handleEdit(row) {
-      this.id = row.id
-      this.time = row.time
-      this.form.labId = row.labId
-      this.form.fixId = row.id
-      this.fromVisible = true   // 打开弹窗
+      this.form = {
+        labId: row.labId,
+        fixId: row.id,
+        inspectorName: '',
+        phone: '',
+        content: '',
+        department: '',
+        description: '',
+        fixTime: null
+      }
+      this.fromVisible = true
     },
     load(pageNum) {  // 分页查询
       if (pageNum) this.pageNum = pageNum

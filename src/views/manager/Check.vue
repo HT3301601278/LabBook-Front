@@ -1,7 +1,9 @@
 <template>
   <div>
     <div class="search">
-      <el-input placeholder="请输入检修人姓名" style="width: 200px" v-model="username"></el-input>
+      <el-input placeholder="请输入检修人姓名" style="width: 200px" v-model="inspectorName"></el-input>
+      <el-input placeholder="请输入检修内容" style="width: 200px; margin-left: 10px" v-model="content"></el-input>
+      <el-input placeholder="请输入检修部门" style="width: 200px; margin-left: 10px" v-model="department"></el-input>
       <el-button type="info" plain style="margin-left: 10px" @click="load(1)">查询</el-button>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
     </div>
@@ -10,14 +12,13 @@
       <el-table :data="tableData" stripe  @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="id" label="序号" width="80" align="center" sortable></el-table-column>
-        <el-table-column prop="username" label="检修人" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="phone" label="联系电话" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="content" label="检修说明"></el-table-column>
-        <el-table-column prop="time" label="检修时间"></el-table-column>
-        <el-table-column prop="department" label="检修单位"></el-table-column>
-        <el-table-column prop="labName" label="实验室"></el-table-column>
-        <el-table-column prop="fixName" label="报修说明"></el-table-column>
-
+        <el-table-column prop="labName" label="实验室" min-width="10%" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="fixName" label="报修说明" min-width="25%" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="content" label="检修内容" min-width="25%" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="inspectorName" label="检修人" min-width="10%" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="department" label="检修部门" min-width="10%" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="phone" label="联系电话" min-width="10%" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="inspectionTime" label="检修时间" min-width="10%" show-overflow-tooltip></el-table-column>
       </el-table>
 
       <div class="pagination">
@@ -45,16 +46,21 @@ export default {
       pageNum: 1,   // 当前的页码
       pageSize: 10,  // 每页显示的个数
       total: 0,
-      username: null,
+      inspectorName: null,  // 修改搜索条件字段名
+      content: null,
+      department: null,
       fromVisible: false,
       form: {},
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
       rules: {
-        title: [
-          {required: true, message: '请输入标题', trigger: 'blur'},
+        inspectorName: [
+          {required: true, message: '请输入检修人姓名', trigger: 'blur'},
         ],
         content: [
-          {required: true, message: '请输入内容', trigger: 'blur'},
+          {required: true, message: '请输入检修内容', trigger: 'blur'},
+        ],
+        department: [
+          {required: true, message: '请输入检修部门', trigger: 'blur'},
         ]
       },
       ids: []
@@ -130,7 +136,9 @@ export default {
         params: {
           pageNum: this.pageNum,
           pageSize: this.pageSize,
-          username: this.username,
+          inspectorName: this.inspectorName,
+          content: this.content,
+          department: this.department
         }
       }).then(res => {
         this.tableData = res.data?.list
@@ -138,7 +146,9 @@ export default {
       })
     },
     reset() {
-      this.username = null
+      this.inspectorName = null
+      this.content = null
+      this.department = null
       this.load(1)
     },
     handleCurrentChange(pageNum) {
@@ -149,5 +159,9 @@ export default {
 </script>
 
 <style scoped>
-
+.search {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
 </style>
