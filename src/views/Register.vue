@@ -1,5 +1,6 @@
 <template>
   <div class="login-container">
+    <div id="particles-js" class="particles"></div>
     <div class="login-box">
       <div class="login-header">
         <img src="@/assets/imgs/沈阳化工大学校徽.svg" alt="logo" class="logo">
@@ -13,7 +14,9 @@
                 prefix-icon="el-icon-user"
                 placeholder="请输入账号"
                 v-model="form.username"
-                class="custom-input">
+                class="custom-input"
+                @focus="handleFocus"
+                @blur="handleBlur">
               </el-input>
             </el-form-item>
             <el-form-item prop="password">
@@ -22,7 +25,9 @@
                 placeholder="请输入密码"
                 show-password
                 v-model="form.password"
-                class="custom-input">
+                class="custom-input"
+                @focus="handleFocus"
+                @blur="handleBlur">
               </el-input>
             </el-form-item>
             <el-form-item prop="confirmPass">
@@ -31,7 +36,9 @@
                 placeholder="请确认密码"
                 show-password
                 v-model="form.confirmPass"
-                class="custom-input">
+                class="custom-input"
+                @focus="handleFocus"
+                @blur="handleBlur">
               </el-input>
             </el-form-item>
             <el-form-item prop="studentNumber">
@@ -39,7 +46,9 @@
                 prefix-icon="el-icon-notebook-2"
                 placeholder="请输入学号"
                 v-model="form.studentNumber"
-                class="custom-input">
+                class="custom-input"
+                @focus="handleFocus"
+                @blur="handleBlur">
               </el-input>
             </el-form-item>
           </div>
@@ -49,7 +58,9 @@
                 prefix-icon="el-icon-user"
                 placeholder="请输入姓名"
                 v-model="form.name"
-                class="custom-input">
+                class="custom-input"
+                @focus="handleFocus"
+                @blur="handleBlur">
               </el-input>
             </el-form-item>
             <el-form-item prop="college">
@@ -57,6 +68,8 @@
                 v-model="form.college" 
                 placeholder="请选择学院"
                 @change="handleCollegeChange"
+                @focus="handleFocus"
+                @blur="handleBlur"
                 class="custom-input">
                 <el-option
                   v-for="item in colleges"
@@ -70,6 +83,8 @@
               <el-select 
                 v-model="form.major" 
                 placeholder="请选择专业"
+                @focus="handleFocus"
+                @blur="handleBlur"
                 class="custom-input">
                 <el-option
                   v-for="item in majors"
@@ -84,7 +99,9 @@
                 prefix-icon="el-icon-phone"
                 placeholder="请输入手机号"
                 v-model="form.phone"
-                class="custom-input">
+                class="custom-input"
+                @focus="handleFocus"
+                @blur="handleBlur">
               </el-input>
             </el-form-item>
           </div>
@@ -96,7 +113,9 @@
               action="http://localhost:8080/files/upload"
               :show-file-list="false"
               :on-success="handleStudentCardSuccess"
-              :before-upload="beforeStudentCardUpload">
+              :before-upload="beforeStudentCardUpload"
+              @focus="handleFocus"
+              @blur="handleBlur">
               <div class="upload-area" :class="{'has-file': form.studentCardPhoto}">
                 <i class="el-icon-upload upload-icon"></i>
                 <div class="upload-text">
@@ -113,8 +132,10 @@
         <el-form-item>
           <el-button
             class="login-button"
-            @click="register">
-            注 册
+            @click="register"
+            @mouseenter="handleButtonHover"
+            @mouseleave="handleButtonLeave">
+            <span>注 册</span>
           </el-button>
         </el-form-item>
         <div class="register-link">
@@ -148,6 +169,8 @@ export default {
       }
     }
     return {
+      activeField: null,
+      buttonHovered: false,
       form: { 
         role: 'STUDENT',
         username: '',
@@ -276,11 +299,98 @@ export default {
     // 初始化学院列表
     this.colleges = Object.keys(this.collegeToMajors)
   },
+  mounted() {
+    // 动态加载粒子动画库
+    const script = document.createElement('script')
+    script.setAttribute('src', 'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js')
+    script.onload = this.initParticles
+    document.head.appendChild(script)
+  },
   methods: {
     // 处理学院选择变化
     handleCollegeChange(value) {
       this.form.major = '' // 清空专业选择
       this.majors = this.collegeToMajors[value] || [] // 更新专业列表
+    },
+    // 初始化粒子动画
+    initParticles() {
+      if (window.particlesJS) {
+        window.particlesJS('particles-js', {
+          particles: {
+            number: { value: 80, density: { enable: true, value_area: 800 } },
+            color: { value: '#409EFF' },
+            shape: { type: 'circle', stroke: { width: 0, color: '#000000' } },
+            opacity: { value: 0.5, random: true, anim: { enable: true, speed: 1, opacity_min: 0.1, sync: false } },
+            size: { value: 3, random: true, anim: { enable: true, speed: 2, size_min: 0.1, sync: false } },
+            line_linked: { enable: true, distance: 150, color: '#409EFF', opacity: 0.4, width: 1 },
+            move: {
+              enable: true, speed: 1, direction: 'none', random: true,
+              straight: false, out_mode: 'out', bounce: false,
+              attract: { enable: true, rotateX: 600, rotateY: 1200 }
+            }
+          },
+          interactivity: {
+            detect_on: 'canvas',
+            events: {
+              onhover: { enable: true, mode: 'grab' },
+              onclick: { enable: true, mode: 'push' },
+              resize: true
+            },
+            modes: {
+              grab: { distance: 140, line_linked: { opacity: 1 } },
+              bubble: { distance: 400, size: 40, duration: 2, opacity: 8, speed: 3 },
+              repulse: { distance: 200, duration: 0.4 },
+              push: { particles_nb: 4 },
+              remove: { particles_nb: 2 }
+            }
+          },
+          retina_detect: true
+        })
+      }
+    },
+    // 处理输入框焦点
+    handleFocus(event) {
+      // 记录当前激活的输入框
+      this.activeField = event.target
+      
+      // 添加焦点动画
+      const formItem = event.target.closest('.el-form-item')
+      if (formItem) {
+        formItem.classList.add('form-item-focus')
+      }
+    },
+    // 处理输入框失焦
+    handleBlur(event) {
+      // 移除焦点动画
+      const formItem = event.target.closest('.el-form-item')
+      if (formItem) {
+        formItem.classList.remove('form-item-focus')
+      }
+      this.activeField = null
+    },
+    // 处理按钮悬停
+    handleButtonHover() {
+      this.buttonHovered = true
+    },
+    // 处理按钮离开
+    handleButtonLeave() {
+      this.buttonHovered = false
+    },
+    // 显示成功动画
+    showSuccessAnimation() {
+      const loginBox = document.querySelector('.login-box')
+      loginBox.classList.add('success-animation')
+      setTimeout(() => {
+        loginBox.classList.remove('success-animation')
+      }, 1000)
+    },
+    // 显示错误动画
+    showErrorAnimation() {
+      const loginBox = document.querySelector('.login-box')
+      loginBox.classList.add('error-animation')
+      setTimeout(() => {
+        loginBox.classList.remove('error-animation')
+      }, 500)
     },
     // 上传学生证照片前的验证
     beforeStudentCardUpload(file) {
@@ -312,14 +422,30 @@ export default {
     register() {
       this.$refs['formRef'].validate((valid) => {
         if (valid) {
+          // 添加按钮加载动画
+          const loginBtn = document.querySelector('.login-button')
+          loginBtn.classList.add('loading')
+          
           // 验证通过
           this.$request.post('/register', this.form).then(res => {
+            loginBtn.classList.remove('loading')
             if (res.code === '200') {
-              this.$router.push('/login')  // 跳转登录页面
-              this.$message.success('注册成功')
+              // 添加成功动画
+              this.showSuccessAnimation()
+              
+              // 延迟跳转，让动画有时间显示
+              setTimeout(() => {
+                this.$router.push('/login')  // 跳转登录页面
+                this.$message.success('注册成功')
+              }, 800)
             } else {
+              // 添加失败动画
+              this.showErrorAnimation()
               this.$message.error(res.msg)
             }
+          }).catch(() => {
+            loginBtn.classList.remove('loading')
+            this.showErrorAnimation()
           })
         }
       })
@@ -338,6 +464,15 @@ export default {
   position: relative;
   overflow: hidden;
   padding: 30px 15px;
+}
+
+.particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 0;
 }
 
 .login-container::before {
@@ -361,7 +496,8 @@ export default {
   position: relative;
   z-index: 1;
   backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: translateY(0);
 }
 
 .login-header {
@@ -373,6 +509,19 @@ export default {
   width: 70px;
   height: 70px;
   margin-bottom: 12px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .login-header h2 {
@@ -380,6 +529,23 @@ export default {
   font-size: 22px;
   font-weight: 600;
   margin: 0 0 5px 0;
+  background: linear-gradient(45deg, #4facfe, #00f2fe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient 8s ease infinite;
+  background-size: 200% 200%;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .subtitle {
@@ -391,6 +557,15 @@ export default {
 
 .login-form {
   margin-top: 20px;
+}
+
+.el-form-item {
+  margin-bottom: 25px;
+  transition: all 0.3s ease;
+}
+
+.form-item-focus {
+  transform: translateX(5px);
 }
 
 .custom-input {
@@ -405,12 +580,14 @@ export default {
   border-radius: 8px;
   border: 1px solid #dcdfe6;
   transition: all 0.3s;
+  padding-left: 40px;
 }
 
 .custom-input :deep(.el-input__inner):focus,
 .custom-input :deep(.el-select .el-input__inner):focus {
   border-color: #409EFF;
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .upload-container {
@@ -492,21 +669,69 @@ export default {
   color: white;
   transition: all 0.3s;
   margin-top: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: all 0.6s;
+}
+
+.login-button:hover::before {
+  left: 100%;
 }
 
 .login-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 7px 14px rgba(64, 158, 255, 0.4);
 }
 
 .login-button:active {
   transform: translateY(0);
+  box-shadow: 0 4px 8px rgba(64, 158, 255, 0.3);
+}
+
+.login-button span {
+  position: relative;
+  z-index: 1;
+}
+
+.login-button.loading {
+  background: linear-gradient(135deg, #409EFF 0%, #3a8ee6 100%);
+  pointer-events: none;
+}
+
+.login-button.loading::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  margin-top: -10px;
+  margin-left: -10px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .register-link {
   text-align: center;
   margin-top: 15px;
   color: #606266;
+  transition: all 0.3s;
 }
 
 .register-text {
@@ -514,6 +739,22 @@ export default {
   text-decoration: none;
   font-weight: 500;
   transition: all 0.3s;
+  position: relative;
+}
+
+.register-text::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 1px;
+  bottom: -2px;
+  left: 0;
+  background-color: #409EFF;
+  transition: width 0.3s;
+}
+
+.register-text:hover::after {
+  width: 100%;
 }
 
 .register-text:hover {
@@ -581,5 +822,31 @@ export default {
 .login-form :deep(.el-input),
 .login-form :deep(.el-select) {
   transition: all 0.3s ease;
+}
+
+.success-animation {
+  animation: success-pulse 0.8s;
+}
+
+@keyframes success-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(103, 194, 58, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 20px rgba(103, 194, 58, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(103, 194, 58, 0);
+  }
+}
+
+.error-animation {
+  animation: shake 0.5s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
 }
 </style>
