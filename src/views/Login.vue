@@ -35,6 +35,9 @@
             class="custom-select"
             @focus="handleFocus"
             @blur="handleBlur">
+            <template #prefix>
+              <i class="el-icon-s-custom"></i>
+            </template>
             <el-option label="系统管理员" value="ADMIN" style="text-align: center"></el-option>
             <el-option label="实验室管理员" value="LABADMIN" style="text-align: center"></el-option>
             <el-option label="学生" value="STUDENT" style="text-align: center"></el-option>
@@ -332,6 +335,25 @@ export default {
   line-height: 45px;
   border-radius: 8px;
   padding-left: 40px;
+}
+
+.custom-select :deep(.el-input__prefix) {
+  left: 10px;
+  height: 100%;
+  text-align: center;
+  color: #909399;
+  transition: all .3s;
+  display: flex;
+  align-items: center;
+}
+
+.custom-select :deep(.el-input__prefix i) {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.custom-select:hover :deep(.el-input__prefix) {
+  color: #409EFF;
 }
 
 .login-button {
