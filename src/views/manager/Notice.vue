@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="search">
-      <el-input placeholder="请输入标题查询" style="width: 200px" v-model="title"></el-input>
+      <el-input placeholder="请输入标题或内容进行搜索" style="width: 250px" v-model="searchText"></el-input>
       <el-button type="info" plain style="margin-left: 10px" @click="load(1)">查询</el-button>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
     </div>
@@ -17,7 +17,7 @@
         <el-table-column prop="id" label="序号" width="80" align="center" sortable></el-table-column>
         <el-table-column prop="title" label="标题" min-width="20%" show-overflow-tooltip></el-table-column>
         <el-table-column prop="content" label="内容" min-width="55%" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="createTime" label="创建时间" min-width="15%">
+        <el-table-column prop="createTime" label="创建时间" min-width="15%" sortable>
           <template v-slot="scope">
             {{ scope.row.createTime ? scope.row.createTime.split('T')[0] : '' }}
           </template>
@@ -36,10 +36,11 @@
         <el-pagination
             background
             @current-change="handleCurrentChange"
+            @size-change="handleSizeChange"
             :current-page="pageNum"
-            :page-sizes="[5, 10, 20]"
+            :page-sizes="[10, 30, 50]"
             :page-size="pageSize"
-            layout="total, prev, pager, next"
+            layout="total, sizes, prev, pager, next"
             :total="total">
         </el-pagination>
       </div>
@@ -74,7 +75,7 @@ export default {
       pageNum: 1,   // 当前的页码
       pageSize: 10,  // 每页显示的个数
       total: 0,
-      title: null,
+      searchText: null,
       fromVisible: false,
       form: {},
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
@@ -159,7 +160,8 @@ export default {
         params: {
           pageNum: this.pageNum,
           pageSize: this.pageSize,
-          title: this.title,
+          title: this.searchText,
+          content: this.searchText,
         }
       }).then(res => {
         this.tableData = res.data?.list
@@ -167,11 +169,15 @@ export default {
       })
     },
     reset() {
-      this.title = null
+      this.searchText = null
       this.load(1)
     },
     handleCurrentChange(pageNum) {
       this.load(pageNum)
+    },
+    handleSizeChange(pageSize) {
+      this.pageSize = pageSize
+      this.load(1)
     },
   }
 }
