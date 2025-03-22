@@ -1,7 +1,14 @@
 <template>
   <div>
     <div class="search">
-      <el-input placeholder="请输入报修说明" style="width: 200px" v-model="name"></el-input>
+      <el-input placeholder="请输入报修说明" style="width: 200px" v-model="description"></el-input>
+      <el-input placeholder="请输入报修人" style="width: 200px; margin-left: 10px" v-model="studentName"></el-input>
+      <el-input placeholder="请输入实验室" style="width: 200px; margin-left: 10px" v-model="labName"></el-input>
+      <el-select v-model="status" placeholder="请选择处理状态" style="width: 200px; margin-left: 10px">
+        <el-option label="待处理" value="待处理"></el-option>
+        <el-option label="处理中" value="处理中"></el-option>
+        <el-option label="已完成" value="已完成"></el-option>
+      </el-select>
       <el-button type="info" plain style="margin-left: 10px" @click="load(1)">查询</el-button>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
     </div>
@@ -11,16 +18,20 @@
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="id" label="序号" width="80" align="center" sortable></el-table-column>
         <el-table-column prop="studentName" label="报修人" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="name" label="报修说明" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="time" label="报修时间"></el-table-column>
+        <el-table-column prop="description" label="报修说明" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="createTime" label="报修时间"></el-table-column>
         <el-table-column prop="labName" label="实验室">
           <template v-slot="scope">
             {{scope.row.typeName}} - {{scope.row.labName}}
           </template>
         </el-table-column>
         <el-table-column prop="labadminName" label="实验室管理员"></el-table-column>
-        <el-table-column prop="status" label="处理状态"></el-table-column>
-        <el-table-column prop="fixtime" label="处理时间"></el-table-column>
+        <el-table-column prop="status" label="处理状态">
+          <template v-slot="scope">
+            <el-tag :type="getStatusType(scope.row.status)">{{ scope.row.status }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="fixTime" label="处理时间"></el-table-column>
 
         <el-table-column label="操作" width="180" align="center">
           <template v-slot="scope">
@@ -81,7 +92,10 @@ export default {
       pageNum: 1,   // 当前的页码
       pageSize: 10,  // 每页显示的个数
       total: 0,
-      name: null,
+      description: null,
+      studentName: null,
+      labName: null,
+      status: null,
       fromVisible: false,
       form: {},
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
@@ -111,6 +125,14 @@ export default {
     this.load(1)
   },
   methods: {
+    getStatusType(status) {
+      switch (status) {
+        case '待处理': return 'warning'
+        case '处理中': return 'primary'
+        case '已完成': return 'success'
+        default: return 'info'
+      }
+    },
     handleSelectionChange(rows) {   // 当前选中的所有的行数据
       this.ids = rows.map(v => v.id)   //  [1,2]
     },
@@ -146,11 +168,14 @@ export default {
     },
     load(pageNum) {  // 分页查询
       if (pageNum) this.pageNum = pageNum
-      this.$request.get('/fix/selectPage', {
+      this.$request.get('/fix/searchPage', {
         params: {
           pageNum: this.pageNum,
           pageSize: this.pageSize,
-          name: this.name,
+          description: this.description,
+          studentName: this.studentName,
+          labName: this.labName,
+          status: this.status
         }
       }).then(res => {
         this.tableData = res.data?.list
@@ -158,7 +183,10 @@ export default {
       })
     },
     reset() {
-      this.name = null
+      this.description = null
+      this.studentName = null
+      this.labName = null
+      this.status = null
       this.load(1)
     },
     handleCurrentChange(pageNum) {
@@ -169,5 +197,12 @@ export default {
 </script>
 
 <style scoped>
-
+.search {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.el-tag {
+  margin-right: 5px;
+}
 </style>
