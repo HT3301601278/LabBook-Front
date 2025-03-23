@@ -32,7 +32,6 @@ const routes = [
       { path: 'reserve', name: 'Reserve', meta: { name: '预约记录', title: '预约记录' }, component: () => import('../views/manager/Reserve') },
       { path: 'fix', name: 'Fix', meta: { name: '报修记录', title: '报修记录' }, component: () => import('../views/manager/Fix') },
       { path: 'checks', name: 'Check', meta: { name: '检修记录', title: '检修记录' }, component: () => import('../views/manager/Check') },
-      { path: 'studentAudit', name: 'StudentAudit', meta: { name: '学生注册审核', title: '学生注册审核' }, component: () => import('../views/manager/StudentAudit') },
     ]
   },
   {
