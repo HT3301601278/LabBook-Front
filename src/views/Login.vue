@@ -620,7 +620,42 @@ export default {
 
 .resubmit-button {
   width: 100%;
+  height: 45px;
+  font-size: 16px;
+  font-weight: 500;
+  background: linear-gradient(135deg, #409EFF 0%, #3a8ee6 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
   margin-top: 10px;
+}
+
+.resubmit-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: all 0.6s;
+}
+
+.resubmit-button:hover::before {
+  left: 100%;
+}
+
+.resubmit-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 14px rgba(64, 158, 255, 0.4);
+}
+
+.resubmit-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 8px rgba(64, 158, 255, 0.3);
 }
 
 .upload-demo {
