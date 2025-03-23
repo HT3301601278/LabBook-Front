@@ -49,14 +49,29 @@
             <el-tag :type="getStatusType(scope.row.status)">{{ getStatusText(scope.row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" width="280">
+        <el-table-column label="操作" align="center" width="320">
           <template v-slot="scope">
-            <el-button size="mini" type="success" plain v-if="scope.row.status === '0'"
-                      @click="handleAudit(scope.row.id, '1')">通过</el-button>
-            <el-button size="mini" type="danger" plain v-if="scope.row.status === '0'"
-                      @click="handleAudit(scope.row.id, '2')">拒绝</el-button>
-            <el-button size="mini" type="primary" plain @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button size="mini" type="danger" plain @click="del(scope.row.id)">删除</el-button>
+            <template v-if="scope.row.status === 0">
+              <el-button size="mini" type="success" plain @click="handleAudit(scope.row.id, '1')">
+                <i class="el-icon-check"></i> 通过审核
+              </el-button>
+              <el-button size="mini" type="danger" plain @click="handleAudit(scope.row.id, '2')">
+                <i class="el-icon-close"></i> 拒绝审核
+              </el-button>
+            </template>
+            <template v-else-if="scope.row.status === 2">
+              <el-tooltip content="查看拒绝原因" placement="top" effect="light">
+                <el-button size="mini" type="warning" plain @click="showRejectReason(scope.row)">
+                  <i class="el-icon-warning"></i> 查看原因
+                </el-button>
+              </el-tooltip>
+            </template>
+            <el-button size="mini" type="primary" plain @click="handleEdit(scope.row)">
+              <i class="el-icon-edit"></i> 编辑
+            </el-button>
+            <el-button size="mini" type="danger" plain @click="del(scope.row.id)">
+              <i class="el-icon-delete"></i> 删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -130,6 +145,31 @@
       </div>
     </el-dialog>
 
+    <!-- 审核不通过对话框 -->
+    <el-dialog title="审核不通过原因" :visible.sync="rejectDialogVisible" width="30%" :close-on-click-modal="false" :append-to-body="true">
+      <el-form :model="rejectForm" ref="rejectFormRef" :rules="rejectRules">
+        <el-form-item label="审核意见" prop="rejectReason" label-width="80px">
+          <el-input
+            type="textarea"
+            :rows="4"
+            placeholder="请输入审核不通过的原因"
+            v-model="rejectForm.rejectReason">
+          </el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="rejectDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitReject">确 定</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 查看拒绝原因对话框 -->
+    <el-dialog title="审核拒绝原因" :visible.sync="rejectReasonVisible" width="30%" :append-to-body="true" center>
+      <div class="reject-reason-content">
+        <i class="el-icon-warning-outline warning-icon"></i>
+        <div class="reject-reason-text">{{ currentRejectReason }}</div>
+      </div>
+    </el-dialog>
 
   </div>
 </template>
@@ -225,7 +265,21 @@ export default {
         '体育部': [
           '社会体育指导与管理专业'
         ]
-      }
+      },
+      rejectDialogVisible: false,
+      rejectForm: {
+        id: null,
+        rejectReason: '',
+        status: '2'
+      },
+      rejectRules: {
+        rejectReason: [
+          { required: true, message: '请输入审核不通过的原因', trigger: 'blur' },
+          { min: 5, message: '审核意见至少5个字符', trigger: 'blur' }
+        ]
+      },
+      rejectReasonVisible: false,
+      currentRejectReason: '',
     }
   },
   created() {
@@ -336,46 +390,102 @@ export default {
     // 获取状态标签类型
     getStatusType(status) {
       const types = {
-        '0': 'warning',
-        '1': 'success',
-        '2': 'danger'
+        0: 'warning',
+        1: 'success',
+        2: 'danger'
       }
       return types[status] || 'info'
     },
     // 获取状态文本
     getStatusText(status) {
       const texts = {
-        '0': '待审核',
-        '1': '已通过',
-        '2': '已拒绝'
+        0: '待审核',
+        1: '已通过',
+        2: '已拒绝'
       }
       return texts[status] || '未知'
     },
     // 处理审核操作
     handleAudit(id, status) {
-      const actionText = status === '1' ? '通过' : '拒绝'
-      this.$confirm(`确定要${actionText}这个学生的注册申请吗？`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.$request.put('/student/update', {
-          id: id,
-          status: status
-        }).then(res => {
-          if (res.code === '200') {
-            this.$message.success('操作成功')
-            this.load(this.pageNum)
-          } else {
-            this.$message.error(res.msg)
-          }
-        })
-      }).catch(() => {})
-    }
+      if (status === '2') {
+        // 如果是拒绝，显示填写原因的对话框
+        this.rejectForm.id = id
+        this.rejectDialogVisible = true
+      } else {
+        // 如果是通过，直接确认
+        const actionText = '通过'
+        this.$confirm(`确定要${actionText}这个学生的注册申请吗？`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.updateStudentStatus(id, status)
+        }).catch(() => {})
+      }
+    },
+    // 提交审核不通过
+    submitReject() {
+      this.$refs.rejectFormRef.validate((valid) => {
+        if (valid) {
+          this.updateStudentStatus(
+            this.rejectForm.id,
+            this.rejectForm.status,
+            this.rejectForm.rejectReason
+          )
+          this.rejectDialogVisible = false
+          this.rejectForm.rejectReason = ''
+        }
+      })
+    },
+    // 更新学生状态
+    updateStudentStatus(id, status, rejectReason = '') {
+      this.$request.put('/student/update', {
+        id: id,
+        status: status,
+        reviewComment: rejectReason
+      }).then(res => {
+        if (res.code === '200') {
+          this.$message.success('操作成功')
+          this.load(this.pageNum)
+        } else {
+          this.$message.error(res.msg)
+        }
+      })
+    },
+    // 显示拒绝原因
+    showRejectReason(row) {
+      this.currentRejectReason = row.reviewComment || '未提供拒绝原因'
+      this.rejectReasonVisible = true
+    },
   }
 }
 </script>
 
 <style scoped>
+.el-dialog__body {
+  padding: 20px;
+}
 
+.reject-reason-content {
+  display: flex;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+.warning-icon {
+  font-size: 24px;
+  color: #E6A23C;
+  margin-right: 15px;
+  margin-top: 3px;
+}
+
+.reject-reason-text {
+  flex: 1;
+  color: #666;
+  line-height: 1.6;
+  background: #f8f8f8;
+  padding: 15px;
+  border-radius: 4px;
+  font-size: 14px;
+}
 </style>
