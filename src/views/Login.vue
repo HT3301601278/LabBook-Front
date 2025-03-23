@@ -52,10 +52,63 @@
             <span>登 录</span>
           </el-button>
         </el-form-item>
+        <div v-if="showResubmit" class="resubmit-section">
+          <el-button type="primary" @click="openResubmitDialog" class="resubmit-button">
+            重新提交注册信息
+          </el-button>
+        </div>
         <div class="register-link">
           还没有账号？<router-link to="/register" class="register-text">立即注册</router-link>
         </div>
       </el-form>
+    </div>
+
+    <!-- 重新提交信息卡片 -->
+    <div v-if="resubmitDialogVisible" class="resubmit-overlay" @click.self="resubmitDialogVisible = false">
+      <div class="resubmit-card">
+        <div class="resubmit-card-header">
+          <h3>重新提交注册信息</h3>
+          <el-icon class="close-icon" @click="resubmitDialogVisible = false">
+            <i class="el-icon-close"></i>
+          </el-icon>
+        </div>
+        <el-form :model="resubmitForm" ref="resubmitFormRef" label-width="100px" class="resubmit-form">
+          <el-form-item label="姓名">
+            <el-input v-model="resubmitForm.name" placeholder="请输入姓名"></el-input>
+          </el-form-item>
+          <el-form-item label="学号">
+            <el-input v-model="resubmitForm.studentNumber" placeholder="请输入学号"></el-input>
+          </el-form-item>
+          <el-form-item label="学院">
+            <el-input v-model="resubmitForm.college" placeholder="请输入学院"></el-input>
+          </el-form-item>
+          <el-form-item label="专业">
+            <el-input v-model="resubmitForm.major" placeholder="请输入专业"></el-input>
+          </el-form-item>
+          <el-form-item label="电话">
+            <el-input v-model="resubmitForm.phone" placeholder="请输入电话"></el-input>
+          </el-form-item>
+          <el-form-item label="学生证照片">
+            <el-upload
+              class="upload-demo"
+              action="http://localhost:8080/files/upload"
+              :on-success="handleUploadSuccess"
+              :before-upload="beforeUpload"
+              :show-file-list="false">
+              <el-button type="primary">
+                <i class="el-icon-upload"></i> 
+                {{ resubmitForm.studentCardPhoto ? '重新上传' : '上传照片' }}
+              </el-button>
+              <div v-if="resubmitForm.studentCardPhoto" class="upload-preview">
+                <img :src="resubmitForm.studentCardPhoto" class="preview-image">
+              </div>
+            </el-upload>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" class="submit-button" @click="submitResubmit">提交</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
     </div>
   </div>
 </template>
@@ -75,7 +128,19 @@ export default {
         ]
       },
       activeField: null,
-      buttonHovered: false
+      buttonHovered: false,
+      showResubmit: false,
+      resubmitDialogVisible: false,
+      studentId: null,
+      resubmitForm: {
+        id: null,
+        name: '',
+        studentNumber: '',
+        college: '',
+        major: '',
+        phone: '',
+        studentCardPhoto: ''
+      }
     }
   },
   created() {
@@ -99,28 +164,28 @@ export default {
     login() {
       this.$refs['formRef'].validate((valid) => {
         if (valid) {
-          // 添加按钮加载动画
           const loginBtn = document.querySelector('.login-button')
           loginBtn.classList.add('loading')
           
-          // 验证通过
           this.$request.post('/login', this.form).then(res => {
             loginBtn.classList.remove('loading')
             if (res.code === '200') {
-              localStorage.setItem("labuser", JSON.stringify(res.data))  // 存储用户数据
-              
-              // 添加成功动画
+              localStorage.setItem("labuser", JSON.stringify(res.data))
               this.showSuccessAnimation()
-              
-              // 延迟跳转，让动画有时间显示
               setTimeout(() => {
-                this.$router.push('/')  // 跳转主页
+                this.$router.push('/')
                 this.$message.success('登录成功')
               }, 800)
             } else {
-              // 添加失败动画
               this.showErrorAnimation()
-              this.$message.error(res.msg)
+              // 检查是否是审核未通过的情况
+              if (res.code === '402' && res.msg.startsWith('您的账号审核未通过')) {
+                this.showResubmit = true
+                this.studentId = res.id
+                this.$message.error(res.msg)
+              } else {
+                this.$message.error(res.msg)
+              }
             }
           }).catch(() => {
             loginBtn.classList.remove('loading')
@@ -201,6 +266,61 @@ export default {
       setTimeout(() => {
         loginBox.classList.remove('error-animation')
       }, 500)
+    },
+    // 打开重新提交对话框
+    async openResubmitDialog() {
+      try {
+        const res = await this.$request.get(`/student/selectById/${this.studentId}`)
+        if (res.code === '200') {
+          this.resubmitForm = {
+            id: this.studentId,
+            name: res.data.name || '',
+            studentNumber: res.data.studentNumber || '',
+            college: res.data.college || '',
+            major: res.data.major || '',
+            phone: res.data.phone || '',
+            studentCardPhoto: res.data.studentCardPhoto || ''
+          }
+          this.resubmitDialogVisible = true
+        } else {
+          this.$message.error('获取学生信息失败')
+        }
+      } catch (error) {
+        this.$message.error('获取学生信息失败')
+      }
+    },
+    // 处理文件上传成功
+    handleUploadSuccess(response) {
+      if (response.code === '200') {
+        this.resubmitForm.studentCardPhoto = response.data
+        this.$message.success('上传成功')
+      } else {
+        this.$message.error('上传失败')
+      }
+    },
+    // 上传前检查
+    beforeUpload(file) {
+      const isImage = file.type.startsWith('image/')
+      if (!isImage) {
+        this.$message.error('请上传图片文件')
+        return false
+      }
+      return true
+    },
+    // 提交重新注册信息
+    async submitResubmit() {
+      try {
+        const res = await this.$request.put('/student/resubmit', this.resubmitForm)
+        if (res.code === '200') {
+          this.$message.success('重新提交成功，请等待审核')
+          this.resubmitDialogVisible = false
+          this.showResubmit = false
+        } else {
+          this.$message.error(res.msg || '提交失败')
+        }
+      } catch (error) {
+        this.$message.error('提交失败')
+      }
     }
   }
 }
@@ -491,5 +611,123 @@ export default {
   to {
     transform: rotate(360deg);
   }
+}
+
+.resubmit-section {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.resubmit-button {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.upload-demo {
+  text-align: center;
+}
+
+:deep(.el-upload) {
+  width: 100%;
+}
+
+:deep(.el-dialog__body) {
+  padding: 20px 30px;
+}
+
+.resubmit-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.resubmit-card {
+  width: 500px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  position: relative;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.resubmit-card-header {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resubmit-card-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 20px;
+}
+
+.close-icon {
+  cursor: pointer;
+  font-size: 20px;
+  color: #909399;
+  transition: color 0.3s;
+}
+
+.close-icon:hover {
+  color: #409EFF;
+}
+
+.resubmit-form {
+  padding: 20px;
+}
+
+.upload-preview {
+  margin-top: 10px;
+  width: 100%;
+  max-width: 300px;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+}
+
+.preview-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.submit-button {
+  width: 100%;
+  margin-top: 20px;
+  height: 40px;
+  font-size: 16px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
+}
+
+:deep(.el-input__inner) {
+  border-radius: 4px;
+}
+
+:deep(.el-upload) {
+  width: auto;
 }
 </style>
