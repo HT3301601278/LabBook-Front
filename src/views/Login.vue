@@ -72,42 +72,50 @@
             <i class="el-icon-close"></i>
           </el-icon>
         </div>
-        <el-form :model="resubmitForm" ref="resubmitFormRef" label-width="100px" class="resubmit-form">
-          <el-form-item label="姓名">
-            <el-input v-model="resubmitForm.name" placeholder="请输入姓名"></el-input>
-          </el-form-item>
-          <el-form-item label="学号">
-            <el-input v-model="resubmitForm.studentNumber" placeholder="请输入学号"></el-input>
-          </el-form-item>
-          <el-form-item label="学院">
-            <el-input v-model="resubmitForm.college" placeholder="请输入学院"></el-input>
-          </el-form-item>
-          <el-form-item label="专业">
-            <el-input v-model="resubmitForm.major" placeholder="请输入专业"></el-input>
-          </el-form-item>
-          <el-form-item label="电话">
-            <el-input v-model="resubmitForm.phone" placeholder="请输入电话"></el-input>
-          </el-form-item>
-          <el-form-item label="学生证照片">
+        <div class="resubmit-card-content">
+          <div class="form-section">
+            <el-form :model="resubmitForm" ref="resubmitFormRef" label-width="100px" class="resubmit-form">
+              <el-form-item label="姓名">
+                <el-input v-model="resubmitForm.name" placeholder="请输入姓名"></el-input>
+              </el-form-item>
+              <el-form-item label="学号">
+                <el-input v-model="resubmitForm.studentNumber" placeholder="请输入学号"></el-input>
+              </el-form-item>
+              <el-form-item label="学院">
+                <el-input v-model="resubmitForm.college" placeholder="请输入学院"></el-input>
+              </el-form-item>
+              <el-form-item label="专业">
+                <el-input v-model="resubmitForm.major" placeholder="请输入专业"></el-input>
+              </el-form-item>
+              <el-form-item label="电话">
+                <el-input v-model="resubmitForm.phone" placeholder="请输入电话"></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" class="submit-button" @click="submitResubmit">提交</el-button>
+              </el-form-item>
+            </el-form>
+          </div>
+          <div class="upload-section">
+            <div class="upload-title">学生证照片</div>
             <el-upload
               class="upload-demo"
               action="http://localhost:8080/files/upload"
               :on-success="handleUploadSuccess"
               :before-upload="beforeUpload"
               :show-file-list="false">
-              <el-button type="primary">
-                <i class="el-icon-upload"></i> 
-                {{ resubmitForm.studentCardPhoto ? '重新上传' : '上传照片' }}
-              </el-button>
+              <div class="upload-content">
+                <template v-if="!resubmitForm.studentCardPhoto">
+                  <i class="el-icon-upload"></i>
+                  <div class="upload-text">点击上传照片</div>
+                </template>
+                <el-button v-else type="primary" class="reupload-btn">重新上传</el-button>
+              </div>
               <div v-if="resubmitForm.studentCardPhoto" class="upload-preview">
                 <img :src="resubmitForm.studentCardPhoto" class="preview-image">
               </div>
             </el-upload>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" class="submit-button" @click="submitResubmit">提交</el-button>
-          </el-form-item>
-        </el-form>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -676,93 +684,235 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
+  backdrop-filter: blur(5px);
 }
 
 .resubmit-card {
-  width: 500px;
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  width: 800px;
+  background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
   position: relative;
-  animation: slideDown 0.3s ease;
+  animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+}
+
+.resubmit-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #409EFF, #3a8ee6);
+}
+
+.resubmit-card-header {
+  padding: 25px 30px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.resubmit-card-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 22px;
+  font-weight: 600;
+  background: linear-gradient(45deg, #409EFF, #3a8ee6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.close-icon {
+  cursor: pointer;
+  font-size: 22px;
+  color: #909399;
+  transition: all 0.3s;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-icon:hover {
+  color: #409EFF;
+  background: rgba(64, 158, 255, 0.1);
+  transform: rotate(90deg);
+}
+
+.resubmit-card-content {
+  display: flex;
+  padding: 30px;
+  gap: 30px;
+}
+
+.form-section {
+  flex: 3;
+  border-right: 1px solid #ebeef5;
+  padding-right: 30px;
+}
+
+.resubmit-form :deep(.el-form-item) {
+  margin-bottom: 25px;
+}
+
+.resubmit-form :deep(.el-input__inner) {
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid #dcdfe6;
+  transition: all 0.3s;
+  padding: 0 15px;
+}
+
+.resubmit-form :deep(.el-input__inner):hover {
+  border-color: #409EFF;
+}
+
+.resubmit-form :deep(.el-input__inner):focus {
+  border-color: #409EFF;
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+}
+
+.resubmit-form :deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #2c3e50;
+  padding-bottom: 8px;
+}
+
+.upload-section {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 20px;
+}
+
+.upload-title {
+  margin-bottom: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.upload-demo {
+  width: 100%;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #f8f9fa;
+  border: 2px dashed #e4e7ed;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.upload-demo:hover {
+  border-color: #409EFF;
+  background: rgba(64, 158, 255, 0.05);
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.upload-content i {
+  font-size: 48px;
+  color: #909399;
+}
+
+.upload-text {
+  color: #606266;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.reupload-btn {
+  margin-top: 10px;
+}
+
+.upload-preview {
+  margin-top: 20px;
+  width: 100%;
+  max-height: 250px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: all 0.3s;
+}
+
+.submit-button {
+  width: 100%;
+  height: 45px;
+  font-size: 16px;
+  font-weight: 500;
+  background: linear-gradient(135deg, #409EFF 0%, #3a8ee6 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  margin-top: 30px;
+}
+
+.submit-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: all 0.6s;
+}
+
+.submit-button:hover::before {
+  left: 100%;
+}
+
+.submit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 14px rgba(64, 158, 255, 0.4);
+}
+
+.submit-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 8px rgba(64, 158, 255, 0.3);
 }
 
 @keyframes slideDown {
   from {
-    transform: translateY(-20px);
+    transform: translateY(-30px);
     opacity: 0;
   }
   to {
     transform: translateY(0);
     opacity: 1;
   }
-}
-
-.resubmit-card-header {
-  padding: 20px;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.resubmit-card-header h3 {
-  margin: 0;
-  color: #2c3e50;
-  font-size: 20px;
-}
-
-.close-icon {
-  cursor: pointer;
-  font-size: 20px;
-  color: #909399;
-  transition: color 0.3s;
-}
-
-.close-icon:hover {
-  color: #409EFF;
-}
-
-.resubmit-form {
-  padding: 20px;
-}
-
-.upload-preview {
-  margin-top: 10px;
-  width: 100%;
-  max-width: 300px;
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
-}
-
-.preview-image {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.submit-button {
-  width: 100%;
-  margin-top: 20px;
-  height: 40px;
-  font-size: 16px;
-}
-
-:deep(.el-form-item__label) {
-  font-weight: 500;
-}
-
-:deep(.el-input__inner) {
-  border-radius: 4px;
-}
-
-:deep(.el-upload) {
-  width: auto;
 }
 </style>
