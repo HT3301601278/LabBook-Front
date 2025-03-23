@@ -3,6 +3,12 @@
     <div class="search">
       <el-input placeholder="请输入账号查询" style="width: 200px" v-model="username"></el-input>
       <el-input placeholder="请输入姓名查询" style="width: 200px; margin-left: 5px" v-model="name"></el-input>
+      <el-select v-model="status" placeholder="请选择状态" style="width: 150px; margin-left: 5px">
+        <el-option label="全部" value=""></el-option>
+        <el-option label="待审核" value="0"></el-option>
+        <el-option label="已通过" value="1"></el-option>
+        <el-option label="已拒绝" value="2"></el-option>
+      </el-select>
       <el-button type="info" plain style="margin-left: 10px" @click="load(1)">查询</el-button>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
     </div>
@@ -38,8 +44,17 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" width="180">
+        <el-table-column prop="status" label="状态">
           <template v-slot="scope">
+            <el-tag :type="getStatusType(scope.row.status)">{{ getStatusText(scope.row.status) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" width="280">
+          <template v-slot="scope">
+            <el-button size="mini" type="success" plain v-if="scope.row.status === '0'"
+                      @click="handleAudit(scope.row.id, '1')">通过</el-button>
+            <el-button size="mini" type="danger" plain v-if="scope.row.status === '0'"
+                      @click="handleAudit(scope.row.id, '2')">拒绝</el-button>
             <el-button size="mini" type="primary" plain @click="handleEdit(scope.row)">编辑</el-button>
             <el-button size="mini" type="danger" plain @click="del(scope.row.id)">删除</el-button>
           </template>
@@ -138,6 +153,7 @@ export default {
       total: 0,
       username: null,
       name: null,  // 添加姓名查询参数
+      status: "", // 添加状态查询参数
       fromVisible: false,
       form: {},
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
@@ -284,7 +300,8 @@ export default {
           pageNum: this.pageNum,
           pageSize: this.pageSize,
           username: this.username,
-          name: this.name,  // 添加姓名参数
+          name: this.name,
+          status: this.status || null
         }
       }).then(res => {
         this.tableData = res.data?.list
@@ -293,7 +310,8 @@ export default {
     },
     reset() {
       this.username = null
-      this.name = null  // 重置姓名参数
+      this.name = null
+      this.status = ""
       this.load(1)
     },
     handleCurrentChange(pageNum) {
@@ -315,6 +333,45 @@ export default {
       this.form.major = ''  // 清空专业选择
       this.majors = this.collegeToMajors[value] || []  // 更新专业列表
     },
+    // 获取状态标签类型
+    getStatusType(status) {
+      const types = {
+        '0': 'warning',
+        '1': 'success',
+        '2': 'danger'
+      }
+      return types[status] || 'info'
+    },
+    // 获取状态文本
+    getStatusText(status) {
+      const texts = {
+        '0': '待审核',
+        '1': '已通过',
+        '2': '已拒绝'
+      }
+      return texts[status] || '未知'
+    },
+    // 处理审核操作
+    handleAudit(id, status) {
+      const actionText = status === '1' ? '通过' : '拒绝'
+      this.$confirm(`确定要${actionText}这个学生的注册申请吗？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$request.put('/student/update', {
+          id: id,
+          status: status
+        }).then(res => {
+          if (res.code === '200') {
+            this.$message.success('操作成功')
+            this.load(this.pageNum)
+          } else {
+            this.$message.error(res.msg)
+          }
+        })
+      }).catch(() => {})
+    }
   }
 }
 </script>
