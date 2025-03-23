@@ -1,0 +1,292 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "学生注册审核 API",
+        "version": "1.0.0",
+        "description": "学生注册审核相关接口"
+    },
+    "paths": {
+        "http://localhost:8080/studentAudit/pending": {
+            "get": {
+                "summary": "查询所有待审核学生",
+                "description": "",
+                "tags": [
+                    "学生注册审核"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {}
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {}
+                                },
+                                "example": ""
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "失败",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {}
+                                },
+                                "example": ""
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "http://localhost:8080/studentAudit/approve/15": {
+            "put": {
+                "summary": "审核通过",
+                "description": "",
+                "tags": [
+                    "学生注册审核"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {}
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {}
+                                },
+                                "example": ""
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "失败",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {}
+                                },
+                                "example": ""
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "http://localhost:8080/studentAudit/reject/15": {
+            "put": {
+                "summary": "审核不通过",
+                "description": "",
+                "tags": [
+                    "学生注册审核"
+                ],
+                "parameters": [
+                    {
+                        "name": "statusInfo",
+                        "in": "query",
+                        "description": "",
+                        "required": true,
+                        "example": "",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {}
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {}
+                                },
+                                "example": ""
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "失败",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {}
+                                },
+                                "example": ""
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "http://localhost:8080/studentAudit/all": {
+            "get": {
+                "summary": "组合查询",
+                "description": "",
+                "tags": [
+                    "学生注册审核"
+                ],
+                "parameters": [
+                    {
+                        "name": "pageNum",
+                        "in": "query",
+                        "description": "",
+                        "required": true,
+                        "example": "",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "description": "",
+                        "required": true,
+                        "example": "",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "可选的状态值：\n- 0（待审核）\n- 1（已通过）\n- 2（已拒绝）",
+                        "required": true,
+                        "example": "",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "college",
+                        "in": "query",
+                        "description": "",
+                        "required": true,
+                        "example": "",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {}
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {}
+                                },
+                                "example": ""
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "失败",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {}
+                                },
+                                "example": ""
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "http://localhost:8080/studentAudit/resubmit/15": {
+            "put": {
+                "summary": "学生重新提交审核",
+                "description": "",
+                "tags": [
+                    "学生注册审核"
+                ],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            },
+                            "example": "{\r\n    \"name\": \"李明明\",\r\n    \"studentNumber\": \"2115040288\",\r\n    \"college\": \"信息工程学院\",\r\n    \"major\": \"物联网工程\",\r\n    \"phone\": \"18872911470\",\r\n    \"studentCardPhoto\": \"http://localhost:8080/files/20250322104619-小猫 (2).png\"\r\n}"
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {}
+                                },
+                                "example": ""
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "失败",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {}
+                                },
+                                "example": ""
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
