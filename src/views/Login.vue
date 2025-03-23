@@ -82,10 +82,32 @@
                 <el-input v-model="resubmitForm.studentNumber" placeholder="请输入学号"></el-input>
               </el-form-item>
               <el-form-item label="学院">
-                <el-input v-model="resubmitForm.college" placeholder="请输入学院"></el-input>
+                <el-select 
+                  v-model="resubmitForm.college" 
+                  placeholder="请选择学院"
+                  @change="handleCollegeChange"
+                  class="custom-select">
+                  <el-option
+                    v-for="college in Object.keys(collegeToMajors)"
+                    :key="college"
+                    :label="college"
+                    :value="college">
+                  </el-option>
+                </el-select>
               </el-form-item>
               <el-form-item label="专业">
-                <el-input v-model="resubmitForm.major" placeholder="请输入专业"></el-input>
+                <el-select 
+                  v-model="resubmitForm.major" 
+                  placeholder="请选择专业"
+                  class="custom-select"
+                  :disabled="!resubmitForm.college">
+                  <el-option
+                    v-for="major in collegeToMajors[resubmitForm.college] || []"
+                    :key="major"
+                    :label="major"
+                    :value="major">
+                  </el-option>
+                </el-select>
               </el-form-item>
               <el-form-item label="电话">
                 <el-input v-model="resubmitForm.phone" placeholder="请输入电话"></el-input>
@@ -148,6 +170,77 @@ export default {
         major: '',
         phone: '',
         studentCardPhoto: ''
+      },
+      collegeToMajors: {
+        '化学工程学院': [
+          '化学工程与工艺',
+          '化学工程与工艺（卓越工程师班）',
+          '化学工程与工艺（菱镁产业学院）',
+          '应用化学',
+          '能源化学工程',
+          '制药工程'
+        ],
+        '材料科学与工程学院': [
+          '高分子材料与工程',
+          '高分子材料与工程（卓越工程师班）',
+          '材料化学',
+          '无机非金属材料工程',
+          '金属材料工程',
+          '新能源材料与器件'
+        ],
+        '机械与动力工程学院': [
+          '过程装备与控制工程专业',
+          '机械设计制造及其自动化专业',
+          '能源与动力工程专业',
+          '能源与动力工程专业（中外合作办学）',
+          '金属材料工程',
+          '油气储运工程专业'
+        ],
+        '信息工程学院': [
+          '自动化专业',
+          '电气工程及其自动化专业',
+          '测控技术与仪器专业',
+          '电子信息工程专业',
+          '电子科学与技术专业',
+          '物联网工程专业',
+          '人工智能专业'
+        ],
+        '计算机科学与技术学院': [
+          '计算机科学与技术专业',
+          '网络工程专业',
+          '软件工程专业',
+          '数据科学与大数据技术专业'
+        ],
+        '环境与安全工程学院': [
+          '水质科学与技术专业',
+          '环境工程专业',
+          '安全工程专业'
+        ],
+        '理学院': [
+          '应用物理学专业',
+          '化学专业'
+        ],
+        '经济与管理学院': [
+          '工商管理专业',
+          '工程管理专业',
+          '国际经济与贸易专业',
+          '金融学专业',
+          '会计学专业',
+          '大数据管理与应用专业',
+          '应急管理专业'
+        ],
+        '外国语学院': [
+          '英语专业',
+          '国际经济与贸易专业（对俄贸易方向）'
+        ],
+        '人文与艺术学院': [
+          '社会工作专业',
+          '产品设计专业',
+          '环境设计专业'
+        ],
+        '体育部': [
+          '社会体育指导与管理专业'
+        ]
       }
     }
   },
@@ -329,6 +422,11 @@ export default {
       } catch (error) {
         this.$message.error('提交失败')
       }
+    },
+    // 处理学院变化
+    handleCollegeChange() {
+      // 当学院改变时，清空专业选择
+      this.resubmitForm.major = ''
     }
   }
 }
