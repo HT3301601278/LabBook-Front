@@ -18,20 +18,21 @@ const routes = [
     children: [
       { path: '403', name: 'NoAuth', meta: { name: '无权限', title: '无权限' }, component: () => import('../views/manager/403') },
       { path: 'home', name: 'Home', meta: { name: '系统首页', title: '系统首页' }, component: () => import('../views/manager/Home') },
-      { path: 'admin', name: 'Admin', meta: { name: '管理员信息', title: '管理员信息' }, component: () => import('../views/manager/Admin') },
+      { path: 'admin', name: 'Admin', meta: { name: '管理员', title: '管理员' }, component: () => import('../views/manager/Admin') },
       { path: 'adminPerson', name: 'AdminPerson', meta: { name: '个人信息', title: '个人信息' }, component: () => import('../views/manager/AdminPerson') },
       { path: 'labadminPerson', name: 'LabadminPerson', meta: { name: '个人信息', title: '个人信息' }, component: () => import('../views/manager/LabadminPerson') },
       { path: 'studentPerson', name: 'StudentPerson', meta: { name: '个人信息', title: '个人信息' }, component: () => import('../views/manager/StudentPerson') },
       { path: 'password', name: 'Password', meta: { name: '修改密码', title: '修改密码' }, component: () => import('../views/manager/Password') },
       { path: 'notice', name: 'Notice', meta: { name: '公告信息', title: '公告信息' }, component: () => import('../views/manager/Notice') },
       { path: 'labadmin', name: 'Labadmin', meta: { name: '实验室管理员', title: '实验室管理员' }, component: () => import('../views/manager/Labadmin') },
-      { path: 'student', name: 'Student', meta: { name: '学生信息', title: '学生信息' }, component: () => import('../views/manager/Student') },
+      { path: 'student', name: 'Student', meta: { name: '学生', title: '学生' }, component: () => import('../views/manager/Student') },
       { path: 'type', name: 'Type', meta: { name: '实验室分类', title: '实验室分类' }, component: () => import('../views/manager/Type') },
       { path: 'lab', name: 'Lab', meta: { name: '实验室信息', title: '实验室信息' }, component: () => import('../views/manager/Lab') },
       { path: 'labStudent', name: 'LabStudent', meta: { name: '实验室信息', title: '实验室信息' }, component: () => import('../views/manager/LabStudent') },
       { path: 'reserve', name: 'Reserve', meta: { name: '预约记录', title: '预约记录' }, component: () => import('../views/manager/Reserve') },
       { path: 'fix', name: 'Fix', meta: { name: '报修记录', title: '报修记录' }, component: () => import('../views/manager/Fix') },
       { path: 'checks', name: 'Check', meta: { name: '检修记录', title: '检修记录' }, component: () => import('../views/manager/Check') },
+      { path: 'studentAudit', name: 'StudentAudit', meta: { name: '学生注册审核', title: '学生注册审核' }, component: () => import('../views/manager/StudentAudit') },
     ]
   },
   {
