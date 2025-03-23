@@ -5,9 +5,9 @@
       <el-input placeholder="请输入姓名查询" style="width: 200px; margin-left: 5px" v-model="name"></el-input>
       <el-select v-model="status" placeholder="请选择状态" style="width: 150px; margin-left: 5px">
         <el-option label="全部" value=""></el-option>
-        <el-option label="待审核" value="0"></el-option>
-        <el-option label="已通过" value="1"></el-option>
-        <el-option label="已拒绝" value="2"></el-option>
+        <el-option label="待审核" :value="0"></el-option>
+        <el-option label="已通过" :value="1"></el-option>
+        <el-option label="已拒绝" :value="2"></el-option>
       </el-select>
       <el-button type="info" plain style="margin-left: 10px" @click="load(1)">查询</el-button>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
@@ -46,32 +46,24 @@
         </el-table-column>
         <el-table-column prop="status" label="状态">
           <template v-slot="scope">
-            <el-tag :type="getStatusType(scope.row.status)">{{ getStatusText(scope.row.status) }}</el-tag>
+            <div style="display: flex; align-items: center;">
+              <el-tag :type="getStatusType(scope.row.status)">{{ getStatusText(scope.row.status) }}</el-tag>
+              <el-tooltip v-if="scope.row.status === 2 && scope.row.reviewComment" effect="dark" content="点击查看拒绝原因" placement="top">
+                <i class="el-icon-warning-outline"
+                   style="margin-left: 5px; color: #E6A23C; cursor: pointer;"
+                   @click="showRejectReason(scope.row)"></i>
+              </el-tooltip>
+            </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" width="320">
+        <el-table-column label="操作" align="center" width="280">
           <template v-slot="scope">
-            <template v-if="scope.row.status === 0">
-              <el-button size="mini" type="success" plain @click="handleAudit(scope.row.id, '1')">
-                <i class="el-icon-check"></i> 通过审核
-              </el-button>
-              <el-button size="mini" type="danger" plain @click="handleAudit(scope.row.id, '2')">
-                <i class="el-icon-close"></i> 拒绝审核
-              </el-button>
-            </template>
-            <template v-else-if="scope.row.status === 2">
-              <el-tooltip content="查看拒绝原因" placement="top" effect="light">
-                <el-button size="mini" type="warning" plain @click="showRejectReason(scope.row)">
-                  <i class="el-icon-warning"></i> 查看原因
-                </el-button>
-              </el-tooltip>
-            </template>
-            <el-button size="mini" type="primary" plain @click="handleEdit(scope.row)">
-              <i class="el-icon-edit"></i> 编辑
-            </el-button>
-            <el-button size="mini" type="danger" plain @click="del(scope.row.id)">
-              <i class="el-icon-delete"></i> 删除
-            </el-button>
+            <el-button size="mini" type="success" plain v-if="scope.row.status === 0"
+                      @click="handleAudit(scope.row.id, 1)">通过</el-button>
+            <el-button size="mini" type="danger" plain v-if="scope.row.status === 0"
+                      @click="handleAudit(scope.row.id, 2)">拒绝</el-button>
+            <el-button size="mini" type="primary" plain @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button size="mini" type="danger" plain @click="del(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -145,26 +137,13 @@
       </div>
     </el-dialog>
 
-    <!-- 审核不通过对话框 -->
-    <el-dialog title="审核不通过原因" :visible.sync="rejectDialogVisible" width="30%" :close-on-click-modal="false" :append-to-body="true">
-      <el-form :model="rejectForm" ref="rejectFormRef" :rules="rejectRules">
-        <el-form-item label="审核意见" prop="rejectReason" label-width="80px">
-          <el-input
-            type="textarea"
-            :rows="4"
-            placeholder="请输入审核不通过的原因"
-            v-model="rejectForm.rejectReason">
-          </el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="rejectDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submitReject">确 定</el-button>
-      </div>
-    </el-dialog>
-
-    <!-- 查看拒绝原因对话框 -->
-    <el-dialog title="审核拒绝原因" :visible.sync="rejectReasonVisible" width="30%" :append-to-body="true" center>
+    <!-- 拒绝原因查看对话框 -->
+    <el-dialog
+      title="审核不通过原因"
+      :visible.sync="rejectReasonVisible"
+      width="30%"
+      center
+      :append-to-body="true">
       <div class="reject-reason-content">
         <i class="el-icon-warning-outline warning-icon"></i>
         <div class="reject-reason-text">{{ currentRejectReason }}</div>
@@ -266,20 +245,9 @@ export default {
           '社会体育指导与管理专业'
         ]
       },
-      rejectDialogVisible: false,
-      rejectForm: {
-        id: null,
-        rejectReason: '',
-        status: '2'
-      },
-      rejectRules: {
-        rejectReason: [
-          { required: true, message: '请输入审核不通过的原因', trigger: 'blur' },
-          { min: 5, message: '审核意见至少5个字符', trigger: 'blur' }
-        ]
-      },
+      // 添加拒绝原因相关数据
       rejectReasonVisible: false,
-      currentRejectReason: '',
+      currentRejectReason: ''
     }
   },
   created() {
@@ -407,42 +375,33 @@ export default {
     },
     // 处理审核操作
     handleAudit(id, status) {
-      if (status === '2') {
-        // 如果是拒绝，显示填写原因的对话框
-        this.rejectForm.id = id
-        this.rejectDialogVisible = true
+      const actionText = status === 1 ? '通过' : '拒绝'
+      if (status === 2) {
+        // 如果是拒绝，先弹出输入备注的对话框
+        this.$prompt('请输入拒绝原因', '审核不通过', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputType: 'textarea',
+          inputPlaceholder: '请输入拒绝原因，学生将看到这个信息'
+        }).then(({ value }) => {
+          this.submitAudit(id, status, value)
+        }).catch(() => {})
       } else {
-        // 如果是通过，直接确认
-        const actionText = '通过'
         this.$confirm(`确定要${actionText}这个学生的注册申请吗？`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          this.updateStudentStatus(id, status)
+          this.submitAudit(id, status)
         }).catch(() => {})
       }
     },
-    // 提交审核不通过
-    submitReject() {
-      this.$refs.rejectFormRef.validate((valid) => {
-        if (valid) {
-          this.updateStudentStatus(
-            this.rejectForm.id,
-            this.rejectForm.status,
-            this.rejectForm.rejectReason
-          )
-          this.rejectDialogVisible = false
-          this.rejectForm.rejectReason = ''
-        }
-      })
-    },
-    // 更新学生状态
-    updateStudentStatus(id, status, rejectReason = '') {
+    // 提交审核结果
+    submitAudit(id, status, rejectReason = '') {
       this.$request.put('/student/update', {
         id: id,
         status: status,
-        reviewComment: rejectReason
+        reviewComment: rejectReason  // 修改字段名为reviewComment
       }).then(res => {
         if (res.code === '200') {
           this.$message.success('操作成功')
@@ -454,38 +413,77 @@ export default {
     },
     // 显示拒绝原因
     showRejectReason(row) {
-      this.currentRejectReason = row.reviewComment || '未提供拒绝原因'
+      this.currentRejectReason = row.reviewComment || '未填写拒绝原因'
       this.rejectReasonVisible = true
-    },
+    }
   }
 }
 </script>
 
 <style scoped>
-.el-dialog__body {
-  padding: 20px;
-}
-
 .reject-reason-content {
   display: flex;
-  align-items: flex-start;
-  padding: 20px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  padding: 30px;
+  background-color: #fff;
 }
 
 .warning-icon {
-  font-size: 24px;
+  font-size: 48px;
   color: #E6A23C;
-  margin-right: 15px;
-  margin-top: 3px;
+  margin-bottom: 20px;
 }
 
 .reject-reason-text {
-  flex: 1;
-  color: #666;
-  line-height: 1.6;
-  background: #f8f8f8;
-  padding: 15px;
-  border-radius: 4px;
+  color: #606266;
+  line-height: 1.8;
   font-size: 14px;
+  text-align: center;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-width: 100%;
+  padding: 0 20px;
+}
+
+:deep(.el-dialog) {
+  display: flex;
+  flex-direction: column;
+  margin: 0 !important;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-height: 90%;
+  max-width: 90%;
+}
+
+:deep(.el-dialog__body) {
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+}
+
+:deep(.el-dialog__header) {
+  padding: 20px;
+  margin: 0;
+  border-bottom: 1px solid #ebeef5;
+  background: linear-gradient(120deg, #4facfe 0%, #00f2fe 100%);
+}
+
+:deep(.el-dialog__title) {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+:deep(.el-dialog__headerbtn .el-dialog__close) {
+  color: #fff;
+}
+
+:deep(.el-dialog__headerbtn:hover .el-dialog__close) {
+  color: #f4f4f5;
 }
 </style>
