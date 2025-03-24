@@ -48,7 +48,7 @@
     </div>
 
 
-    <el-dialog title="信息" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close>
+    <el-dialog title="编辑公告信息" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close center>
       <el-form label-width="100px" style="padding-right: 50px" :model="form" :rules="rules" ref="formRef">
         <el-form-item prop="title" label="标题">
           <el-input v-model="form.title" autocomplete="off"></el-input>
@@ -185,5 +185,39 @@ export default {
 </script>
 
 <style scoped>
+.pagination {
+  margin-top: 20px;
+  text-align: right;
+}
 
+/* 对话框样式 */
+:deep(.el-dialog) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.el-dialog__header) {
+  background-color: #409EFF;
+  padding: 20px;
+  margin-right: 0;
+}
+
+:deep(.el-dialog__title) {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+:deep(.el-dialog__headerbtn .el-dialog__close) {
+  color: #fff;
+}
+
+:deep(.el-dialog__body) {
+  padding: 30px 20px;
+}
+
+:deep(.el-dialog__footer) {
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+}
 </style>

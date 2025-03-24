@@ -53,7 +53,7 @@
         </el-pagination>
       </div>
     </div>
-    <el-dialog title="填写检修信息" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close>
+    <el-dialog title="填写检修信息" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close center>
       <el-form label-width="100px" style="padding-right: 50px" :model="form" :rules="rules" ref="formRef">
         <el-form-item prop="inspectorName" label="检修人">
           <el-input v-model="form.inspectorName" autocomplete="off"></el-input>
@@ -230,12 +230,60 @@ export default {
 </script>
 
 <style scoped>
-.search {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
+.pagination {
+  margin-top: 20px;
+  text-align: right;
 }
+
 .el-tag {
   margin-right: 5px;
+}
+
+/* 对话框样式 */
+:deep(.el-dialog) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.el-dialog__header) {
+  background-color: #409EFF;
+  padding: 20px;
+  margin-right: 0;
+}
+
+:deep(.el-dialog__title) {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+:deep(.el-dialog__headerbtn .el-dialog__close) {
+  color: #fff;
+}
+
+:deep(.el-dialog__body) {
+  padding: 30px 20px;
+}
+
+:deep(.el-dialog__footer) {
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+}
+
+/* 表单样式优化 */
+:deep(.el-textarea__inner) {
+  min-height: 80px;
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 22px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
+}
+
+:deep(.el-input), :deep(.el-textarea) {
+  width: 100%;
 }
 </style>

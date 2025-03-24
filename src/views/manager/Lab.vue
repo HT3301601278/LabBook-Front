@@ -47,7 +47,7 @@
     </div>
 
 
-    <el-dialog title="信息" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close>
+    <el-dialog title="编辑实验室信息" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close center>
       <el-form label-width="100px" style="padding-right: 50px" :model="form" :rules="rules" ref="formRef">
         <el-form-item prop="labNumber" label="实验室编号">
           <el-input v-model="form.labNumber" autocomplete="off"></el-input>
@@ -298,5 +298,69 @@ export default {
 </script>
 
 <style scoped>
+.pagination {
+  margin-top: 20px;
+  text-align: right;
+}
 
+/* 对话框样式 */
+:deep(.el-dialog) {
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 0 !important;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+:deep(.el-dialog__header) {
+  background-color: #409EFF;
+  padding: 20px;
+  margin-right: 0;
+}
+
+:deep(.el-dialog__title) {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+:deep(.el-dialog__headerbtn .el-dialog__close) {
+  color: #fff;
+}
+
+:deep(.el-dialog__body) {
+  padding: 30px 20px;
+  overflow-y: auto;
+}
+
+:deep(.el-dialog__footer) {
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+}
+
+/* 上传组件样式 */
+.upload-demo {
+  margin-bottom: 10px;
+}
+
+:deep(.el-upload-list) {
+  margin-top: 10px;
+}
+
+:deep(.el-upload-list__item) {
+  transition: all 0.3s ease;
+}
+
+:deep(.el-upload-list__item:hover) {
+  background-color: #f5f7fa;
+}
+
+:deep(.el-input-number) {
+  width: 100%;
+}
 </style>
