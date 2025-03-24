@@ -47,7 +47,7 @@
     </div>
 
 
-    <el-dialog title="编辑实验室信息" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close center>
+    <el-dialog :title="form.id ? '编辑实验室信息' : '新增实验室信息'" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close center>
       <el-form label-width="100px" style="padding-right: 50px" :model="form" :rules="rules" ref="formRef">
         <el-form-item prop="labNumber" label="实验室编号">
           <el-input v-model="form.labNumber" autocomplete="off"></el-input>

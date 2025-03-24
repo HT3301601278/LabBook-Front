@@ -83,7 +83,7 @@
     </div>
 
 
-    <el-dialog title="编辑学生信息" :visible.sync="fromVisible" width="60%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close center>
+    <el-dialog :title="form.id ? '编辑学生信息' : '新增学生信息'" :visible.sync="fromVisible" width="60%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close center>
       <div class="form-container">
         <div class="form-left">
           <el-form :model="form" label-width="100px" :rules="rules" ref="formRef">
