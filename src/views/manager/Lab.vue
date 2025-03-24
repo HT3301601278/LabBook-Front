@@ -85,22 +85,32 @@
           </el-select>
         </el-form-item>
         <el-form-item label="使用手册">
-          <el-upload
-              class="upload-demo"
-              :action="$baseUrl + '/files/upload'"
-              :on-success="handleManualSuccess"
-              :file-list="manualFileList">
-            <el-button size="small" type="primary">点击上传</el-button>
-          </el-upload>
+          <div class="upload-container">
+            <el-upload
+                class="upload-demo"
+                :action="$baseUrl + '/files/upload'"
+                :on-success="handleManualSuccess"
+                :file-list="manualFileList">
+              <el-button size="small" type="primary">点击上传</el-button>
+            </el-upload>
+            <el-button v-if="form.manual" type="text" size="small" @click="openManual(form.manual)">
+              <i class="el-icon-document"></i> 查看手册
+            </el-button>
+          </div>
         </el-form-item>
         <el-form-item label="3D模型">
-          <el-upload
-              class="upload-demo"
-              :action="$baseUrl + '/files/upload'"
-              :on-success="handleModelSuccess"
-              :file-list="modelFileList">
-            <el-button size="small" type="primary">点击上传</el-button>
-          </el-upload>
+          <div class="upload-container">
+            <el-upload
+                class="upload-demo"
+                :action="$baseUrl + '/files/upload'"
+                :on-success="handleModelSuccess"
+                :file-list="modelFileList">
+              <el-button size="small" type="primary">点击上传</el-button>
+            </el-upload>
+            <el-button v-if="form.modelFile" type="text" size="small" @click="openModel(form.modelFile)">
+              <i class="el-icon-view"></i> 查看模型
+            </el-button>
+          </div>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -109,13 +119,30 @@
       </div>
     </el-dialog>
 
+    <!-- 使用手册弹窗 -->
+    <el-dialog title="使用手册" :visible.sync="manualDialogVisible" width="80%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close>
+      <div style="height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <iframe :src="currentManual" style="width: 100%; height: 100%; border: none;"></iframe>
+      </div>
+    </el-dialog>
 
+    <!-- 3D模型查看弹窗 -->
+    <el-dialog title="3D模型查看器" :visible.sync="modelDialogVisible" width="90%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close>
+      <div style="height: 80vh;">
+        <model-viewer :model-path="currentModel"></model-viewer>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import ModelViewer from './ModelViewer.vue';
+
 export default {
   name: "Lab",
+  components: {
+    ModelViewer
+  },
   data() {
     return {
       tableData: [],  // 所有的数据
@@ -153,7 +180,11 @@ export default {
       typeData: [],
       manualFileList: [],
       modelFileList: [],
-      labadminData: []
+      labadminData: [],
+      manualDialogVisible: false,
+      currentManual: '',
+      modelDialogVisible: false,
+      currentModel: ''
     }
   },
   created() {
@@ -293,6 +324,21 @@ export default {
       this.pageSize = pageSize
       this.load(1)
     },
+    openManual(manual) {
+      // 添加PDF.js查看器前缀，确保PDF在浏览器中预览而不是下载
+      this.currentManual = manual.startsWith('http') ?
+        `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(manual)}` :
+        manual
+      this.manualDialogVisible = true
+    },
+    openModel(modelFile) {
+      if (modelFile) {
+        this.currentModel = modelFile
+        this.modelDialogVisible = true
+      } else {
+        this.$message.warning('没有可查看的3D模型')
+      }
+    }
   }
 }
 </script>
@@ -362,5 +408,19 @@ export default {
 
 :deep(.el-input-number) {
   width: 100%;
+}
+
+.upload-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upload-container .el-button {
+  margin-left: 10px;
+}
+
+.upload-container .el-button i {
+  margin-right: 4px;
 }
 </style>
