@@ -273,10 +273,15 @@ export default {
   methods: {
     handleAdd() {   // 新增数据
       this.form = {}  // 新增数据的时候清空数据
+      this.majors = []  // 清空专业列表
       this.fromVisible = true   // 打开弹窗
     },
     handleEdit(row) {   // 编辑数据
       this.form = JSON.parse(JSON.stringify(row))  // 给form对象赋值  注意要深拷贝数据
+      // 如果有学院信息，初始化对应的专业列表
+      if (this.form.college) {
+        this.majors = this.collegeToMajors[this.form.college] || []
+      }
       this.fromVisible = true   // 打开弹窗
     },
     save() {   // 保存按钮触发的逻辑  它会触发新增或者更新
@@ -360,16 +365,26 @@ export default {
       this.load(1)
     },
     handleAvatarSuccess(response, file, fileList) {
-      // 把头像属性换成上传的图片的链接
-      this.form.avatar = response.data
+      // 使用$set确保响应式更新
+      if (response.code === '200') {
+        this.$set(this.form, 'avatar', response.data)
+      } else {
+        this.$message.error('上传失败：' + response.msg)
+      }
     },
     handleStudentCardPhotoSuccess(response, file, fileList) {
-      // 把学生证照片属性换成上传的图片的链接
-      this.form.studentCardPhoto = response.data
+      // 使用$set确保响应式更新
+      if (response.code === '200') {
+        this.$set(this.form, 'studentCardPhoto', response.data)
+      } else {
+        this.$message.error('上传失败：' + response.msg)
+      }
     },
     handleCollegeChange(value) {
-      this.form.major = ''  // 清空专业选择
-      this.majors = this.collegeToMajors[value] || []  // 更新专业列表
+      // 清空专业选择
+      this.$set(this.form, 'major', '')
+      // 更新专业列表
+      this.majors = this.collegeToMajors[value] || []
     },
     // 获取状态标签类型
     getStatusType(status) {
@@ -528,6 +543,7 @@ export default {
   position: relative;
   overflow: hidden;
   width: 100%;
+  height: 200px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -557,7 +573,7 @@ export default {
 }
 
 .avatar {
-  width: 100%;
+  width: 160px;
   height: 160px;
   display: block;
   object-fit: cover;
@@ -565,6 +581,10 @@ export default {
 
 :deep(.el-upload) {
   width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 :deep(.el-dialog) {
