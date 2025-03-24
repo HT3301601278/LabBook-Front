@@ -82,8 +82,8 @@
                 <el-input v-model="resubmitForm.studentNumber" placeholder="请输入学号"></el-input>
               </el-form-item>
               <el-form-item label="学院">
-                <el-select 
-                  v-model="resubmitForm.college" 
+                <el-select
+                  v-model="resubmitForm.college"
                   placeholder="请选择学院"
                   @change="handleCollegeChange"
                   class="custom-select">
@@ -96,8 +96,8 @@
                 </el-select>
               </el-form-item>
               <el-form-item label="专业">
-                <el-select 
-                  v-model="resubmitForm.major" 
+                <el-select
+                  v-model="resubmitForm.major"
                   placeholder="请选择专业"
                   class="custom-select"
                   :disabled="!resubmitForm.college">
@@ -267,7 +267,7 @@ export default {
         if (valid) {
           const loginBtn = document.querySelector('.login-button')
           loginBtn.classList.add('loading')
-          
+
           this.$request.post('/login', this.form).then(res => {
             loginBtn.classList.remove('loading')
             if (res.code === '200') {
@@ -333,7 +333,7 @@ export default {
     handleFocus(event) {
       // 记录当前激活的输入框
       this.activeField = event.target
-      
+
       // 添加焦点动画
       const formItem = event.target.closest('.el-form-item')
       if (formItem) {

@@ -4,7 +4,7 @@
       <el-select v-model="typeId" placeholder="请选择实验室分类" style="width: 200px">
         <el-option v-for="item in typeData" :key="item.id" :label="item.name" :value="item.id"></el-option>
       </el-select>
-      <el-input placeholder="请输入实验室编号" style="width: 200px; margin-left: 5px" v-model="name"></el-input>
+      <el-input placeholder="请输入实验室名称" style="width: 200px; margin-left: 5px" v-model="name"></el-input>
       <el-button type="info" plain style="margin-left: 10px" @click="load(1)">查询</el-button>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
     </div>
@@ -68,7 +68,10 @@
                 </div>
                 <div class="reserve-button">
                   <el-button type="primary" size="mini" @click="openReserveForm(item)" 
-                    :disabled="item.usageStatus === '使用中'">预约</el-button>
+                    :disabled="item.usageStatus === '使用中' || item.usageStatus === '已预约'"
+                    :type="item.usageStatus === '已预约' ? 'info' : 'primary'">
+                    {{ item.usageStatus === '已预约' ? '已预约' : '预约' }}
+                  </el-button>
                 </div>
               </div>
             </div>
