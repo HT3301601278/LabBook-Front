@@ -129,7 +129,7 @@
             </el-upload>
           </div>
           <div class="upload-section">
-            <div class="upload-title">学生证照片</div>
+            <div class="upload-title">学生证照片 <span class="required">*</span></div>
             <el-upload
                 class="avatar-uploader"
                 :action="$baseUrl + '/files/upload'"
@@ -212,6 +212,9 @@ export default {
         phone: [
           {required: true, message: '请输入手机号', trigger: 'blur'},
           {validator: validatePhone, trigger: 'blur'}
+        ],
+        studentCardPhoto: [
+          {required: true, message: '请上传学生证照片', trigger: 'change'}
         ]
       },
       ids: [],
@@ -532,6 +535,12 @@ export default {
   color: #606266;
   margin-bottom: 10px;
   font-weight: 500;
+}
+
+.required {
+  color: #f56c6c;
+  margin-left: 4px;
+  font-size: 14px;
 }
 
 /* 头像上传样式 */
