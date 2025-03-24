@@ -47,71 +47,111 @@
     </div>
 
 
-    <el-dialog :title="form.id ? '编辑实验室信息' : '新增实验室信息'" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close center>
-      <el-form label-width="100px" style="padding-right: 50px" :model="form" :rules="rules" ref="formRef">
-        <el-form-item prop="labNumber" label="实验室编号">
-          <el-input v-model="form.labNumber" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item prop="labName" label="实验室名称">
-          <el-input v-model="form.labName" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item prop="startTime" label="开始时间">
-          <el-date-picker style="width: 100%"
-              v-model="form.startTime"
-              type="datetime"
-              value-format="yyyy-MM-dd HH:mm"
-              placeholder="请选择开始时间">
-          </el-date-picker>
-        </el-form-item>
-        <el-form-item prop="endTime" label="结束时间">
-          <el-date-picker style="width: 100%"
-              v-model="form.endTime"
-              type="datetime"
-              value-format="yyyy-MM-dd HH:mm"
-              placeholder="请选择结束时间">
-          </el-date-picker>
-        </el-form-item>
-        <el-form-item prop="maxReservationHours" label="最大预约时长">
-          <el-input-number v-model="form.maxReservationHours" :min="1" :max="24"></el-input-number>
-        </el-form-item>
-        <el-form-item prop="typeId" label="实验室分类">
-          <el-select v-model="form.typeId" placeholder="请选择实验室分类" style="width: 100%">
-            <el-option v-for="item in typeData" :key="item.id" :label="item.name" :value="item.id"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item prop="labadminId" label="实验室管理员">
-          <el-select v-model="form.labadminId" placeholder="请选择实验室管理员" style="width: 100%">
-            <el-option v-for="item in labadminData" :key="item.id" :label="item.name" :value="item.id"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="使用手册">
-          <div class="upload-container">
-            <el-upload
-                class="upload-demo"
-                :action="$baseUrl + '/files/upload'"
-                :on-success="handleManualSuccess"
-                :file-list="manualFileList">
-              <el-button size="small" type="primary">点击上传</el-button>
-            </el-upload>
-            <el-button v-if="form.manual" type="text" size="small" @click="openManual(form.manual)">
-              <i class="el-icon-document"></i> 查看手册
-            </el-button>
-          </div>
-        </el-form-item>
-        <el-form-item label="3D模型">
-          <div class="upload-container">
-            <el-upload
-                class="upload-demo"
-                :action="$baseUrl + '/files/upload'"
-                :on-success="handleModelSuccess"
-                :file-list="modelFileList">
-              <el-button size="small" type="primary">点击上传</el-button>
-            </el-upload>
-            <el-button v-if="form.modelFile" type="text" size="small" @click="openModel(form.modelFile)">
-              <i class="el-icon-view"></i> 查看模型
-            </el-button>
-          </div>
-        </el-form-item>
+    <el-dialog :title="form.id ? '编辑实验室信息' : '新增实验室信息'" :visible.sync="fromVisible" width="50%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close center class="lab-form-dialog">
+      <el-form label-width="120px" :model="form" :rules="rules" ref="formRef" class="lab-form">
+        <div class="form-section">
+          <div class="section-title">基本信息</div>
+          <el-form-item prop="labNumber" label="实验室编号">
+            <el-input v-model="form.labNumber" placeholder="请输入实验室编号"></el-input>
+          </el-form-item>
+          <el-form-item prop="labName" label="实验室名称">
+            <el-input v-model="form.labName" placeholder="请输入实验室名称"></el-input>
+          </el-form-item>
+          <el-form-item prop="typeId" label="实验室分类">
+            <el-select v-model="form.typeId" placeholder="请选择实验室分类" style="width: 100%">
+              <el-option v-for="item in typeData" :key="item.id" :label="item.name" :value="item.id"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item prop="labadminId" label="实验室管理员">
+            <el-select v-model="form.labadminId" placeholder="请选择实验室管理员" style="width: 100%">
+              <el-option v-for="item in labadminData" :key="item.id" :label="item.name" :value="item.id"></el-option>
+            </el-select>
+          </el-form-item>
+        </div>
+
+        <div class="form-section">
+          <div class="section-title">时间设置</div>
+          <el-form-item prop="startTime" label="开放开始时间">
+            <el-date-picker
+                v-model="form.startTime"
+                type="datetime"
+                value-format="yyyy-MM-dd HH:mm"
+                placeholder="请选择开放开始时间"
+                style="width: 100%">
+            </el-date-picker>
+          </el-form-item>
+          <el-form-item prop="endTime" label="开放结束时间">
+            <el-date-picker
+                v-model="form.endTime"
+                type="datetime"
+                value-format="yyyy-MM-dd HH:mm"
+                placeholder="请选择开放结束时间"
+                style="width: 100%">
+            </el-date-picker>
+          </el-form-item>
+          <el-form-item prop="maxReservationHours" label="最大预约时长">
+            <el-input-number 
+                v-model="form.maxReservationHours" 
+                :min="1" 
+                :max="24"
+                controls-position="right"
+                style="width: 100%">
+              <template slot="append">小时</template>
+            </el-input-number>
+          </el-form-item>
+        </div>
+
+        <div class="form-section">
+          <div class="section-title">附件管理</div>
+          <el-form-item label="使用手册">
+            <div class="upload-container">
+              <div class="upload-wrapper">
+                <el-upload
+                    class="upload-demo"
+                    :action="$baseUrl + '/files/upload'"
+                    :on-success="handleManualSuccess"
+                    :file-list="manualFileList"
+                    :limit="1">
+                  <el-button size="small" type="primary" icon="el-icon-upload">上传手册</el-button>
+                  <div slot="tip" class="el-upload__tip">支持 PDF 格式文件</div>
+                </el-upload>
+              </div>
+              <div v-if="form.manual" class="file-info">
+                <div class="file-name">
+                  <i class="el-icon-document"></i>
+                  <span>使用手册.pdf</span>
+                </div>
+                <el-button type="primary" size="small" plain @click="openManual(form.manual)" class="view-button">
+                  <i class="el-icon-view"></i> 查看
+                </el-button>
+              </div>
+            </div>
+          </el-form-item>
+          <el-form-item label="3D模型">
+            <div class="upload-container">
+              <div class="upload-wrapper">
+                <el-upload
+                    class="upload-demo"
+                    :action="$baseUrl + '/files/upload'"
+                    :on-success="handleModelSuccess"
+                    :file-list="modelFileList"
+                    :limit="1">
+                  <el-button size="small" type="primary" icon="el-icon-upload">上传模型</el-button>
+                  <div slot="tip" class="el-upload__tip">支持 3D 模型文件</div>
+                </el-upload>
+              </div>
+              <div v-if="form.modelFile" class="file-info">
+                <div class="file-name">
+                  <i class="el-icon-document"></i>
+                  <span>3D模型文件</span>
+                </div>
+                <el-button type="primary" size="small" plain @click="openModel(form.modelFile)" class="view-button">
+                  <i class="el-icon-view"></i> 查看
+                </el-button>
+              </div>
+            </div>
+          </el-form-item>
+        </div>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="fromVisible = false">取 消</el-button>
@@ -412,15 +452,174 @@ export default {
 
 .upload-container {
   display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: #fff;
+  border-radius: 4px;
+  padding: 15px;
+  border: 1px solid #e4e7ed;
+}
+
+.upload-wrapper {
+  .el-upload {
+    width: 100%;
+  }
+
+  .el-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    i {
+      margin-right: 5px;
+    }
+  }
+}
+
+.file-info {
+  display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #f5f7fa;
+  border-radius: 4px;
+  margin-top: 5px;
+
+  .file-name {
+    display: flex;
+    align-items: center;
+    color: #606266;
+    font-size: 14px;
+
+    i {
+      margin-right: 8px;
+      font-size: 16px;
+      color: #409EFF;
+    }
+  }
+
+  .view-button {
+    padding: 5px 15px;
+    
+    &:hover {
+      color: #409EFF;
+      border-color: #c6e2ff;
+      background-color: #ecf5ff;
+    }
+    
+    i {
+      margin-right: 4px;
+    }
+  }
 }
 
-.upload-container .el-button {
-  margin-left: 10px;
+.el-upload__tip {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 5px;
+  line-height: 1.4;
 }
 
-.upload-container .el-button i {
-  margin-right: 4px;
+.upload-demo {
+  :deep(.el-upload-list) {
+    margin-top: 8px;
+  }
+
+  :deep(.el-upload-list__item) {
+    transition: all 0.3s;
+    
+    &:hover {
+      background-color: #f5f7fa;
+    }
+  }
+}
+
+/* 表单样式优化 */
+.lab-form-dialog {
+  :deep(.el-dialog__body) {
+    padding: 20px 30px;
+  }
+}
+
+.lab-form {
+  .form-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #303133;
+    margin-bottom: 20px;
+    padding-left: 10px;
+    border-left: 4px solid #409EFF;
+  }
+
+  :deep(.el-form-item) {
+    margin-bottom: 22px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  :deep(.el-form-item__label) {
+    font-weight: 500;
+    color: #606266;
+  }
+
+  :deep(.el-input__inner),
+  :deep(.el-textarea__inner) {
+    border-radius: 4px;
+    transition: all 0.3s;
+    
+    &:hover {
+      border-color: #409EFF;
+    }
+    
+    &:focus {
+      border-color: #409EFF;
+      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
+    }
+  }
+
+  :deep(.el-select) {
+    width: 100%;
+  }
+
+  :deep(.el-date-editor) {
+    width: 100%;
+  }
+
+  :deep(.el-input-number) {
+    width: 100%;
+    
+    .el-input__inner {
+      text-align: left;
+    }
+  }
+}
+
+/* 对话框底部按钮样式 */
+.dialog-footer {
+  text-align: right;
+  padding: 20px 30px;
+  border-top: 1px solid #ebeef5;
+  
+  .el-button {
+    padding: 9px 20px;
+    
+    & + .el-button {
+      margin-left: 10px;
+    }
+  }
 }
 </style>
