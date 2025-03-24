@@ -205,8 +205,8 @@ export default {
       this.load(1)
     },
     handleAvatarSuccess(response, file, fileList) {
-      // 把头像属性换成上传的图片的链接
-      this.form.avatar = response.data
+      // 使用this.$set确保响应式更新
+      this.$set(this.form, 'avatar', response.data)
     },
   }
 }
