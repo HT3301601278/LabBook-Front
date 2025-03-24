@@ -60,9 +60,8 @@
 
 <script>
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 
 
 export default {
@@ -177,26 +176,26 @@ export default {
     },
     loadModel() {
       const loader = new GLTFLoader();
-      
+
       loader.load(
         this.modelPath,
         (gltf) => {
           this.model = gltf.scene;
-          
+
           // 自动调整模型大小和位置
           const box = new THREE.Box3().setFromObject(this.model);
           const size = box.getSize(new THREE.Vector3()).length();
           const center = box.getCenter(new THREE.Vector3());
-          
+
           this.model.position.x = -center.x;
           this.model.position.y = -center.y;
           this.model.position.z = -center.z;
-          
 
-          
+
+
           this.camera.position.z = size * 2;
           this.camera.lookAt(0, 0, 0);
-          
+
           this.scene.add(this.model);
         },
         (xhr) => {
@@ -209,11 +208,11 @@ export default {
     },
     animate() {
       requestAnimationFrame(this.animate);
-      
+
       if (this.controls) {
         this.controls.update();
       }
-      
+
       this.renderer.render(this.scene, this.camera);
     },
     onWindowResize() {
@@ -230,7 +229,7 @@ export default {
       if (this.model) {
         this.scene.remove(this.model);
       }
-      
+
       if (this.renderer) {
         this.renderer.dispose();
       }
@@ -279,14 +278,14 @@ export default {
     resetDirectionalLightPosition() {
       this.lightSettings.directionalPosition = { x: 1, y: 1, z: 1 };
     },
-    
 
-    
+
+
     setPointLightPreset(preset) {
       const position = this.lightPresets.point[preset];
       this.lightSettings.pointPosition = { ...position };
     },
-    
+
     setDirectionalLightPreset(preset) {
       const position = this.lightPresets.directional[preset];
       this.lightSettings.directionalPosition = { ...position };
