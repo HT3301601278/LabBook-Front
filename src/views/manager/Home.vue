@@ -7,8 +7,8 @@
     <div style="display: flex; margin: 10px 0">
       <div style="width: 100%;" class="card">
         <div style="margin-bottom: 30px; font-size: 20px; font-weight: bold">公告列表</div>
-        <div >
-          <el-timeline  reverse slot="reference">
+        <div>
+          <el-timeline reverse slot="reference">
             <el-timeline-item v-for="item in notices" :key="item.id" :timestamp="item.createTime ? item.createTime.split('T')[0] : ''">
               <el-popover
                   placement="right"
@@ -35,8 +35,8 @@ import * as echarts from "echarts";
 
 let pieOptions = {
   title: {
-    text: '', // 主标题
-    subtext: '', // 副标题
+    text: '',
+    subtext: '',
     left: 'center'
   },
   tooltip: {
@@ -49,29 +49,24 @@ let pieOptions = {
   },
   series: [
     {
-      name: '', // 鼠标移上去显示内容
+      name: '',
       type: 'pie',
       radius: '50%',
       center: ['50%', '60%'],
-      data: [
-        {value: 1048, name: '瑞幸咖啡'}, // 示例数据：name表示维度，value表示对应的值
-        {value: 735, name: '雀巢咖啡'},
-        {value: 580, name: '星巴克咖啡'},
-        {value: 484, name: '栖巢咖啡'},
-        {value: 300, name: '小武哥咖啡'}
-      ]
+      data: []
     }
   ]
 }
+
 let barOptions = {
   title: {
-    text: '', // 主标题
-    subtext: '', // 副标题
+    text: '',
+    subtext: '',
     left: 'center'
   },
   xAxis: {
     type: 'category',
-    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] // 示例数据：统计的维度（横坐标）
+    data: []
   },
   yAxis: {
     type: 'value'
@@ -81,16 +76,19 @@ let barOptions = {
   },
   series: [
     {
-      data: [120, 200, 150, 80, 70, 110, 130], // 示例数据：横坐标维度对应的值（纵坐标）
+      data: [],
       type: 'bar',
       itemStyle: {
         normal: {
-          color:function(){return "#"+Math.floor(Math.random()*(256*256*256-1)).toString(16);}
-        },
-      },
+          color: function() {
+            return "#" + Math.floor(Math.random() * (256 * 256 * 256 - 1)).toString(16);
+          }
+        }
+      }
     }
   ]
 }
+
 export default {
   name: 'Home',
   data() {
