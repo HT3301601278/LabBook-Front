@@ -83,53 +83,69 @@
     </div>
 
 
-    <el-dialog title="管理员" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close>
-      <el-form :model="form" label-width="100px" style="padding-right: 50px" :rules="rules" ref="formRef">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" placeholder="用户名"></el-input>
-        </el-form-item>
-        <el-form-item label="姓名" prop="name">
-          <el-input v-model="form.name" placeholder="姓名"></el-input>
-        </el-form-item>
-        <el-form-item label="学号" prop="studentNumber">
-          <el-input v-model="form.studentNumber" placeholder="学号"></el-input>
-        </el-form-item>
-        <el-form-item label="学院" prop="college">
-          <el-select v-model="form.college" placeholder="请选择学院" @change="handleCollegeChange" style="width: 100%">
-            <el-option v-for="item in colleges" :key="item" :label="item" :value="item"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="专业" prop="major">
-          <el-select v-model="form.major" placeholder="请选择专业" style="width: 100%">
-            <el-option v-for="item in majors" :key="item" :label="item" :value="item"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="电话" prop="phone">
-          <el-input v-model="form.phone" placeholder="电话"></el-input>
-        </el-form-item>
-        <el-form-item label="头像">
-          <el-upload
-              class="avatar-uploader"
-              :action="$baseUrl + '/files/upload'"
-              :headers="{ token: user.token }"
-              list-type="picture"
-              :on-success="handleAvatarSuccess"
-          >
-            <el-button type="primary">上传头像</el-button>
-          </el-upload>
-        </el-form-item>
-        <el-form-item label="学生证照片">
-          <el-upload
-              class="avatar-uploader"
-              :action="$baseUrl + '/files/upload'"
-              :headers="{ token: user.token }"
-              list-type="picture"
-              :on-success="handleStudentCardPhotoSuccess"
-          >
-            <el-button type="primary">上传学生证照片</el-button>
-          </el-upload>
-        </el-form-item>
-      </el-form>
+    <el-dialog title="编辑学生信息" :visible.sync="fromVisible" width="60%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close center>
+      <div class="form-container">
+        <div class="form-left">
+          <el-form :model="form" label-width="100px" :rules="rules" ref="formRef">
+            <el-form-item label="用户名" prop="username">
+              <el-input v-model="form.username" placeholder="用户名"></el-input>
+            </el-form-item>
+            <el-form-item label="姓名" prop="name">
+              <el-input v-model="form.name" placeholder="姓名"></el-input>
+            </el-form-item>
+            <el-form-item label="学号" prop="studentNumber">
+              <el-input v-model="form.studentNumber" placeholder="学号"></el-input>
+            </el-form-item>
+            <el-form-item label="学院" prop="college">
+              <el-select v-model="form.college" placeholder="请选择学院" @change="handleCollegeChange" style="width: 100%">
+                <el-option v-for="item in colleges" :key="item" :label="item" :value="item"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="专业" prop="major">
+              <el-select v-model="form.major" placeholder="请选择专业" style="width: 100%">
+                <el-option v-for="item in majors" :key="item" :label="item" :value="item"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="电话" prop="phone">
+              <el-input v-model="form.phone" placeholder="电话"></el-input>
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="form-right">
+          <div class="upload-section">
+            <div class="upload-title">头像</div>
+            <el-upload
+                class="avatar-uploader"
+                :action="$baseUrl + '/files/upload'"
+                :headers="{ token: user.token }"
+                :show-file-list="false"
+                :on-success="handleAvatarSuccess"
+            >
+              <img v-if="form.avatar" :src="form.avatar" class="avatar" />
+              <div v-else class="upload-placeholder">
+                <i class="el-icon-plus"></i>
+                <div>点击上传头像</div>
+              </div>
+            </el-upload>
+          </div>
+          <div class="upload-section">
+            <div class="upload-title">学生证照片</div>
+            <el-upload
+                class="avatar-uploader"
+                :action="$baseUrl + '/files/upload'"
+                :headers="{ token: user.token }"
+                :show-file-list="false"
+                :on-success="handleStudentCardPhotoSuccess"
+            >
+              <img v-if="form.studentCardPhoto" :src="form.studentCardPhoto" class="avatar" />
+              <div v-else class="upload-placeholder">
+                <i class="el-icon-plus"></i>
+                <div>点击上传学生证照片</div>
+              </div>
+            </el-upload>
+          </div>
+        </div>
+      </div>
 
       <div slot="footer" class="dialog-footer">
         <el-button @click="fromVisible = false">取 消</el-button>
@@ -421,6 +437,144 @@ export default {
 </script>
 
 <style scoped>
+.table {
+  background-color: #fff;
+  padding: 20px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.pagination {
+  margin-top: 20px;
+  text-align: right;
+}
+
+/* 对话框样式 */
+:deep(.el-dialog) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.el-dialog__header) {
+  background-color: #409EFF;
+  padding: 20px;
+  margin-right: 0;
+}
+
+:deep(.el-dialog__title) {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+:deep(.el-dialog__headerbtn .el-dialog__close) {
+  color: #fff;
+}
+
+:deep(.el-dialog__body) {
+  padding: 30px 20px;
+}
+
+:deep(.el-dialog__footer) {
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+}
+
+/* 表单样式优化 */
+:deep(.el-form-item) {
+  margin-bottom: 22px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
+}
+
+:deep(.el-input), :deep(.el-textarea), :deep(.el-select) {
+  width: 100%;
+}
+
+/* 表单布局样式 */
+.form-container {
+  display: flex;
+  gap: 40px;
+  padding: 0 20px;
+}
+
+.form-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-right {
+  width: 300px;
+}
+
+.upload-section {
+  margin-bottom: 30px;
+}
+
+.upload-title {
+  font-size: 14px;
+  color: #606266;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+/* 头像上传样式 */
+.avatar-uploader {
+  text-align: center;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fafafa;
+}
+
+.avatar-uploader:hover {
+  border-color: #409EFF;
+  background-color: #f5f7fa;
+}
+
+.upload-placeholder {
+  padding: 32px 16px;
+  width: 100%;
+  text-align: center;
+}
+
+.upload-placeholder i {
+  font-size: 28px;
+  color: #8c939d;
+  margin-bottom: 5px;
+}
+
+.upload-placeholder div {
+  color: #8c939d;
+  font-size: 14px;
+}
+
+.avatar {
+  width: 100%;
+  height: 160px;
+  display: block;
+  object-fit: cover;
+}
+
+:deep(.el-upload) {
+  width: 100%;
+}
+
+:deep(.el-dialog) {
+  min-width: 800px;
+}
+
+:deep(.el-form-item:last-child) {
+  margin-bottom: 0;
+}
+
 .reject-reason-content {
   display: flex;
   flex-direction: column;
@@ -446,44 +600,5 @@ export default {
   word-break: break-all;
   max-width: 100%;
   padding: 0 20px;
-}
-
-:deep(.el-dialog) {
-  display: flex;
-  flex-direction: column;
-  margin: 0 !important;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  max-height: 90%;
-  max-width: 90%;
-}
-
-:deep(.el-dialog__body) {
-  flex: 1;
-  overflow: auto;
-  padding: 0;
-}
-
-:deep(.el-dialog__header) {
-  padding: 20px;
-  margin: 0;
-  border-bottom: 1px solid #ebeef5;
-  background: linear-gradient(120deg, #4facfe 0%, #00f2fe 100%);
-}
-
-:deep(.el-dialog__title) {
-  color: #fff;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-:deep(.el-dialog__headerbtn .el-dialog__close) {
-  color: #fff;
-}
-
-:deep(.el-dialog__headerbtn:hover .el-dialog__close) {
-  color: #f4f4f5;
 }
 </style>

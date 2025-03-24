@@ -162,11 +162,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.search {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-}
-</style>

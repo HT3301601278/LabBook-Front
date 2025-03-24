@@ -51,7 +51,7 @@
     </div>
 
 
-    <el-dialog title="管理员" :visible.sync="formVisible" width="40%" :close-on-click-modal="false" destroy-on-close :modal-append-to-body="true" :append-to-body="true">
+    <el-dialog title="编辑管理员信息" :visible.sync="formVisible" width="40%" :close-on-click-modal="false" destroy-on-close :modal-append-to-body="true" :append-to-body="true" center>
       <el-form :model="form" label-width="100px" style="padding-right: 50px" :rules="rules" ref="formRef">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" placeholder="用户名"></el-input>
@@ -70,10 +70,14 @@
               class="avatar-uploader"
               :action="$baseUrl + '/files/upload'"
               :headers="{ token: user.token }"
-              list-type="picture"
+              :show-file-list="false"
               :on-success="handleAvatarSuccess"
           >
-            <el-button type="primary">上传头像</el-button>
+            <img v-if="form.avatar" :src="form.avatar" class="avatar" />
+            <div v-else class="upload-placeholder">
+              <i class="el-icon-plus"></i>
+              <div>点击上传头像</div>
+            </div>
           </el-upload>
         </el-form-item>
       </el-form>
@@ -209,13 +213,112 @@ export default {
 </script>
 
 <style scoped>
-::v-deep .el-dialog {
-  z-index: 3000 !important;
+.table {
+  background-color: #fff;
+  padding: 20px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
-::v-deep .el-dialog__wrapper {
-  z-index: 2999 !important;
+
+.pagination {
+  margin-top: 20px;
+  text-align: right;
 }
-::v-deep .v-modal {
-  z-index: 2998 !important;
+
+/* 对话框样式 */
+:deep(.el-dialog) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.el-dialog__header) {
+  background-color: #409EFF;
+  padding: 20px;
+  margin-right: 0;
+}
+
+:deep(.el-dialog__title) {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+:deep(.el-dialog__headerbtn .el-dialog__close) {
+  color: #fff;
+}
+
+:deep(.el-dialog__body) {
+  padding: 30px 20px;
+}
+
+:deep(.el-dialog__footer) {
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+}
+
+/* 表单样式优化 */
+:deep(.el-form-item) {
+  margin-bottom: 22px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
+}
+
+:deep(.el-input), :deep(.el-textarea) {
+  width: 100%;
+}
+
+/* 头像上传样式 */
+.avatar-uploader {
+  text-align: center;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.avatar-uploader:hover {
+  border-color: #409EFF;
+}
+
+.upload-placeholder {
+  padding: 32px 16px;
+  width: 100%;
+  text-align: center;
+}
+
+.upload-placeholder i {
+  font-size: 28px;
+  color: #8c939d;
+  margin-bottom: 5px;
+}
+
+.upload-placeholder div {
+  color: #8c939d;
+  font-size: 14px;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  display: block;
+  object-fit: cover;
+  margin: 20px auto;
+}
+
+:deep(.el-upload) {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+:deep(.el-upload:hover) {
+  border-color: #409EFF;
 }
 </style>
