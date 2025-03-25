@@ -214,13 +214,14 @@ export default {
 }
 
 .avatar {
-  width: 120px;
-  height: 120px;
+  width: 100%;
+  height: 100%;
   display: block;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  border: 3px solid white;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .button-container {
