@@ -14,7 +14,16 @@ const routes = [
     path: '/',
     name: 'Manager',
     component: () => import('../views/Manager.vue'),
-    redirect: '/studentHome',  // 默认重定向到学生首页
+    redirect: to => {
+      const user = JSON.parse(localStorage.getItem("labuser") || '{}');
+      if (user.role === 'ADMIN') {
+        return '/adminHome';
+      } else if (user.role === 'LABADMIN') {
+        return '/labadminHome';
+      } else {
+        return '/studentHome';
+      }
+    },
     children: [
       { path: '403', name: 'NoAuth', meta: { name: '无权限', title: '无权限' }, component: () => import('../views/manager/403') },
       { path: 'adminHome', name: 'AdminHome', meta: { name: '系统首页', title: '系统首页' }, component: () => import('../views/manager/AdminHome') },
@@ -34,15 +43,6 @@ const routes = [
       { path: 'reserve', name: 'Reserve', meta: { name: '预约记录', title: '预约记录' }, component: () => import('../views/manager/Reserve') },
       { path: 'fix', name: 'Fix', meta: { name: '报修记录', title: '报修记录' }, component: () => import('../views/manager/Fix') },
       { path: 'checks', name: 'Check', meta: { name: '检修记录', title: '检修记录' }, component: () => import('../views/manager/Check') },
-    ]
-  },
-  {
-    path: '/front',
-    name: 'Front',
-    component: () => import('../views/Front.vue'),
-    children: [
-      { path: 'home', name: 'Home', meta: { name: '系统首页', title: '首页' }, component: () => import('../views/front/Home') },
-      { path: 'person', name: 'Person', meta: { name: '个人信息', title: '个人信息' }, component: () => import('../views/front/Person') },
     ]
   },
   { path: '/login', name: 'Login', meta: { name: '登录', title: '登录' }, component: () => import('../views/Login.vue') },
@@ -67,30 +67,30 @@ router.beforeEach((to, from, next) => {
 
   let user = JSON.parse(localStorage.getItem("labuser") || '{}');
   const publicPaths = ['/login', '/register'];
+  
+  // 处理公共路径（登录和注册页面）
   if (publicPaths.includes(to.path)) {
     if (user.token) {
-      next('/');
+      // 如果已登录，根据角色跳转到对应首页
+      if (user.role === 'STUDENT') {
+        next('/studentHome');
+      } else if (user.role === 'ADMIN') {
+        next('/adminHome');
+      } else if (user.role === 'LABADMIN') {
+        next('/labadminHome');
+      }
     } else {
       next();
     }
     return;
   }
+
+  // 处理未登录情况
   if (!user.token) {
     next('/login');
     return;
   }
-  if (to.path === '/') {
-    if (user.role === 'STUDENT') {
-      next('/front/home');
-    } else if (user.role === 'ADMIN') {
-      next('/adminHome');
-    } else if (user.role === 'LABADMIN') {
-      next('/labadminHome');
-    } else {
-      next('/studentHome');
-    }
-    return;
-  }
+
   next();
 });
 
