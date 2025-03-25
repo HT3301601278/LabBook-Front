@@ -95,25 +95,24 @@ export default {
 
 <style scoped>
 .password-container {
+  min-height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  padding: 40px 30px;
   background-color: #f5f7fa;
   background-image: linear-gradient(135deg, #f5f7fa 0%, #e4ecfb 100%);
-  padding: 20px;
-  box-sizing: border-box;
 }
 
 .password-card {
-  width: 90%;
-  max-width: 600px;
+  width: 700px;
   border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   transition: all 0.3s ease;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   background-color: #fff;
   border: none;
+  margin: 0 auto;
 }
 
 .password-card:hover {
@@ -122,13 +121,13 @@ export default {
 }
 
 .card-header {
-  background-color: #409EFF;
-  color: white;
+  background-color: #f0f5ff;
+  color: #1d1d1f;
   padding: 20px 0;
   text-align: center;
-  margin-bottom: 20px;
   border-radius: 16px;
-  background-image: linear-gradient(120deg, #4facfe 0%, #00f2fe 100%);
+  margin-bottom: 30px;
+  background-image: linear-gradient(120deg, #e6f7ff 0%, #bae7ff 100%);
 }
 
 .title {
@@ -136,19 +135,22 @@ export default {
   font-size: 24px;
   font-weight: 600;
   letter-spacing: 1px;
+  color: #1d1d1f;
 }
 
-.password-card :deep(.el-form) {
+.avatar-container {
+  margin: 20px 0 30px;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  width: 100%;
-  padding: 0 20px 20px;
-  box-sizing: border-box;
+  flex-direction: column;
+}
+
+:deep(.el-form) {
+  padding: 0 40px;
 }
 
 :deep(.el-form-item) {
-  width: 100%;
   margin-bottom: 22px;
 }
 
@@ -160,19 +162,11 @@ export default {
 :deep(.el-input__inner) {
   border-radius: 4px;
   transition: all 0.3s;
-  padding-left: 40px;
 }
 
 :deep(.el-input__inner:focus) {
   border-color: #409EFF;
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
-}
-
-.avatar-container {
-  margin: 10px 0 30px;
-  display: flex;
-  justify-content: center;
-  width: 100%;
 }
 
 :deep(.el-upload) {
@@ -187,6 +181,11 @@ export default {
   overflow: hidden;
   border-radius: 50%;
   background-color: #fafafa;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 :deep(.avatar-uploader .el-upload:hover) {
@@ -195,66 +194,65 @@ export default {
   box-shadow: 0 0 10px rgba(64, 158, 255, 0.3);
 }
 
-.avatar-placeholder {
-  width: 130px;
-  height: 130px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: #8c939d;
-  border-radius: 50%;
-}
-
-.avatar-placeholder i {
-  font-size: 32px;
-  margin-bottom: 8px;
-}
-
-.avatar-placeholder span {
-  font-size: 14px;
-}
-
 .avatar {
-  width: 130px;
-  height: 130px;
+  width: 100%;
+  height: 100%;
   display: block;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  border: 3px solid white;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .button-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin: 30px 0 20px;
+  text-align: center;
+  margin: 30px 0;
   padding-top: 20px;
-  border-top: 1px solid #ebeef5;
 }
 
 .submit-button {
-  padding: 12px 30px;
-  width: 180px;
-  height: 40px;
+  padding: 12px 40px;
   font-size: 16px;
-  font-weight: 500;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  background-image: linear-gradient(120deg, #4facfe 0%, #00f2fe 100%);
+  border-radius: 16px;
+  background-image: linear-gradient(120deg, #40a9ff 0%, #1890ff 100%);
   border: none;
-  box-shadow: 0 4px 10px rgba(79, 172, 254, 0.3);
-  color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(24, 144, 255, 0.15);
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  width: 200px;
+}
+
+.submit-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: 0.5s;
 }
 
 .submit-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(79, 172, 254, 0.4);
+  box-shadow: 0 6px 20px rgba(24, 144, 255, 0.25);
+  background-image: linear-gradient(120deg, #69c0ff 0%, #40a9ff 100%);
+}
+
+.submit-button:hover::before {
+  left: 100%;
 }
 
 .submit-button:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 10px rgba(79, 172, 254, 0.3);
+  transform: translateY(1px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 </style>
