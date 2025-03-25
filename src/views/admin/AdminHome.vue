@@ -168,6 +168,39 @@
         </div>
       </div>
     </div>
+
+    <!-- 报修处理对话框 -->
+    <el-dialog title="填写检修信息" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" :append-to-body="true" destroy-on-close center>
+      <el-form label-width="100px" style="padding-right: 50px" :model="form" :rules="rules" ref="formRef">
+        <el-form-item prop="inspectorName" label="检修人">
+          <el-input v-model="form.inspectorName" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item prop="phone" label="联系电话">
+          <el-input v-model="form.phone" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item prop="department" label="检修部门">
+          <el-input v-model="form.department" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item prop="content" label="检修内容">
+          <el-input type="textarea" :rows="3" v-model="form.content" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item prop="description" label="处理说明">
+          <el-input type="textarea" :rows="3" v-model="form.description" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item prop="fixTime" label="处理时间">
+          <el-date-picker style="width: 100%"
+              v-model="form.fixTime"
+              type="datetime"
+              value-format="yyyy-MM-dd HH:mm"
+              placeholder="选择处理时间">
+          </el-date-picker>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="fromVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submit">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -179,6 +212,9 @@ export default {
     return {
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
       notices: [],
+      labTypes: [],
+      labStatus: {},
+      userStats: {},
       // 模拟数据 - 实际应用中应通过API获取
       stats: {
         totalLabs: 30,
@@ -192,24 +228,110 @@ export default {
         { id: 3, name: '王五', role: 'STUDENT', avatar: '', createTime: '2023-06-08' },
         { id: 4, name: '赵六', role: 'STUDENT', avatar: '', createTime: '2023-06-07' }
       ],
-      pendingReserves: [
-        { id: 101, labName: '计算机网络实验室', userName: '张三', date: '2023-06-12', startTime: '09:00', endTime: '11:00' },
-        { id: 102, labName: '软件工程实验室', userName: '李四', date: '2023-06-12', startTime: '14:00', endTime: '16:00' }
-      ],
-      pendingFixes: [
-        { id: 201, labName: '电子电路实验室', userName: '王五', description: '示波器无法正常显示', createTime: '2023-06-10' },
-        { id: 202, labName: '计算机网络实验室', userName: '赵六', description: '路由器故障', createTime: '2023-06-09' }
-      ]
+      pendingReserves: [],
+      pendingFixes: [],
+      form: {
+        labId: '',
+        fixId: '',
+        inspectorName: '',
+        phone: '',
+        content: '',
+        department: '',
+        description: '',
+        fixTime: null
+      },
+      fromVisible: false,
+      rules: {
+        inspectorName: [
+          {required: true, message: '请输入检修人姓名', trigger: 'blur'},
+        ],
+        phone: [
+          {required: true, message: '请输入联系电话', trigger: 'blur'},
+        ],
+        content: [
+          {required: true, message: '请输入检修内容', trigger: 'blur'},
+        ],
+        department: [
+          {required: true, message: '请输入检修部门', trigger: 'blur'},
+        ],
+        description: [
+          {required: true, message: '请输入处理说明', trigger: 'blur'},
+        ],
+        fixTime: [
+          {required: true, message: '请选择处理时间', trigger: 'blur'},
+        ],
+      }
     }
   },
   mounted() {
     this.loadNotices()
+    this.loadLabTypes()
+    this.loadLabStatus()
+    this.loadUserStats()
+    this.loadPendingReserves()
+    this.loadPendingFixes()
     this.initCharts()
   },
   methods: {
     loadNotices() {
       this.$request.get('/notice/selectAll').then(res => {
         this.notices = res.data || []
+      })
+    },
+    loadLabTypes() {
+      this.$request.get('/type/selectAll').then(res => {
+        this.labTypes = res.data || []
+        this.updateLabBarChart()
+      })
+    },
+    loadLabStatus() {
+      this.$request.get('/lab/selectAll').then(res => {
+        if (res.code === '200' && res.data) {
+          this.labStatus = res.data.statusStats || {}
+          this.updateLabPieChart()
+        }
+      })
+    },
+    loadUserStats() {
+      this.$request.get('/userStats').then(res => {
+        if (res.code === '200' && res.data) {
+          this.userStats = res.data
+          this.updateUserPieChart()
+        }
+      })
+    },
+    loadPendingReserves() {
+      this.$request.get('/reserve/selectPage?pageNum=1&pageSize=1000&status=待审核').then(res => {
+        if (res.code === '200' && res.data) {
+          this.pendingReserves = res.data.list.map(item => ({
+            id: item.id,
+            labName: item.labName,
+            userName: item.studentName,
+            date: item.reserveStartTime.split(' ')[0],
+            startTime: item.reserveStartTime.split(' ')[1],
+            endTime: item.reserveEndTime.split(' ')[1],
+            createTime: item.createTime
+          }))
+        }
+      })
+    },
+    loadPendingFixes() {
+      this.$request.get('/fix/searchPage', {
+        params: {
+          pageNum: 1,
+          pageSize: 1000,
+          status: '待处理'
+        }
+      }).then(res => {
+        if (res.code === '200' && res.data) {
+          this.pendingFixes = res.data.list.map(item => ({
+            id: item.id,
+            labName: item.labName,
+            userName: item.studentName,
+            description: item.description,
+            createTime: item.createTime
+          }))
+        }
       })
     },
     initCharts() {
@@ -219,8 +341,18 @@ export default {
     },
     initUserPieChart() {
       const chartDom = document.getElementById('userPie');
-      const myChart = echarts.init(chartDom);
+      this.userPieChart = echarts.init(chartDom);
+      this.updateUserPieChart()
+    },
+    updateUserPieChart() {
+      if (!this.userPieChart || !this.userStats.data) return
+      
       const option = {
+        title: {
+          text: this.userStats.text || '用户分布',
+          subtext: this.userStats.subtext || '统计维度：用户角色',
+          left: 'center'
+        },
         tooltip: {
           trigger: 'item',
           formatter: '{a} <br/>{b}: {c} ({d}%)'
@@ -228,7 +360,7 @@ export default {
         legend: {
           orient: 'vertical',
           left: 10,
-          data: ['系统管理员', '实验室管理员', '学生']
+          data: this.userStats.data.map(item => item.name)
         },
         series: [
           {
@@ -250,19 +382,26 @@ export default {
             labelLine: {
               show: false
             },
-            data: [
-              { value: 5, name: '系统管理员' },
-              { value: 15, name: '实验室管理员' },
-              { value: 100, name: '学生' }
-            ]
+            data: this.userStats.data.map(item => ({
+              ...item,
+              itemStyle: {
+                color: item.name === '管理员' ? '#409EFF' : 
+                       item.name === '实验室管理员' ? '#67C23A' : '#E6A23C'
+              }
+            }))
           }
         ]
       };
-      myChart.setOption(option);
+      this.userPieChart.setOption(option);
     },
     initLabPieChart() {
       const chartDom = document.getElementById('labPie');
-      const myChart = echarts.init(chartDom);
+      this.labPieChart = echarts.init(chartDom);
+      this.updateLabPieChart()
+    },
+    updateLabPieChart() {
+      if (!this.labPieChart) return
+      
       const option = {
         tooltip: {
           trigger: 'item',
@@ -271,7 +410,7 @@ export default {
         legend: {
           orient: 'vertical',
           left: 10,
-          data: ['空闲', '使用中', '维护中']
+          data: Object.keys(this.labStatus)
         },
         series: [
           {
@@ -293,19 +432,27 @@ export default {
             labelLine: {
               show: false
             },
-            data: [
-              { value: 18, name: '空闲', itemStyle: { color: '#67C23A' } },
-              { value: 9, name: '使用中', itemStyle: { color: '#E6A23C' } },
-              { value: 3, name: '维护中', itemStyle: { color: '#F56C6C' } }
-            ]
+            data: Object.entries(this.labStatus).map(([name, value]) => ({
+              name,
+              value,
+              itemStyle: {
+                color: name === '空闲中' ? '#67C23A' : 
+                       name === '使用中' ? '#E6A23C' : '#F56C6C'
+              }
+            }))
           }
         ]
       };
-      myChart.setOption(option);
+      this.labPieChart.setOption(option);
     },
     initLabBarChart() {
       const chartDom = document.getElementById('labBar');
-      const myChart = echarts.init(chartDom);
+      this.labBarChart = echarts.init(chartDom);
+      this.updateLabBarChart()
+    },
+    updateLabBarChart() {
+      if (!this.labBarChart) return
+      
       const option = {
         tooltip: {
           trigger: 'axis',
@@ -315,27 +462,24 @@ export default {
         },
         xAxis: {
           type: 'category',
-          data: ['化学类', '物理类', '计算机类', '电子类', '机械类']
+          data: this.labTypes.map(type => type.name)
         },
         yAxis: {
-          type: 'value'
+          type: 'value',
+          name: '实验室数量'
         },
         series: [
           {
             name: '实验室数量',
             type: 'bar',
-            data: [8, 6, 10, 4, 2],
+            data: this.labTypes.map(type => type.labCount),
             itemStyle: {
-              normal: {
-                color: function() {
-                  return "#" + Math.floor(Math.random() * (256 * 256 * 256 - 1)).toString(16);
-                }
-              }
+              color: '#409EFF'
             }
           }
         ]
       };
-      myChart.setOption(option);
+      this.labBarChart.setOption(option);
     },
     getRoleName(role) {
       if (role === 'ADMIN') return '系统管理员'
@@ -344,15 +488,95 @@ export default {
       return '未知角色'
     },
     handleReserve(id, action) {
-      // 处理预约审核，实际应用中应调用API
-      this.$message.success(`已${action === 'approve' ? '通过' : '拒绝'}预约申请`)
-      this.pendingReserves = this.pendingReserves.filter(item => item.id !== id)
+      const status = action === 'approve' ? '已通过' : '已拒绝'
+      const actionText = action === 'approve' ? '通过' : '拒绝'
+      
+      this.$confirm(`确认${actionText}此预约申请？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$request.put('/reserve/update', {
+          id: id,
+          status: status
+        }).then(res => {
+          if (res.code === '200') {
+            this.$message.success('操作成功')
+            this.loadPendingReserves() // 重新加载待处理预约列表
+          } else {
+            this.$message.error(res.msg || '操作失败')
+          }
+        })
+      }).catch(() => {})
     },
     handleFix(id) {
-      // 处理报修，实际应用中应跳转到报修详情页或调用API
-      this.$message.success('已开始处理报修')
-      this.pendingFixes = this.pendingFixes.filter(item => item.id !== id)
-    }
+      // 获取报修详情
+      this.$request.get('/fix/searchPage', {
+        params: {
+          pageNum: 1,
+          pageSize: 1000,
+          id: id
+        }
+      }).then(res => {
+        if (res.code === '200' && res.data && res.data.list && res.data.list.length > 0) {
+          const fixData = res.data.list[0]
+          this.form = {
+            labId: fixData.labId,
+            fixId: fixData.id,
+            inspectorName: '',
+            phone: '',
+            content: '',
+            department: '',
+            description: '',
+            fixTime: null
+          }
+          this.fromVisible = true
+        } else {
+          this.$message.error('获取报修详情失败')
+        }
+      })
+    },
+    submit() {
+      this.$refs.formRef.validate((valid) => {
+        if (valid) {
+          // 先添加检修记录
+          const checksData = {
+            labId: this.form.labId,
+            fixId: this.form.fixId,
+            inspectorName: this.form.inspectorName,
+            phone: this.form.phone,
+            content: this.form.content,
+            department: this.form.department,
+            inspectionTime: this.form.fixTime
+          }
+
+          this.$request.post('/checks/add', checksData).then(res => {
+            if (res.code === '200') {
+              // 更新报修记录状态
+              const fixData = {
+                id: this.form.fixId,
+                status: '已完成',
+                fixTime: this.form.fixTime,
+                labadminId: this.user.id,
+                description: this.form.description
+              }
+
+              this.$request.put('/fix/update', fixData).then(res => {
+                if (res.code === '200') {
+                  this.$message.success('操作成功')
+                  this.fromVisible = false
+                  this.loadPendingFixes() // 重新加载待处理报修列表
+                } else {
+                  this.$message.error(res.msg)
+                }
+              })
+            } else {
+              this.$message.error(res.msg)
+            }
+          })
+        }
+      })
+    },
   }
 }
 </script>
@@ -585,6 +809,54 @@ export default {
 .empty-data i {
   font-size: 30px;
   margin-bottom: 10px;
+}
+
+/* 对话框样式 */
+:deep(.el-dialog) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.el-dialog__header) {
+  background-color: #409EFF;
+  padding: 20px;
+  margin-right: 0;
+}
+
+:deep(.el-dialog__title) {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+:deep(.el-dialog__headerbtn .el-dialog__close) {
+  color: #fff;
+}
+
+:deep(.el-dialog__body) {
+  padding: 30px 20px;
+}
+
+:deep(.el-dialog__footer) {
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+}
+
+/* 表单样式优化 */
+:deep(.el-textarea__inner) {
+  min-height: 80px;
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 22px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
+}
+
+:deep(.el-input), :deep(.el-textarea) {
+  width: 100%;
 }
 
 /* 响应式调整 */
