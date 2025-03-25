@@ -176,7 +176,7 @@
 </template>
 
 <script>
-import ModelViewer from './ModelViewer.vue';
+import ModelViewer from '../common/ModelViewer.vue';
 
 export default {
   name: "Lab",

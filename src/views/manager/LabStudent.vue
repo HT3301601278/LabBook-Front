@@ -112,8 +112,8 @@
 </template>
 
 <script>
-import ModelViewer from './ModelViewer.vue';
-import ReserveForm from './ReserveForm.vue';
+import ModelViewer from '../common/ModelViewer.vue';
+import ReserveForm from '../student/ReserveForm.vue';
 
 export default {
   name: "Lab",
