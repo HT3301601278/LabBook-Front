@@ -1,5 +1,6 @@
 import axios from 'axios'
 import router from "@/router";
+import { Message } from 'element-ui'
 
 // 创建可一个新的axios对象
 const request = axios.create({
@@ -38,6 +39,8 @@ request.interceptors.response.use(
             res = res ? JSON.parse(res) : res
         }
         if (res.code === '401') {
+            localStorage.removeItem('labuser')  // 清除token
+            Message.error('登录已过期，请重新登录')  // 添加错误提示
             router.push('/login')
         }
         return res;
