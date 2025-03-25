@@ -33,7 +33,7 @@
                   <i class="el-icon-location"></i>
                   <span class="label">位置：</span>
                   <span class="value">{{ item.location }}</span>
-                </div>  
+                </div>
                 <div class="lab-item">
                   <i class="el-icon-circle-check"></i>
                   <span class="label">状态：</span>
@@ -67,7 +67,7 @@
                   </el-button>
                 </div>
                 <div class="reserve-button">
-                  <el-button type="primary" size="mini" @click="openReserveForm(item)" 
+                  <el-button type="primary" size="mini" @click="openReserveForm(item)"
                     :disabled="item.usageStatus === '使用中' || item.usageStatus === '已预约'"
                     :type="item.usageStatus === '已预约' ? 'info' : 'primary'">
                     {{ item.usageStatus === '已预约' ? '已预约' : '预约' }}
@@ -113,13 +113,13 @@
 
 <script>
 import ModelViewer from '../common/ModelViewer.vue';
-import ReserveForm from '../student/ReserveForm.vue';
+import StudentReserveForm from '../student/StudentReserveForm.vue';
 
 export default {
   name: "Lab",
   components: {
     ModelViewer,
-    ReserveForm
+    ReserveForm: StudentReserveForm
   },
   data() {
     return {
