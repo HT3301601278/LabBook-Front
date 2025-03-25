@@ -14,10 +14,12 @@ const routes = [
     path: '/',
     name: 'Manager',
     component: () => import('../views/Manager.vue'),
-    redirect: '/home',  // 重定向到主页
+    redirect: '/studentHome',  // 默认重定向到学生首页
     children: [
       { path: '403', name: 'NoAuth', meta: { name: '无权限', title: '无权限' }, component: () => import('../views/manager/403') },
-      { path: 'home', name: 'Home', meta: { name: '系统首页', title: '系统首页' }, component: () => import('../views/manager/Home') },
+      { path: 'adminHome', name: 'AdminHome', meta: { name: '系统首页', title: '系统首页' }, component: () => import('../views/manager/AdminHome') },
+      { path: 'labadminHome', name: 'LabadminHome', meta: { name: '系统首页', title: '系统首页' }, component: () => import('../views/manager/LabadminHome') },
+      { path: 'studentHome', name: 'StudentHome', meta: { name: '系统首页', title: '系统首页' }, component: () => import('../views/manager/StudentHome') },
       { path: 'admin', name: 'Admin', meta: { name: '管理员', title: '管理员' }, component: () => import('../views/manager/Admin') },
       { path: 'adminPerson', name: 'AdminPerson', meta: { name: '个人信息', title: '个人信息' }, component: () => import('../views/manager/AdminPerson') },
       { path: 'labadminPerson', name: 'LabadminPerson', meta: { name: '个人信息', title: '个人信息' }, component: () => import('../views/manager/LabadminPerson') },
@@ -80,8 +82,12 @@ router.beforeEach((to, from, next) => {
   if (to.path === '/') {
     if (user.role === 'STUDENT') {
       next('/front/home');
+    } else if (user.role === 'ADMIN') {
+      next('/adminHome');
+    } else if (user.role === 'LABADMIN') {
+      next('/labadminHome');
     } else {
-      next('/home');
+      next('/studentHome');
     }
     return;
   }

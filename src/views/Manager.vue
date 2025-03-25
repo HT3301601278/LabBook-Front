@@ -34,7 +34,7 @@
       <!--  侧边栏  -->
       <div class="manager-main-left">
         <el-menu :default-openeds="['info', 'user']" router style="border: none" :default-active="$route.path">
-          <el-menu-item index="/home">
+          <el-menu-item :index="homeRoute">
             <i class="el-icon-s-home"></i>
             <span slot="title">系统首页</span>
           </el-menu-item>
@@ -77,6 +77,20 @@ export default {
   data() {
     return {
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
+      isCollapse: false
+    }
+  },
+  computed: {
+    homeRoute() {
+      if (this.user.role === 'ADMIN') {
+        return '/adminHome'
+      } else if (this.user.role === 'LABADMIN') {
+        return '/labadminHome'
+      } else if (this.user.role === 'STUDENT') {
+        return '/studentHome'
+      } else {
+        return '/adminHome'
+      }
     }
   },
   created() {
