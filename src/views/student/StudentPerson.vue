@@ -37,7 +37,7 @@
         <div class="form-section">
           <h3 class="section-title">学院信息</h3>
           <el-form-item label="学院" prop="college">
-            <el-select v-model="user.college" placeholder="请选择学院" @change="handleCollegeChange">
+            <el-select v-model="user.college" placeholder="请选择学院" @change="handleCollegeChange" style="width: 55%">
               <el-option
                 v-for="college in colleges"
                 :key="college"
@@ -47,7 +47,7 @@
             </el-select>
           </el-form-item>
           <el-form-item label="专业" prop="major">
-            <el-select v-model="user.major" placeholder="请选择专业">
+            <el-select v-model="user.major" placeholder="请选择专业" style="width: 55%">
               <el-option
                 v-for="major in majors"
                 :key="major"
@@ -240,28 +240,35 @@ export default {
 }
 
 .card-header {
-  background-color: #409EFF;
-  color: white;
+  background-color: #f0f5ff;
+  color: #1d1d1f;
   padding: 20px 0;
   text-align: center;
   border-radius: 16px;
-  margin-bottom: 20px;
-  background-image: linear-gradient(120deg, #4facfe 0%, #00f2fe 100%);
+  margin-bottom: 30px;
+  background-image: linear-gradient(120deg, #e6f7ff 0%, #bae7ff 100%);
 }
 
 .card-header h2 {
   margin: 0;
-  font-weight: 600;
   font-size: 24px;
+  font-weight: 600;
   letter-spacing: 1px;
+  color: #1d1d1f;
 }
 
 .avatar-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   margin: 20px 0 30px;
-  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.avatar-hint {
+  margin-top: 10px;
+  color: #909399;
+  font-size: 14px;
 }
 
 .avatar-uploader {
@@ -329,34 +336,29 @@ export default {
 .form-section {
   width: 100%;
   padding: 0 40px;
-  margin-bottom: 25px;
-  position: relative;
-  background-color: #fafafa;
-  border-radius: 12px;
-  padding-top: 15px;
-  padding-bottom: 15px;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.02);
+  margin-bottom: 30px;
+  border-bottom: 1px solid #ebeef5;
+  padding-bottom: 20px;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.form-section:last-child {
+  border-bottom: none;
 }
 
 .section-title {
+  color: #6e6e73;
   font-size: 18px;
   font-weight: 600;
-  color: #409EFF;
   margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ebeef5;
-  position: relative;
+  padding-left: 10px;
+  border-left: 4px solid #d2d2d7;
+  border-bottom: none;
 }
 
 .section-title::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 50px;
-  height: 3px;
-  background-image: linear-gradient(120deg, #4facfe 0%, #00f2fe 100%);
-  border-radius: 3px;
+  display: none;
 }
 
 :deep(.el-form-item) {
@@ -370,7 +372,7 @@ export default {
   position: relative;
   overflow: hidden;
   border-radius: 8px;
-  background-color: #f5f7fa;
+  background-color: #fafafa;
   transition: all 0.3s ease;
   width: 200px;
   height: 120px;
@@ -378,8 +380,8 @@ export default {
 
 .student-card-uploader .el-upload:hover {
   border-color: #409EFF;
-  background-color: rgba(64, 158, 255, 0.05);
   transform: scale(1.02);
+  box-shadow: 0 0 10px rgba(64, 158, 255, 0.3);
 }
 
 .upload-placeholder {
@@ -427,18 +429,48 @@ export default {
 }
 
 .button-container .el-button {
-  padding: 12px 30px;
+  padding: 12px 40px;
   font-size: 16px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  background-image: linear-gradient(120deg, #4facfe 0%, #00f2fe 100%);
+  border-radius: 16px;
+  background-image: linear-gradient(120deg, #40a9ff 0%, #1890ff 100%);
   border: none;
-  box-shadow: 0 4px 10px rgba(79, 172, 254, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(24, 144, 255, 0.15);
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  width: 200px;
+}
+
+.button-container .el-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: 0.5s;
 }
 
 .button-container .el-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(79, 172, 254, 0.4);
+  box-shadow: 0 6px 20px rgba(24, 144, 255, 0.25);
+  background-image: linear-gradient(120deg, #69c0ff 0%, #40a9ff 100%);
+}
+
+.button-container .el-button:hover::before {
+  left: 100%;
+}
+
+.button-container .el-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 :deep(.el-input__inner), :deep(.el-select .el-input__inner) {

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import router from "@/router";
+import {Message} from 'element-ui'
 
 // 创建可一个新的axios对象
 const request = axios.create({
@@ -12,7 +13,7 @@ const request = axios.create({
 // 比如统一加token，对请求参数统一加密
 request.interceptors.request.use(config => {
     config.headers['Content-Type'] = 'application/json;charset=utf-8';        // 设置请求头格式
-    
+
     // 登录和注册接口不需要token
     if (!config.url.includes('/login') && !config.url.includes('/register')) {
         let user = JSON.parse(localStorage.getItem("labuser") || '{}')  // 获取缓存的用户信息
@@ -37,7 +38,10 @@ request.interceptors.response.use(
         if (typeof res === 'string') {
             res = res ? JSON.parse(res) : res
         }
-        if (res.code === '401') {
+        // 只在非登录接口时处理token过期
+        if (res.code === '401' && !response.config.url.includes('/login')) {
+            localStorage.removeItem('labuser')  // 清除token
+            Message.error('登录已过期，请重新登录')  // 添加错误提示
             router.push('/login')
         }
         return res;

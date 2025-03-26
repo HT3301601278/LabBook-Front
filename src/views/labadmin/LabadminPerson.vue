@@ -44,7 +44,7 @@
 
 <script>
 export default {
-  name: "AdminPerson",
+  name: "LabadminPerson",
   data() {
     return {
       user: JSON.parse(localStorage.getItem('labuser') || '{}')
@@ -56,7 +56,7 @@ export default {
   methods: {
     update() {
       // 保存当前的用户信息到数据库
-      this.$request.put('/admin/update', this.user).then(res => {
+      this.$request.put('/labadmin/update', this.user).then(res => {
         if (res.code === '200') {
           // 成功更新
           this.$message.success('保存成功')
@@ -107,13 +107,13 @@ export default {
 }
 
 .card-header {
-  background-color: #409EFF;
-  color: white;
+  background-color: #f0f5ff;
+  color: #1d1d1f;
   padding: 20px 0;
   text-align: center;
   border-radius: 16px;
   margin-bottom: 30px;
-  background-image: linear-gradient(120deg, #4facfe 0%, #00f2fe 100%);
+  background-image: linear-gradient(120deg, #e6f7ff 0%, #bae7ff 100%);
 }
 
 .card-header h2 {
@@ -121,6 +121,7 @@ export default {
   font-size: 24px;
   font-weight: 600;
   letter-spacing: 1px;
+  color: #1d1d1f;
 }
 
 .avatar-container {
@@ -152,12 +153,12 @@ export default {
 }
 
 .section-title {
-  color: #409EFF;
+  color: #6e6e73;
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 20px;
   padding-left: 10px;
-  border-left: 4px solid #409EFF;
+  border-left: 4px solid #d2d2d7;
 }
 
 :deep(.el-form-item) {
@@ -214,13 +215,14 @@ export default {
 }
 
 .avatar {
-  width: 120px;
-  height: 120px;
+  width: 100%;
+  height: 100%;
   display: block;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  border: 3px solid white;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .button-container {
@@ -232,20 +234,45 @@ export default {
 .button-container .el-button {
   padding: 12px 40px;
   font-size: 16px;
-  border-radius: 8px;
-  background-image: linear-gradient(120deg, #4facfe 0%, #00f2fe 100%);
+  border-radius: 16px;
+  background-image: linear-gradient(120deg, #40a9ff 0%, #1890ff 100%);
   border: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(79, 172, 254, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(24, 144, 255, 0.15);
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  width: 200px;
+}
+
+.button-container .el-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: 0.5s;
 }
 
 .button-container .el-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(79, 172, 254, 0.4);
+  box-shadow: 0 6px 20px rgba(24, 144, 255, 0.25);
+  background-image: linear-gradient(120deg, #69c0ff 0%, #40a9ff 100%);
+}
+
+.button-container .el-button:hover::before {
+  left: 100%;
 }
 
 .button-container .el-button:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 10px rgba(79, 172, 254, 0.3);
+  transform: translateY(1px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 </style>
