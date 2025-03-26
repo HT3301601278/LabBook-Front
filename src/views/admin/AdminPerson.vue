@@ -17,7 +17,7 @@
             <div class="avatar-hint">点击更换头像</div>
           </el-upload>
         </div>
-        
+
         <div class="form-section">
           <h3 class="section-title">基本信息</h3>
           <el-form-item label="用户名" prop="username">
@@ -33,7 +33,7 @@
             <el-input v-model="user.email" placeholder="邮箱"></el-input>
           </el-form-item>
         </div>
-        
+
         <div class="button-container">
           <el-button type="primary" @click="update">保存信息</el-button>
         </div>
