@@ -460,9 +460,31 @@ export default {
             type: 'shadow'
           }
         },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '15%',
+          containLabel: true
+        },
+        dataZoom: [
+          {
+            type: 'slider',
+            show: true,
+            xAxisIndex: [0],
+            start: 0,
+            end: 100
+          }
+        ],
         xAxis: {
           type: 'category',
-          data: this.labTypes.map(type => type.name)
+          data: this.labTypes.map(type => type.name),
+          axisLabel: {
+            interval: 0,
+            rotate: 45,
+            textStyle: {
+              fontSize: 12
+            }
+          }
         },
         yAxis: {
           type: 'value',
