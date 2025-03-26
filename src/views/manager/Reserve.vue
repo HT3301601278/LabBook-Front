@@ -43,7 +43,7 @@
             <el-button plain type="warning" size="mini" @click="del(scope.row.id)" v-if="user.role === 'STUDENT' && scope.row.status === '待审核'">取消预约</el-button>
             <el-button plain type="success" size="mini" @click="handleAudit(scope.row, '已通过')" v-if="user.role !== 'STUDENT' && scope.row.status === '待审核'">通过</el-button>
             <el-button plain type="danger" size="mini" @click="handleAudit(scope.row, '已拒绝')" v-if="user.role !== 'STUDENT' && scope.row.status === '待审核'">不通过</el-button>
-            <el-button plain type="warning" size="mini" @click="handleComplete(scope.row)" v-if="user.role !== 'STUDENT' && scope.row.completionStatus === '进行中'">结束使用</el-button>
+            <el-button plain type="warning" size="mini" @click="handleComplete(scope.row)" v-if="(user.role !== 'STUDENT' || (user.role === 'STUDENT' && scope.row.studentId === user.id)) && scope.row.completionStatus === '进行中'">结束使用</el-button>
           </template>
         </el-table-column>
       </el-table>
