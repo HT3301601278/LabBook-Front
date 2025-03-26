@@ -215,12 +215,12 @@ export default {
       labTypes: [],
       labStatus: {},
       userStats: {},
-      // 模拟数据 - 实际应用中应通过API获取
+      // 系统统计数据
       stats: {
-        totalLabs: 30,
-        totalUsers: 120,
-        totalReserves: 450,
-        totalFixes: 25
+        totalLabs: 0,
+        totalUsers: 0,
+        totalReserves: 0,
+        totalFixes: 0
       },
       recentUsers: [
         { id: 1, name: '张三', role: 'STUDENT', avatar: '', createTime: '2023-06-10' },
@@ -270,9 +270,40 @@ export default {
     this.loadUserStats()
     this.loadPendingReserves()
     this.loadPendingFixes()
+    this.loadSystemStats()
     this.initCharts()
   },
   methods: {
+    loadSystemStats() {
+      // 获取实验室总数
+      this.$request.get('/lab/selectAll').then(res => {
+        if (res.code === '200' && res.data && res.data.stats) {
+          this.stats.totalLabs = res.data.stats.total || 0
+        }
+      })
+      
+      // 获取用户总数
+      this.$request.get('/userStats').then(res => {
+        if (res.code === '200' && res.data) {
+          this.stats.totalUsers = res.data.totalUsers || 0
+        }
+      })
+      
+      // 获取预约总数
+      this.$request.get('/reserve/selectAll').then(res => {
+        if (res.code === '200' && res.data) {
+          this.stats.totalReserves = res.data.total || 0
+        }
+      })
+      
+      // 获取报修总数
+      this.$request.get('/fix/selectAll').then(res => {
+        if (res.code === '200' && res.data) {
+          this.stats.totalFixes = res.data.total || 0
+        }
+      })
+    },
+    
     loadNotices() {
       this.$request.get('/notice/selectAll').then(res => {
         this.notices = res.data || []
