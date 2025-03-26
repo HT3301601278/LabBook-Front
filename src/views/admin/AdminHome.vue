@@ -287,7 +287,7 @@ export default {
     loadLabStatus() {
       this.$request.get('/lab/selectAll').then(res => {
         if (res.code === '200' && res.data) {
-          this.labStatus = res.data.statusStats || {}
+          this.labStatus = res.data.stats || {}
           this.updateLabPieChart()
         }
       })
@@ -437,9 +437,9 @@ export default {
               value,
               itemStyle: {
                 color: name === '空闲中' ? '#67C23A' : 
-                       name === '使用中' ? '#E6A23C' : '#F56C6C'
+                       name === '使用中' ? '#E6A23C' : '#909399'
               }
-            }))
+            })).filter(item => item.name !== 'total')
           }
         ]
       };
