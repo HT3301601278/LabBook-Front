@@ -38,7 +38,8 @@ request.interceptors.response.use(
         if (typeof res === 'string') {
             res = res ? JSON.parse(res) : res
         }
-        if (res.code === '401') {
+        // 只在非登录接口时处理token过期
+        if (res.code === '401' && !response.config.url.includes('/login')) {
             localStorage.removeItem('labuser')  // 清除token
             Message.error('登录已过期，请重新登录')  // 添加错误提示
             router.push('/login')
