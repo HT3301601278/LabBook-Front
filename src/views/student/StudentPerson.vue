@@ -37,7 +37,7 @@
         <div class="form-section">
           <h3 class="section-title">学院信息</h3>
           <el-form-item label="学院" prop="college">
-            <el-select v-model="user.college" placeholder="请选择学院" @change="handleCollegeChange">
+            <el-select v-model="user.college" placeholder="请选择学院" @change="handleCollegeChange" style="width: 55%">
               <el-option
                 v-for="college in colleges"
                 :key="college"
@@ -47,7 +47,7 @@
             </el-select>
           </el-form-item>
           <el-form-item label="专业" prop="major">
-            <el-select v-model="user.major" placeholder="请选择专业">
+            <el-select v-model="user.major" placeholder="请选择专业" style="width: 55%">
               <el-option
                 v-for="major in majors"
                 :key="major"
