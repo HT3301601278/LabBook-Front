@@ -166,20 +166,131 @@ export default {
   transform: translate(-50%, -50%);
   max-height: 90%;
   max-width: 90%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+  transition: all 0.3s ease;
+}
+
+::v-deep .el-dialog:hover {
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+  transform: translate(-50%, -51%);
+}
+
+::v-deep .el-dialog__header {
+  padding: 24px 30px;
+  border-bottom: 1px solid rgba(235, 238, 245, 0.6);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+::v-deep .el-dialog__title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
+  position: relative;
+  padding-left: 16px;
+}
+
+::v-deep .el-dialog__title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 18px;
+  background: linear-gradient(135deg, #409EFF 0%, #3a8ee6 100%);
+  border-radius: 2px;
 }
 
 ::v-deep .el-dialog__body {
   flex: 1;
   overflow: auto;
-}
-
-::v-deep .el-dialog__header {
-  padding: 20px;
-  border-bottom: 1px solid #ebeef5;
+  padding: 30px;
 }
 
 ::v-deep .el-dialog__footer {
-  padding: 20px;
-  border-top: 1px solid #ebeef5;
+  padding: 20px 30px;
+  border-top: 1px solid rgba(235, 238, 245, 0.6);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+::v-deep .el-form-item {
+  margin-bottom: 24px;
+}
+
+::v-deep .el-form-item__label {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+::v-deep .el-input__inner,
+::v-deep .el-date-editor.el-input {
+  border-radius: 8px;
+  border: 1px solid #dcdfe6;
+  transition: all 0.3s ease;
+}
+
+::v-deep .el-input__inner:hover,
+::v-deep .el-date-editor.el-input:hover {
+  border-color: #409EFF;
+}
+
+::v-deep .el-input__inner:focus,
+::v-deep .el-date-editor.el-input.is-focus .el-input__inner {
+  border-color: #409EFF;
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
+}
+
+.lab-info {
+  background: rgba(64, 158, 255, 0.05);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(64, 158, 255, 0.1);
+}
+
+.lab-info div {
+  font-size: 14px;
+  color: #606266;
+  line-height: 1.8;
+}
+
+.dialog-footer {
+  text-align: right;
+}
+
+::v-deep .el-button {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+::v-deep .el-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+::v-deep .el-button--primary {
+  background: linear-gradient(135deg, #409EFF 0%, #3a8ee6 100%);
+  border: none;
+}
+
+::v-deep .el-button--primary:hover {
+  background: linear-gradient(135deg, #66b1ff 0%, #409EFF 100%);
+}
+
+::v-deep .el-button--default {
+  border: 1px solid #dcdfe6;
+  color: #606266;
+}
+
+::v-deep .el-button--default:hover {
+  color: #409EFF;
+  border-color: #409EFF;
+  background: rgba(64, 158, 255, 0.05);
 }
 </style>
