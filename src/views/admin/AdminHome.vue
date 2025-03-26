@@ -62,13 +62,13 @@
           <div class="glass-card">
             <div class="card-title">最近注册用户</div>
             <div class="user-list">
-              <div v-for="user in recentUsers" :key="user.id" class="user-item">
+              <div v-for="user in recentUsers" :key="user.name" class="user-item">
                 <div class="user-avatar">
-                  <el-avatar :src="user.avatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'"></el-avatar>
+                  <el-avatar :src="'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'"></el-avatar>
                 </div>
                 <div class="user-info">
                   <div class="user-name">{{ user.name }}</div>
-                  <div class="user-role">{{ getRoleName(user.role) }}</div>
+                  <div class="user-role">{{ user.role }}</div>
                 </div>
                 <div class="user-time">{{ user.createTime }}</div>
               </div>
@@ -222,12 +222,7 @@ export default {
         totalReserves: 0,
         totalFixes: 0
       },
-      recentUsers: [
-        { id: 1, name: '张三', role: 'STUDENT', avatar: '', createTime: '2023-06-10' },
-        { id: 2, name: '李四', role: 'LABADMIN', avatar: '', createTime: '2023-06-09' },
-        { id: 3, name: '王五', role: 'STUDENT', avatar: '', createTime: '2023-06-08' },
-        { id: 4, name: '赵六', role: 'STUDENT', avatar: '', createTime: '2023-06-07' }
-      ],
+      recentUsers: [],
       pendingReserves: [],
       pendingFixes: [],
       form: {
@@ -327,6 +322,8 @@ export default {
       this.$request.get('/userStats').then(res => {
         if (res.code === '200' && res.data) {
           this.userStats = res.data
+          this.stats.totalUsers = res.data.totalUsers || 0
+          this.recentUsers = res.data.recentUsers || []
           this.updateUserPieChart()
         }
       })
