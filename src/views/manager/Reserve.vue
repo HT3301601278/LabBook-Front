@@ -37,13 +37,24 @@
             <el-tag :type="getCompletionStatusType(scope.row.completionStatus)" effect="plain">{{ scope.row.completionStatus }}</el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="fixStatus" label="报修状态" min-width="10%">
+          <template v-slot="scope">
+            <el-tag v-if="scope.row.fixStatus === 2" type="danger" effect="plain">已报修</el-tag>
+            <el-tag v-else-if="scope.row.fixStatus === 1" type="success" effect="plain">无需报修</el-tag>
+            <el-tag v-else-if="scope.row.completionStatus === '已完成'" type="info" effect="plain">未处理</el-tag>
+          </template>
+        </el-table-column>
 
-        <el-table-column label="操作" width="180" align="center">
+        <el-table-column label="操作" width="280" align="center">
           <template v-slot="scope">
             <el-button plain type="warning" size="mini" @click="del(scope.row.id)" v-if="user.role === 'STUDENT' && scope.row.status === '待审核'">取消预约</el-button>
             <el-button plain type="success" size="mini" @click="handleAudit(scope.row, '已通过')" v-if="user.role !== 'STUDENT' && scope.row.status === '待审核'">通过</el-button>
             <el-button plain type="danger" size="mini" @click="handleAudit(scope.row, '已拒绝')" v-if="user.role !== 'STUDENT' && scope.row.status === '待审核'">不通过</el-button>
             <el-button plain type="warning" size="mini" @click="handleComplete(scope.row)" v-if="(user.role !== 'STUDENT' || (user.role === 'STUDENT' && scope.row.studentId === user.id)) && scope.row.completionStatus === '进行中'">结束使用</el-button>
+            <template v-if="user.role === 'STUDENT' && scope.row.completionStatus === '已完成' && scope.row.fixStatus === null">
+              <el-button plain type="danger" size="mini" @click="handleFix(scope.row, true)">需要报修</el-button>
+              <el-button plain type="success" size="mini" @click="handleFix(scope.row, false)">无需报修</el-button>
+            </template>
           </template>
         </el-table-column>
       </el-table>
@@ -197,7 +208,7 @@ export default {
     submit() {
       // 提交报修信息
       let data = {
-        name: this.form.name,
+        description: this.form.name,
         studentId: this.user.id,
         labId: this.form.labId,
         labadminId: this.form.labadminId,
@@ -205,8 +216,19 @@ export default {
       }
       this.$request.post('/fix/add', data).then(res => {
         if (res.code === '200') {
-          this.$message.success('操作成功')
-          this.fromVisible = false
+          // 更新预约记录的fixStatus
+          this.$request.put('/reserve/update', {
+            id: this.form.id,
+            fixStatus: 2
+          }).then(updateRes => {
+            if (updateRes.code === '200') {
+              this.$message.success('操作成功')
+              this.fromVisible = false
+              this.load(this.pageNum)
+            } else {
+              this.$message.error(updateRes.msg)
+            }
+          })
         } else {
           this.$message.error(res.msg)
         }
@@ -225,6 +247,29 @@ export default {
         }
       })
     },
+    handleFix(row, needFix) {
+      if (needFix) {
+        this.form = {
+          name: '',
+          labId: row.labId,
+          labadminId: row.labadminId,
+          id: row.id  // 添加预约记录ID
+        }
+        this.fromVisible = true
+      } else {
+        this.$request.put('/reserve/update', {
+          id: row.id,
+          fixStatus: 1
+        }).then(res => {
+          if (res.code === '200') {
+            this.$message.success('操作成功')
+            this.load(this.pageNum)
+          } else {
+            this.$message.error(res.msg)
+          }
+        })
+      }
+    }
   }
 }
 </script>
