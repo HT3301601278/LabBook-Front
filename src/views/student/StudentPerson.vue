@@ -245,24 +245,30 @@ export default {
   padding: 20px 0;
   text-align: center;
   border-radius: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   background-image: linear-gradient(120deg, #e6f7ff 0%, #bae7ff 100%);
 }
 
 .card-header h2 {
   margin: 0;
-  font-weight: 600;
   font-size: 24px;
+  font-weight: 600;
   letter-spacing: 1px;
   color: #1d1d1f;
 }
 
 .avatar-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   margin: 20px 0 30px;
-  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.avatar-hint {
+  margin-top: 10px;
+  color: #909399;
+  font-size: 14px;
 }
 
 .avatar-uploader {
@@ -330,34 +336,29 @@ export default {
 .form-section {
   width: 100%;
   padding: 0 40px;
-  margin-bottom: 25px;
-  position: relative;
-  background-color: #fafafa;
-  border-radius: 12px;
-  padding-top: 15px;
-  padding-bottom: 15px;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.02);
+  margin-bottom: 30px;
+  border-bottom: 1px solid #ebeef5;
+  padding-bottom: 20px;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.form-section:last-child {
+  border-bottom: none;
 }
 
 .section-title {
+  color: #6e6e73;
   font-size: 18px;
   font-weight: 600;
-  color: #409EFF;
   margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ebeef5;
-  position: relative;
+  padding-left: 10px;
+  border-left: 4px solid #d2d2d7;
+  border-bottom: none;
 }
 
 .section-title::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 50px;
-  height: 3px;
-  background-image: linear-gradient(120deg, #4facfe 0%, #00f2fe 100%);
-  border-radius: 3px;
+  display: none;
 }
 
 :deep(.el-form-item) {
@@ -371,7 +372,7 @@ export default {
   position: relative;
   overflow: hidden;
   border-radius: 8px;
-  background-color: #f5f7fa;
+  background-color: #fafafa;
   transition: all 0.3s ease;
   width: 200px;
   height: 120px;
@@ -379,8 +380,8 @@ export default {
 
 .student-card-uploader .el-upload:hover {
   border-color: #409EFF;
-  background-color: rgba(64, 158, 255, 0.05);
   transform: scale(1.02);
+  box-shadow: 0 0 10px rgba(64, 158, 255, 0.3);
 }
 
 .upload-placeholder {
