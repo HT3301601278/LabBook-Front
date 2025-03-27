@@ -424,7 +424,10 @@ export default {
       return 'el-icon-message'
     },
     goToReserve(labId) {
-      this.$router.push('/labStudent')
+      this.$router.push({
+        path: '/labStudent',
+        query: { labId: labId }
+      })
       this.$message({
         message: '请在实验室列表中选择实验室进行预约',
         type: 'info'
