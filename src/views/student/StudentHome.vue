@@ -216,12 +216,7 @@ export default {
         maintenance: 0
       },
       labTypes: [],
-      activeTypes: [],
-      notifications: [
-        { id: 201, type: 'success', title: '预约审核通过', message: '您预约的计算机网络实验室(6月10日 09:00-11:00)已通过审核', time: '2023-06-09 14:30' },
-        { id: 202, type: 'warning', title: '预约即将开始', message: '您预约的计算机网络实验室将在30分钟后开始', time: '2023-06-10 08:30' },
-        { id: 203, type: 'error', title: '预约被拒绝', message: '您预约的数据库实验室(6月9日 10:00-12:00)被拒绝，原因：时段已被占用', time: '2023-06-08 16:45' }
-      ]
+      activeTypes: []
     }
   },
   mounted() {
@@ -408,9 +403,10 @@ export default {
       return 'el-icon-message'
     },
     goToReserve(labId) {
-      // 跳转到预约页面，实际应用中应该跳转到相应的预约表单页面
-      this.$message.success('即将跳转到预约页面')
-      // this.$router.push(`/reserve/${labId}`)
+      this.$router.push({
+        name: 'reserve',
+        params: { id: labId }
+      })
     }
   }
 }
