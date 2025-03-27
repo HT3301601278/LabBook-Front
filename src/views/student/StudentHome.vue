@@ -197,7 +197,6 @@
 </template>
 
 <script>
-
 export default {
   data() {
     return {
@@ -350,7 +349,10 @@ export default {
                     startTime: labDetail.startTime || '未设置',
                     endTime: labDetail.endTime || '未设置',
                     status: labDetail.usageStatus === '空闲中' ? '空闲' : 
-                           labDetail.usageStatus === '使用中' ? '使用中' : '已预约'
+                           labDetail.usageStatus === '使用中' ? '使用中' : '已预约',
+                    labadminId: labDetail.labadminId,
+                    maxReservationHours: labDetail.maxReservationHours,
+                    descr: labDetail.descr
                   }
                 })
             }
@@ -422,9 +424,10 @@ export default {
       return 'el-icon-message'
     },
     goToReserve(labId) {
-      this.$router.push({
-        name: 'reserve',
-        params: { id: labId }
+      this.$router.push('/labStudent')
+      this.$message({
+        message: '请在实验室列表中选择实验室进行预约',
+        type: 'info'
       })
     }
   }
