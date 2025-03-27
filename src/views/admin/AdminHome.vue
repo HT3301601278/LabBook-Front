@@ -560,30 +560,10 @@ export default {
       }).catch(() => {})
     },
     handleFix(id) {
-      // 获取报修详情
-      this.$request.get('/fix/searchPage', {
-        params: {
-          pageNum: 1,
-          pageSize: 1000,
-          id: id
-        }
-      }).then(res => {
-        if (res.code === '200' && res.data && res.data.list && res.data.list.length > 0) {
-          const fixData = res.data.list[0]
-          this.form = {
-            labId: fixData.labId,
-            fixId: fixData.id,
-            inspectorName: '',
-            phone: '',
-            content: '',
-            department: '',
-            description: '',
-            fixTime: null
-          }
-          this.fromVisible = true
-        } else {
-          this.$message.error('获取报修详情失败')
-        }
+      // 跳转到报修记录页面
+      this.$router.push({
+        path: '/fix',
+        query: { id: id }
       })
     },
     submit() {
