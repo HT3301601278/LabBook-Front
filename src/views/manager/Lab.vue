@@ -349,8 +349,14 @@ export default {
           name: this.name,
         }
       }).then(res => {
-        this.tableData = res.data?.list
-        this.total = res.data?.total
+        if (res.code === '200' && res.data && res.data.page) {
+          this.tableData = res.data.page.list || []
+          this.total = res.data.page.total || 0
+        } else {
+          this.$message.error(res.msg || '获取数据失败')
+        }
+      }).catch(err => {
+        this.$message.error('获取数据失败：' + err.message)
       })
     },
     reset() {

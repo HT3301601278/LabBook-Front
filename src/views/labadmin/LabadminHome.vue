@@ -39,8 +39,8 @@
                 <div class="stat-label">待审核预约</div>
               </div>
               <div class="stat-item">
-                <div class="stat-value">{{ stats.todayReserves }}</div>
-                <div class="stat-label">今日预约</div>
+                <div class="stat-value">{{ stats.totalReserves }}</div>
+                <div class="stat-label">预约总数</div>
               </div>
               <div class="stat-item">
                 <div class="stat-value">{{ stats.pendingFixes }}</div>
@@ -103,25 +103,29 @@
             </div>
           </div>
           <div class="glass-card">
-            <div class="card-title">今日预约</div>
-            <div v-if="todayReserves.length > 0" class="timeline-container">
-              <el-timeline>
-                <el-timeline-item 
-                  v-for="reserve in todayReserves" 
-                  :key="reserve.id"
-                  :timestamp="reserve.startTime + ' - ' + reserve.endTime"
-                  :type="getTimelineType(reserve.status)">
-                  <div class="timeline-content">
-                    <div class="timeline-title">{{ reserve.labName }}</div>
-                    <div class="timeline-info">申请人：{{ reserve.userName }}</div>
-                    <div class="timeline-info">状态：{{ reserve.status }}</div>
+            <div class="card-title">最近预约记录</div>
+            <div v-if="allReserves.length > 0" class="reserve-list">
+              <div v-for="reserve in allReserves" :key="reserve.id" class="reserve-item">
+                <div class="reserve-info">
+                  <div class="reserve-lab">{{ reserve.labName }}</div>
+                  <div class="reserve-user">申请人：{{ reserve.studentName }}</div>
+                  <div class="reserve-time">
+                    预约时间：{{ formatDateTime(reserve.reserveStartTime) }} - {{ formatTime(reserve.reserveEndTime) }}
                   </div>
-                </el-timeline-item>
-              </el-timeline>
+                  <div class="reserve-details">
+                    <span class="reserve-detail-item">状态：{{ reserve.status }}</span>
+                    <span class="reserve-detail-item">进度：{{ reserve.completionStatus }}</span>
+                    <span class="reserve-detail-item">创建时间：{{ formatDateTime(reserve.createTime) }}</span>
+                  </div>
+                </div>
+                <div class="reserve-status" :class="getReserveStatusClass(reserve.status)">
+                  {{ reserve.status }}
+                </div>
+              </div>
             </div>
             <div v-else class="empty-data">
               <i class="el-icon-date"></i>
-              <span>今日暂无预约</span>
+              <span>暂无预约记录</span>
             </div>
           </div>
         </div>
@@ -158,10 +162,10 @@
               <div v-for="check in recentChecks" :key="check.id" class="check-item">
                 <div class="check-info">
                   <div class="check-lab">{{ check.labName }}</div>
+                  <div class="check-inspector">检修人：{{ check.inspectorName }}</div>
                   <div class="check-desc">{{ check.description }}</div>
-                  <div class="check-time">{{ check.createTime }}</div>
+                  <div class="check-time">检修时间：{{ check.createTime }}</div>
                 </div>
-                <div class="check-status">{{ check.status }}</div>
               </div>
             </div>
             <div v-else class="empty-data">
@@ -206,41 +210,25 @@ export default {
     return {
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
       notices: [],
-      // 模拟数据 - 实际应用中应通过API获取
       stats: {
-        managedLabs: 5,
-        pendingReserves: 3,
-        todayReserves: 8,
-        pendingFixes: 2
+        managedLabs: 0,
+        pendingReserves: 0,
+        totalReserves: 0,
+        pendingFixes: 0
       },
-      managedLabs: [
-        { id: 1, name: '化学分析实验室', typeName: '化学类', status: '空闲' },
-        { id: 3, name: '计算机网络实验室', typeName: '计算机类', status: '空闲' },
-        { id: 5, name: '软件工程实验室', typeName: '计算机类', status: '空闲' },
-        { id: 7, name: '有机化学实验室', typeName: '化学类', status: '使用中' },
-        { id: 10, name: '数字信号处理实验室', typeName: '电子类', status: '维护中' }
-      ],
-      pendingReserves: [
-        { id: 101, labName: '计算机网络实验室', userName: '张三', date: '2023-06-12', startTime: '09:00', endTime: '11:00' },
-        { id: 102, labName: '软件工程实验室', userName: '李四', date: '2023-06-12', startTime: '14:00', endTime: '16:00' },
-        { id: 103, labName: '化学分析实验室', userName: '王五', date: '2023-06-13', startTime: '10:00', endTime: '12:00' }
-      ],
-      todayReserves: [
-        { id: 101, labName: '计算机网络实验室', userName: '张三', startTime: '09:00', endTime: '11:00', status: '已通过' },
-        { id: 102, labName: '软件工程实验室', userName: '李四', startTime: '14:00', endTime: '16:00', status: '待审核' }
-      ],
-      pendingFixes: [
-        { id: 201, labName: '数字信号处理实验室', userName: '王五', description: '示波器无法正常显示', createTime: '2023-06-10' },
-        { id: 202, labName: '计算机网络实验室', userName: '赵六', description: '路由器故障', createTime: '2023-06-09' }
-      ],
-      recentChecks: [
-        { id: 301, labName: '有机化学实验室', description: '更换损坏的烧杯和试管', createTime: '2023-06-08', status: '已完成' },
-        { id: 302, labName: '软件工程实验室', description: '更新电脑操作系统', createTime: '2023-06-05', status: '已完成' }
-      ]
+      managedLabs: [],
+      pendingReserves: [],
+      allReserves: [],
+      pendingFixes: [],
+      recentChecks: []
     }
   },
   mounted() {
     this.loadNotices()
+    this.loadManagedLabs()
+    this.loadPendingReserves()
+    this.loadPendingFixes()
+    this.loadAllReserves()
     this.initLabPieChart()
   },
   methods: {
@@ -249,54 +237,177 @@ export default {
         this.notices = res.data || []
       })
     },
-    initLabPieChart() {
-      const chartDom = document.getElementById('labPie');
-      const myChart = echarts.init(chartDom);
-      const option = {
-        tooltip: {
-          trigger: 'item',
-          formatter: '{a} <br/>{b}: {c} ({d}%)'
-        },
-        legend: {
-          orient: 'vertical',
-          left: 10,
-          data: ['空闲', '使用中', '维护中']
-        },
-        series: [
-          {
-            name: '实验室状态',
-            type: 'pie',
-            radius: ['50%', '70%'],
-            avoidLabelOverlap: false,
-            label: {
-              show: false,
-              position: 'center'
+    loadManagedLabs() {
+      this.$request.get('/lab/selectPage', {
+        params: {
+          pageNum: 1,
+          pageSize: 1000
+        }
+      }).then(res => {
+        if (res.code === '200' && res.data) {
+          // 更新实验室列表
+          this.managedLabs = res.data.page.list.map(lab => ({
+            id: lab.id,
+            name: lab.labName,
+            typeName: lab.typeName,
+            status: lab.usageStatus
+          }))
+          
+          // 更新实验室总数和状态统计
+          this.stats.managedLabs = res.data.stats.total
+          
+          // 更新饼图数据
+          const statusCount = {
+            '空闲中': res.data.stats['空闲中'] || 0,
+            '使用中': res.data.stats['使用中'] || 0
+          }
+          
+          // 初始化饼图
+          const chartDom = document.getElementById('labPie')
+          if (!chartDom) return
+          
+          const myChart = echarts.init(chartDom)
+          const option = {
+            tooltip: {
+              trigger: 'item',
+              formatter: '{a} <br/>{b}: {c} ({d}%)'
             },
-            emphasis: {
-              label: {
-                show: true,
-                fontSize: '18',
-                fontWeight: 'bold'
+            legend: {
+              orient: 'vertical',
+              left: 10,
+              data: ['空闲中', '使用中']
+            },
+            series: [
+              {
+                name: '实验室状态',
+                type: 'pie',
+                radius: ['50%', '70%'],
+                avoidLabelOverlap: false,
+                label: {
+                  show: false,
+                  position: 'center'
+                },
+                emphasis: {
+                  label: {
+                    show: true,
+                    fontSize: '18',
+                    fontWeight: 'bold'
+                  }
+                },
+                labelLine: {
+                  show: false
+                },
+                data: [
+                  { value: statusCount['空闲中'], name: '空闲中', itemStyle: { color: '#67C23A' } },
+                  { value: statusCount['使用中'], name: '使用中', itemStyle: { color: '#E6A23C' } }
+                ]
               }
-            },
-            labelLine: {
-              show: false
-            },
-            data: [
-              { value: 3, name: '空闲', itemStyle: { color: '#67C23A' } },
-              { value: 1, name: '使用中', itemStyle: { color: '#E6A23C' } },
-              { value: 1, name: '维护中', itemStyle: { color: '#F56C6C' } }
             ]
           }
-        ]
-      };
-      myChart.setOption(option);
+          myChart.setOption(option)
+        }
+      })
+    },
+    loadPendingReserves() {
+      // 获取所有预约数据
+      this.$request.get('/reserve/selectPage', {
+        params: {
+          pageNum: 1,
+          pageSize: 1000
+        }
+      }).then(res => {
+        if (res.code === '200' && res.data) {
+          // 更新预约总数
+          this.stats.totalReserves = res.data.total
+
+          // 过滤待审核预约
+          this.pendingReserves = res.data.list
+            .filter(reserve => reserve.status === '待审核')
+            .map(reserve => ({
+              id: reserve.id,
+              labName: reserve.labName,
+              userName: reserve.studentName,
+              date: reserve.reserveStartTime.split(' ')[0],
+              startTime: reserve.reserveStartTime.split(' ')[1],
+              endTime: reserve.reserveEndTime.split(' ')[1]
+            }))
+          this.stats.pendingReserves = this.pendingReserves.length
+        }
+      })
+    },
+    loadPendingFixes() {
+      // 获取检修记录
+      this.$request.get('/checks/selectPage', {
+        params: {
+          pageNum: 1,
+          pageSize: 1000
+        }
+      }).then(res => {
+        if (res.code === '200' && res.data) {
+          // 处理待处理报修数据
+          this.pendingFixes = res.data.list.map(fix => ({
+            id: fix.id,
+            labName: fix.labName,
+            userName: fix.inspectorName,
+            description: fix.content,
+            createTime: fix.inspectionTime
+          }))
+          this.stats.pendingFixes = this.pendingFixes.length
+
+          // 处理最近检修记录，按时间降序排序并只取前3条
+          this.recentChecks = res.data.list
+            .sort((a, b) => new Date(b.inspectionTime) - new Date(a.inspectionTime))
+            .slice(0, 3)
+            .map(check => ({
+              id: check.id,
+              labName: check.labName,
+              inspectorName: check.inspectorName,
+              description: check.content,
+              createTime: check.inspectionTime
+            }))
+        }
+      })
+    },
+    loadAllReserves() {
+      this.$request.get('/reserve/selectPage', {
+        params: {
+          pageNum: 1,
+          pageSize: 1000
+        }
+      }).then(res => {
+        if (res.code === '200' && res.data) {
+          // 按创建时间降序排序，并只取前3条记录
+          this.allReserves = res.data.list
+            .sort((a, b) => new Date(b.createTime) - new Date(a.createTime))
+            .slice(0, 3)
+        }
+      })
+    },
+    formatDateTime(datetime) {
+      if (!datetime) return ''
+      const [date, time] = datetime.split(' ')
+      return `${date} ${time}`
+    },
+    formatTime(datetime) {
+      if (!datetime) return ''
+      const [, time] = datetime.split(' ')
+      return time
+    },
+    getReserveStatusClass(status) {
+      switch (status) {
+        case '已通过':
+          return 'status-success'
+        case '待审核':
+          return 'status-pending'
+        case '已拒绝':
+          return 'status-rejected'
+        default:
+          return ''
+      }
     },
     getStatusClass(status) {
-      if (status === '空闲') return 'status-free'
+      if (status === '空闲中') return 'status-free'
       if (status === '使用中') return 'status-using'
-      if (status === '维护中') return 'status-maintenance'
-      return ''
     },
     getTimelineType(status) {
       if (status === '已通过') return 'success'
@@ -305,14 +416,29 @@ export default {
       return 'info'
     },
     viewLabDetail(labId) {
-      // 查看实验室详情，实际应用中应跳转到实验室详情页
-      this.$message.success('查看实验室详情：' + labId)
-      // this.$router.push(`/lab/detail/${labId}`)
+      // 跳转到实验室信息页面
+      this.$router.push({
+        path: '/lab',
+        query: { id: labId }
+      })
     },
     handleReserve(id, action) {
-      // 处理预约审核，实际应用中应调用API
-      this.$message.success(`已${action === 'approve' ? '通过' : '拒绝'}预约申请`)
-      this.pendingReserves = this.pendingReserves.filter(item => item.id !== id)
+      // 调用后端API处理预约审核
+      this.$request.put('/reserve/update', {
+        id: id,
+        status: action === 'approve' ? '已通过' : '已拒绝'
+      }).then(res => {
+        if (res.code === '200') {
+          this.$message.success(`已${action === 'approve' ? '通过' : '拒绝'}预约申请`)
+          // 重新加载预约数据
+          this.loadPendingReserves()
+          this.loadAllReserves()
+        } else {
+          this.$message.error('操作失败：' + res.msg)
+        }
+      }).catch(err => {
+        this.$message.error('操作失败：' + err.message)
+      })
     },
     handleFix(id) {
       // 跳转到报修记录页面
@@ -487,6 +613,16 @@ export default {
   background-color: rgba(230, 162, 60, 0.1);
 }
 
+.status-success {
+  color: #67C23A;
+  background-color: rgba(103, 194, 58, 0.1);
+}
+
+.status-rejected {
+  color: #F56C6C;
+  background-color: rgba(245, 108, 108, 0.1);
+}
+
 .timeline-container {
   padding: 10px 0;
 }
@@ -539,6 +675,16 @@ export default {
 .empty-data i {
   font-size: 30px;
   margin-bottom: 10px;
+}
+
+.reserve-details {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #909399;
+}
+
+.reserve-detail-item {
+  margin-right: 15px;
 }
 
 /* 响应式调整 */
