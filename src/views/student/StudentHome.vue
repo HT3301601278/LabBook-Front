@@ -428,10 +428,6 @@ export default {
         path: '/studentLab',
         query: { labId: labId }
       })
-      this.$message({
-        message: '请在实验室列表中选择实验室进行预约',
-        type: 'info'
-      })
     }
   }
 }

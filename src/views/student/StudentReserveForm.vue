@@ -3,7 +3,7 @@
     <el-dialog title="预约实验室" :visible.sync="visible" width="40%" :close-on-click-modal="false" destroy-on-close :append-to-body="true">
       <el-form label-width="100px" style="padding-right: 50px" :model="form" :rules="rules" ref="formRef">
         <el-form-item label="实验室信息" v-if="form.labName">
-          <div>{{ form.labName }} - {{ form.descr }}</div>
+          <div>{{ form.labName }} - {{ form.location }}</div>
         </el-form-item>
         <el-form-item prop="reserveStartTime" label="开始时间">
           <el-date-picker
@@ -80,7 +80,7 @@ export default {
         reserveStartTime: '',
         reserveEndTime: '',
         labName: '',
-        descr: ''
+        location: ''
       },
       rules: {
         reserveStartTime: [
@@ -114,8 +114,8 @@ export default {
           this.form.labId = val.id;
           this.form.labadminId = val.labadminId;
           this.form.studentId = this.user.id;
-          this.form.labName = val.name;
-          this.form.descr = val.descr;
+          this.form.labName = val.labName;
+          this.form.location = val.location;
           this.maxHours = val.maxReservationHours || 4;
         }
       },
