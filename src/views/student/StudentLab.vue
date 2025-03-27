@@ -68,7 +68,7 @@
                 </div>
                 <div class="reserve-button">
                   <el-button type="primary" size="mini" @click="openReserveForm(item)"
-                    :disabled="item.usageStatus === '使用中' || item.usageStatus === '已预约'"
+                    :disabled="item.usageStatus === '已预约'"
                     :type="item.usageStatus === '已预约' ? 'info' : 'primary'">
                     {{ item.usageStatus === '已预约' ? '已预约' : '预约' }}
                   </el-button>
