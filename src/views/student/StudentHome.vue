@@ -118,11 +118,18 @@
                     <i class="el-icon-time"></i>
                     {{ lab.startTime }} - {{ lab.endTime }}
                   </div>
+                  <div class="lab-location">
+                    <i class="el-icon-location"></i>
+                    {{ lab.location }}
+                  </div>
                 </div>
-                <div class="lab-status" :class="getStatusClass(lab.status)">
-                  {{ lab.status }}
-                </div>
-                <el-button size="mini" type="primary" @click="goToReserve(lab.id)" :disabled="lab.status !== '空闲'">预约</el-button>
+                <el-button 
+                  size="mini" 
+                  type="primary" 
+                  @click="openReserveForm(lab)" 
+                  :disabled="hasActiveReservationForLab(lab.id)">
+                  {{ hasActiveReservationForLab(lab.id) ? '已预约' : '预约' }}
+                </el-button>
               </div>
             </div>
           </div>
@@ -145,10 +152,6 @@
             <div class="status-item">
               <div class="status-value status-using">{{ labStats.using }}</div>
               <div class="status-label">使用中</div>
-            </div>
-            <div class="status-item">
-              <div class="status-value status-maintenance">{{ labStats.maintenance }}</div>
-              <div class="status-label">已预约</div>
             </div>
           </div>
           <el-collapse v-model="activeTypes">
@@ -193,11 +196,19 @@
         </div>
       </div>
     </div>
+
+    <!-- 预约表单弹窗 -->
+    <reserve-form :visible.sync="reserveFormVisible" :lab-info="currentLabInfo" @success="loadReserveData"></reserve-form>
   </div>
 </template>
 
 <script>
+import StudentReserveForm from './StudentReserveForm.vue'
+
 export default {
+  components: {
+    ReserveForm: StudentReserveForm
+  },
   data() {
     return {
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
@@ -218,7 +229,10 @@ export default {
         maintenance: 0
       },
       labTypes: [],
-      activeTypes: []
+      activeTypes: [],
+      reserveFormVisible: false,
+      currentLabInfo: null,
+      activeReservations: new Map()
     }
   },
   mounted() {
@@ -291,6 +305,18 @@ export default {
       }).then(res => {
         if (res.code === '200' && res.data) {
           const allReserves = res.data.list
+          
+          // 更新每个实验室的活跃预约状态
+          this.activeReservations.clear();
+          allReserves.forEach(reserve => {
+            if (reserve.studentId === this.user.id && (
+              reserve.status === '待审核' || 
+              (reserve.status === '已通过' && reserve.completionStatus === '未开始') ||
+              (reserve.status === '已通过' && reserve.completionStatus === '进行中')
+            )) {
+              this.activeReservations.set(reserve.labId, true);
+            }
+          });
 
           // 处理今日预约
           const today = new Date().toISOString().split('T')[0]
@@ -348,11 +374,10 @@ export default {
                     labName: labDetail.labName,
                     startTime: labDetail.startTime || '未设置',
                     endTime: labDetail.endTime || '未设置',
-                    status: labDetail.usageStatus === '空闲中' ? '空闲' :
-                           labDetail.usageStatus === '使用中' ? '使用中' : '已预约',
+                    status: labDetail.usageStatus === '使用中' ? '使用中' : '空闲',
                     labadminId: labDetail.labadminId,
                     maxReservationHours: labDetail.maxReservationHours,
-                    descr: labDetail.descr
+                    location: labDetail.location || '未设置'
                   }
                 })
             }
@@ -374,7 +399,6 @@ export default {
           this.labStats.total = labs.length
           this.labStats.free = labs.filter(lab => lab.usageStatus === '空闲中').length
           this.labStats.using = labs.filter(lab => lab.usageStatus === '使用中').length
-          this.labStats.maintenance = labs.filter(lab => lab.usageStatus === '已预约').length
 
           // 按类型分组实验室
           const typeMap = new Map()
@@ -402,7 +426,6 @@ export default {
     getStatusClass(status) {
       if (status === '空闲') return 'status-free'
       if (status === '使用中') return 'status-using'
-      if (status === '维护中') return 'status-maintenance'
       return ''
     },
     getReserveStatusClass(status) {
@@ -423,11 +446,25 @@ export default {
       if (type === 'error') return 'el-icon-close'
       return 'el-icon-message'
     },
+    hasActiveReservationForLab(labId) {
+      return this.activeReservations.get(labId) || false;
+    },
+    openReserveForm(lab) {
+      if (this.hasActiveReservationForLab(lab.id)) {
+        this.$message.warning('您对该实验室已有待审核、未开始或进行中的预约，请等待当前预约完成后再预约');
+        return;
+      }
+      this.currentLabInfo = lab;
+      this.reserveFormVisible = true;
+    },
     goToReserve(labId) {
-      this.$router.push({
-        path: '/studentLab',
-        query: { labId: labId }
-      })
+      // 查找对应的实验室信息
+      const lab = this.frequentLabs.find(item => item.id === labId);
+      if (lab && !this.hasActiveReservationForLab(lab.id)) {
+        this.openReserveForm(lab);
+      } else if (this.hasActiveReservationForLab(lab.id)) {
+        this.$message.warning('您对该实验室已有待审核、未开始或进行中的预约，请等待当前预约完成后再预约');
+      }
     }
   }
 }
@@ -585,26 +622,6 @@ export default {
   background-color: rgba(230, 162, 60, 0.1);
 }
 
-.status-maintenance {
-  color: #F56C6C;
-  background-color: rgba(245, 108, 108, 0.1);
-}
-
-.status-approved {
-  color: #67C23A;
-  background-color: rgba(103, 194, 58, 0.1);
-}
-
-.status-pending {
-  color: #E6A23C;
-  background-color: rgba(230, 162, 60, 0.1);
-}
-
-.status-rejected {
-  color: #F56C6C;
-  background-color: rgba(245, 108, 108, 0.1);
-}
-
 .timeline-container {
   padding: 10px 0;
 }
@@ -721,11 +738,6 @@ export default {
 .lab-grid-item.status-using {
   background: rgba(230, 162, 60, 0.1);
   color: #E6A23C;
-}
-
-.lab-grid-item.status-maintenance {
-  background: rgba(245, 108, 108, 0.1);
-  color: #F56C6C;
 }
 
 /* 自定义折叠面板样式 */
@@ -863,6 +875,21 @@ export default {
 }
 
 .lab-time i {
+  font-size: 12px;
+  margin-right: 4px;
+  color: #909399;
+}
+
+/* 快速通道实验室位置样式 */
+.lab-location {
+  font-size: 12px;
+  color: #606266;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.lab-location i {
   font-size: 12px;
   margin-right: 4px;
   color: #909399;
