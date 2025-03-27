@@ -56,21 +56,6 @@
         <div class="section-title">快速预约</div>
         <div class="card-container">
           <div class="glass-card">
-            <div class="card-title">热门实验室</div>
-            <div class="lab-list">
-              <div v-for="lab in popularLabs" :key="lab.id" class="lab-item">
-                <div class="lab-info">
-                  <div class="lab-name">{{ lab.name }}</div>
-                  <div class="lab-type">{{ lab.typeName }}</div>
-                </div>
-                <div class="lab-status" :class="getStatusClass(lab.status)">
-                  {{ lab.status }}
-                </div>
-                <el-button size="mini" type="primary" @click="goToReserve(lab.id)" :disabled="lab.status !== '空闲'">预约</el-button>
-              </div>
-            </div>
-          </div>
-          <div class="glass-card">
             <div class="card-title">我常用的实验室</div>
             <div class="lab-list">
               <div v-for="lab in frequentLabs" :key="lab.id" class="lab-item">
@@ -103,7 +88,6 @@
                   :type="getTimelineType(reserve.status)">
                   <div class="timeline-content">
                     <div class="timeline-title">{{ reserve.labName }}</div>
-                    <div class="timeline-info">位置：{{ reserve.location || '未知' }}</div>
                     <div class="timeline-info">状态：{{ reserve.status }}</div>
                   </div>
                 </el-timeline-item>
@@ -154,23 +138,22 @@
             </div>
             <div class="status-item">
               <div class="status-value status-maintenance">{{ labStats.maintenance }}</div>
-              <div class="status-label">维护中</div>
+              <div class="status-label">已预约</div>
             </div>
           </div>
-          <div class="lab-type-list">
-            <div v-for="type in labTypes" :key="type.id" class="lab-type-item">
-              <div class="type-name">{{ type.name }}</div>
-              <div class="type-labs">
-                <div 
-                  v-for="lab in type.labs" 
+          <el-collapse v-model="activeTypes">
+            <el-collapse-item v-for="type in labTypes" :key="type.id" :title="type.name" :name="type.id">
+              <div class="lab-grid">
+                <div v-for="lab in type.labs" 
                   :key="lab.id" 
-                  class="type-lab-item"
+                  class="lab-grid-item"
                   :class="getStatusClass(lab.status)">
-                  {{ lab.name }}
+                  <div class="lab-grid-name">{{ lab.name }}</div>
+                  <div class="lab-grid-status">{{ lab.status }}</div>
                 </div>
               </div>
-            </div>
-          </div>
+            </el-collapse-item>
+          </el-collapse>
         </div>
       </div>
 
@@ -229,70 +212,23 @@ export default {
     return {
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
       notices: [],
-      // 模拟数据 - 实际应用中应通过API获取
       stats: {
-        totalReserve: 12,
-        monthReserve: 3,
-        pendingReserve: 1,
-        approvedReserve: 10
+        totalReserve: 0,
+        monthReserve: 0,
+        pendingReserve: 0,
+        approvedReserve: 0
       },
-      popularLabs: [
-        { id: 1, name: '化学分析实验室', typeName: '化学类', status: '空闲' },
-        { id: 2, name: '物理光学实验室', typeName: '物理类', status: '使用中' },
-        { id: 3, name: '计算机网络实验室', typeName: '计算机类', status: '空闲' },
-        { id: 4, name: '电子电路实验室', typeName: '电子类', status: '维护中' }
-      ],
-      frequentLabs: [
-        { id: 3, name: '计算机网络实验室', typeName: '计算机类', status: '空闲' },
-        { id: 5, name: '软件工程实验室', typeName: '计算机类', status: '空闲' },
-        { id: 6, name: '数据库实验室', typeName: '计算机类', status: '使用中' }
-      ],
-      todayReserves: [
-        { id: 101, labName: '计算机网络实验室', startTime: '09:00', endTime: '11:00', status: '已通过', location: '信息楼B201' },
-        { id: 102, labName: '软件工程实验室', startTime: '14:00', endTime: '16:00', status: '待审核', location: '信息楼A305' }
-      ],
-      recentReserves: [
-        { id: 101, labName: '计算机网络实验室', date: '2023-06-10', startTime: '09:00', endTime: '11:00', status: '已通过' },
-        { id: 102, labName: '软件工程实验室', date: '2023-06-10', startTime: '14:00', endTime: '16:00', status: '待审核' },
-        { id: 103, labName: '数据库实验室', date: '2023-06-09', startTime: '10:00', endTime: '12:00', status: '已拒绝' },
-        { id: 104, labName: '电子电路实验室', date: '2023-06-08', startTime: '15:00', endTime: '17:00', status: '已通过' },
-        { id: 105, labName: '化学分析实验室', date: '2023-06-07', startTime: '08:00', endTime: '10:00', status: '已通过' }
-      ],
+      frequentLabs: [],
+      todayReserves: [],
+      recentReserves: [],
       labStats: {
-        total: 30,
-        free: 18,
-        using: 9,
-        maintenance: 3
+        total: 0,
+        free: 0,
+        using: 0,
+        maintenance: 0
       },
-      labTypes: [
-        { 
-          id: 1, 
-          name: '化学类', 
-          labs: [
-            { id: 1, name: '化学分析实验室', status: '空闲' },
-            { id: 7, name: '有机化学实验室', status: '使用中' },
-            { id: 8, name: '无机化学实验室', status: '空闲' }
-          ]
-        },
-        { 
-          id: 2, 
-          name: '计算机类', 
-          labs: [
-            { id: 3, name: '计算机网络实验室', status: '空闲' },
-            { id: 5, name: '软件工程实验室', status: '空闲' },
-            { id: 6, name: '数据库实验室', status: '使用中' },
-            { id: 9, name: '人工智能实验室', status: '维护中' }
-          ]
-        },
-        { 
-          id: 3, 
-          name: '电子类', 
-          labs: [
-            { id: 4, name: '电子电路实验室', status: '维护中' },
-            { id: 10, name: '数字信号处理实验室', status: '空闲' }
-          ]
-        }
-      ],
+      labTypes: [],
+      activeTypes: [],
       notifications: [
         { id: 201, type: 'success', title: '预约审核通过', message: '您预约的计算机网络实验室(6月10日 09:00-11:00)已通过审核', time: '2023-06-09 14:30' },
         { id: 202, type: 'warning', title: '预约即将开始', message: '您预约的计算机网络实验室将在30分钟后开始', time: '2023-06-10 08:30' },
@@ -302,11 +238,161 @@ export default {
   },
   mounted() {
     this.loadNotices()
+    this.loadReserveStats()
+    this.loadReserveData()
+    this.loadLabStats()
   },
   methods: {
     loadNotices() {
       this.$request.get('/notice/selectAll').then(res => {
         this.notices = res.data || []
+      })
+    },
+    loadReserveStats() {
+      // 获取所有预约
+      this.$request.get('/reserve/selectPage', {
+        params: {
+          pageNum: 1,
+          pageSize: 1000
+        }
+      }).then(res => {
+        if (res.code === '200' && res.data) {
+          this.stats.totalReserve = res.data.total
+          
+          // 计算本月预约数
+          const currentMonth = new Date().getMonth() + 1
+          const currentYear = new Date().getFullYear()
+          this.stats.monthReserve = res.data.list.filter(item => {
+            const reserveDate = new Date(item.reserveStartTime)
+            return reserveDate.getMonth() + 1 === currentMonth && 
+                   reserveDate.getFullYear() === currentYear
+          }).length
+        }
+      })
+
+      // 获取待审核预约数
+      this.$request.get('/reserve/selectPage', {
+        params: {
+          pageNum: 1,
+          pageSize: 10,
+          status: '待审核'
+        }
+      }).then(res => {
+        if (res.code === '200' && res.data) {
+          this.stats.pendingReserve = res.data.total
+        }
+      })
+
+      // 获取已通过预约数
+      this.$request.get('/reserve/selectPage', {
+        params: {
+          pageNum: 1,
+          pageSize: 10,
+          status: '已通过'
+        }
+      }).then(res => {
+        if (res.code === '200' && res.data) {
+          this.stats.approvedReserve = res.data.total
+        }
+      })
+    },
+    loadReserveData() {
+      // 获取所有预约数据
+      this.$request.get('/reserve/selectPage', {
+        params: {
+          pageNum: 1,
+          pageSize: 1000
+        }
+      }).then(res => {
+        if (res.code === '200' && res.data) {
+          const allReserves = res.data.list
+
+          // 处理今日预约
+          const today = new Date().toISOString().split('T')[0]
+          this.todayReserves = allReserves
+            .filter(reserve => reserve.reserveStartTime.startsWith(today))
+            .map(reserve => ({
+              id: reserve.id,
+              labName: reserve.labName,
+              startTime: reserve.reserveStartTime.split(' ')[1],
+              endTime: reserve.reserveEndTime.split(' ')[1],
+              status: reserve.status
+            }))
+
+          // 处理近期预约列表（按时间降序排序）
+          this.recentReserves = allReserves
+            .sort((a, b) => new Date(b.reserveStartTime) - new Date(a.reserveStartTime))
+            .slice(0, 4)
+            .map(reserve => ({
+              id: reserve.id,
+              labName: reserve.labName,
+              date: reserve.reserveStartTime.split(' ')[0],
+              startTime: reserve.reserveStartTime.split(' ')[1],
+              endTime: reserve.reserveEndTime.split(' ')[1],
+              status: reserve.status
+            }))
+
+          // 处理常用实验室（统计实验室使用频次）
+          const labFrequency = {}
+          allReserves.forEach(reserve => {
+            labFrequency[reserve.labId] = labFrequency[reserve.labId] || {
+              id: reserve.labId,
+              name: reserve.labName,
+              count: 0
+            }
+            labFrequency[reserve.labId].count++
+          })
+
+          // 转换为数组并按使用频次降序排序，取前3个
+          this.frequentLabs = Object.values(labFrequency)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 3)
+            .map(lab => ({
+              id: lab.id,
+              name: lab.name,
+              typeName: '常用',
+              status: '空闲' // 这里需要从另一个API获取实验室实时状态
+            }))
+        }
+      })
+    },
+    loadLabStats() {
+      this.$request.get('/lab/selectPage', {
+        params: {
+          pageNum: 1,
+          pageSize: 1000
+        }
+      }).then(res => {
+        if (res.code === '200' && res.data && res.data.page) {
+          const labs = res.data.page.list
+          
+          // 更新实验室统计数据
+          this.labStats.total = labs.length
+          this.labStats.free = labs.filter(lab => lab.usageStatus === '空闲中').length
+          this.labStats.using = labs.filter(lab => lab.usageStatus === '使用中').length
+          this.labStats.maintenance = labs.filter(lab => lab.usageStatus === '已预约').length
+
+          // 按类型分组实验室
+          const typeMap = new Map()
+          labs.forEach(lab => {
+            if (!typeMap.has(lab.typeId)) {
+              typeMap.set(lab.typeId, {
+                id: lab.typeId,
+                name: lab.typeName,
+                labs: []
+              })
+            }
+            typeMap.get(lab.typeId).labs.push({
+              id: lab.id,
+              name: lab.labName,
+              status: lab.usageStatus === '空闲中' ? '空闲' : 
+                     lab.usageStatus === '使用中' ? '使用中' : '维护中'
+            })
+          })
+          
+          // 转换为数组
+          this.labTypes = Array.from(typeMap.values())
+        }
       })
     },
     getStatusClass(status) {
@@ -573,32 +659,89 @@ export default {
   text-align: center;
 }
 
-.lab-type-list {
-  display: flex;
-  flex-direction: column;
+/* 添加滚动容器样式 */
+.lab-status-board .el-collapse {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* 自定义滚动条样式 */
+.lab-status-board .el-collapse::-webkit-scrollbar {
+  width: 6px;
+}
+
+.lab-status-board .el-collapse::-webkit-scrollbar-thumb {
+  background-color: rgba(144, 147, 153, 0.3);
+  border-radius: 3px;
+}
+
+.lab-status-board .el-collapse::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.lab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 15px;
+  padding: 10px 0;
 }
 
-.lab-type-item {
-  margin-bottom: 10px;
-}
-
-.type-name {
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.type-labs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.type-lab-item {
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 12px;
+.lab-grid-item {
+  padding: 12px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.lab-grid-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.lab-grid-name {
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.lab-grid-status {
+  font-size: 12px;
+}
+
+.lab-grid-item.status-free {
+  background: rgba(103, 194, 58, 0.1);
+  color: #67C23A;
+}
+
+.lab-grid-item.status-using {
+  background: rgba(230, 162, 60, 0.1);
+  color: #E6A23C;
+}
+
+.lab-grid-item.status-maintenance {
+  background: rgba(245, 108, 108, 0.1);
+  color: #F56C6C;
+}
+
+/* 自定义折叠面板样式 */
+.lab-status-board /deep/ .el-collapse {
+  border: none;
+}
+
+.lab-status-board /deep/ .el-collapse-item__header {
+  font-size: 16px;
+  font-weight: 500;
+  color: #2c3e50;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 15px 0;
+}
+
+.lab-status-board /deep/ .el-collapse-item__content {
+  padding: 15px 0;
+}
+
+.lab-status-board /deep/ .el-collapse-item__wrap {
+  border-bottom: none;
 }
 
 .notice-list {
