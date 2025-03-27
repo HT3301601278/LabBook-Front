@@ -686,6 +686,8 @@ export default {
   max-height: 400px;
   overflow-y: auto;
   padding-right: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.6);
 }
 
 /* 自定义滚动条样式 */
@@ -694,31 +696,70 @@ export default {
 }
 
 .lab-status-board .el-collapse::-webkit-scrollbar-thumb {
-  background-color: rgba(144, 147, 153, 0.3);
-  border-radius: 3px;
+  background-color: rgba(64, 158, 255, 0.3);
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.lab-status-board .el-collapse::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(64, 158, 255, 0.5);
 }
 
 .lab-status-board .el-collapse::-webkit-scrollbar-track {
-  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: 6px;
+}
+
+/* 自定义折叠面板样式 */
+.lab-status-board /deep/ .el-collapse {
+  border: none;
+  padding: 10px;
+}
+
+.lab-status-board /deep/ .el-collapse-item__header {
+  font-size: 16px;
+  font-weight: 500;
+  color: #2c3e50;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 15px 10px;
+  margin: 0;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.lab-status-board /deep/ .el-collapse-item__header:hover {
+  background-color: rgba(64, 158, 255, 0.05);
+}
+
+.lab-status-board /deep/ .el-collapse-item__content {
+  padding: 15px 10px;
+}
+
+.lab-status-board /deep/ .el-collapse-item__wrap {
+  border-bottom: none;
+  border-radius: 6px;
 }
 
 .lab-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 15px;
-  padding: 10px 0;
+  padding: 10px;
+  border-radius: 8px;
 }
 
 .lab-grid-item {
-  padding: 12px;
+  padding: 15px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.7);
   transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .lab-grid-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .lab-grid-name {
@@ -738,27 +779,6 @@ export default {
 .lab-grid-item.status-using {
   background: rgba(230, 162, 60, 0.1);
   color: #E6A23C;
-}
-
-/* 自定义折叠面板样式 */
-.lab-status-board /deep/ .el-collapse {
-  border: none;
-}
-
-.lab-status-board /deep/ .el-collapse-item__header {
-  font-size: 16px;
-  font-weight: 500;
-  color: #2c3e50;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  padding: 15px 0;
-}
-
-.lab-status-board /deep/ .el-collapse-item__content {
-  padding: 15px 0;
-}
-
-.lab-status-board /deep/ .el-collapse-item__wrap {
-  border-bottom: none;
 }
 
 .notice-list {
