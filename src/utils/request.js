@@ -8,6 +8,9 @@ const request = axios.create({
     timeout: 30000                          // 30s请求超时
 })
 
+// 添加标志位，用于防止重复显示 toast
+let isShowingExpiredToast = false
+
 // request 拦截器
 // 可以自请求发送前对请求做一些处理
 // 比如统一加token，对请求参数统一加密
@@ -41,7 +44,13 @@ request.interceptors.response.use(
         // 只在非登录接口时处理token过期
         if (res.code === '401' && !response.config.url.includes('/login')) {
             localStorage.removeItem('labuser')  // 清除token
-            Message.error('登录已过期，请重新登录')  // 添加错误提示
+            if (!isShowingExpiredToast) {
+                isShowingExpiredToast = true
+                Message.error('登录已过期，请重新登录')  // 添加错误提示
+                setTimeout(() => {
+                    isShowingExpiredToast = false
+                }, 3000) // 3秒后重置标志位
+            }
             router.push('/login')
         }
         return res;
