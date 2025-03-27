@@ -10,7 +10,7 @@ import request from "@/utils/request";
 Vue.config.productionTip = false
 
 Vue.prototype.$request = request
-Vue.prototype.$baseUrl = process.env.VUE_APP_BASEURL
+Vue.prototype.$baseUrl = 'http://localhost:8080'
 
 Vue.use(ElementUI, {size: "small"})
 
