@@ -59,19 +59,19 @@ export default {
       if (endTime <= startTime) {
         return callback(new Error('结束时间必须大于开始时间'));
       }
-      
+
       // 计算时间差（毫秒）
       const diffMs = endTime - startTime;
       const diffHours = diffMs / (1000 * 60 * 60);
-      
+
       // 检查是否超过最大预约时长
       if (diffHours > this.maxHours) {
         return callback(new Error(`预约时长不能超过${this.maxHours}小时`));
       }
-      
+
       callback();
     };
-    
+
     return {
       form: {
         labId: '',
@@ -135,7 +135,7 @@ export default {
             status: '待审核',
             dostatus: '待审核'
           };
-          
+
           this.$request.post('/reserve/add', data).then(res => {
             if (res.code === '200') {
               this.$message.success('预约申请提交成功，等待管理员审核');
@@ -161,7 +161,7 @@ export default {
   flex-direction: column;
   margin: 0 !important;
   position: absolute;
-  top: 30%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
   max-height: 90%;
