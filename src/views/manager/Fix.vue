@@ -35,7 +35,7 @@
 
         <el-table-column label="操作" width="180" align="center">
           <template v-slot="scope">
-            <el-button plain type="primary" @click="handleEdit(scope.row)" size="mini" v-if="user.role === 'ADMIN' && scope.row.status === '待处理'">处理</el-button>
+            <el-button plain type="primary" @click="handleEdit(scope.row)" size="mini" v-if="(user.role === 'ADMIN' || user.role === 'LABADMIN') && scope.row.status === '待处理'">处理</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -128,6 +128,22 @@ export default {
   },
   created() {
     this.load(1)
+    // 如果URL中有id参数，自动打开处理对话框
+    const id = this.$route.query.id
+    if (id) {
+      this.$request.get('/fix/searchPage', {
+        params: {
+          pageNum: 1,
+          pageSize: 1000,
+          id: id
+        }
+      }).then(res => {
+        if (res.code === '200' && res.data && res.data.list && res.data.list.length > 0) {
+          const fixData = res.data.list[0]
+          this.handleEdit(fixData)
+        }
+      })
+    }
   },
   methods: {
     getStatusType(status) {

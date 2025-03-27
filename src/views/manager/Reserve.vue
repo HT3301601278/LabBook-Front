@@ -22,7 +22,7 @@
         <el-table-column prop="labadminName" label="实验室管理员" min-width="15%" show-overflow-tooltip></el-table-column>
         <el-table-column prop="studentName" label="预约人" min-width="10%" show-overflow-tooltip></el-table-column>
         <el-table-column prop="createTime" label="预约时间" min-width="15%"></el-table-column>
-        <el-table-column label="使用时间段" min-width="20%">
+        <el-table-column label="使用时间段" min-width="25%">
           <template v-slot="scope">
             {{scope.row.reserveStartTime}} ~ {{scope.row.reserveEndTime}}
           </template>
@@ -51,7 +51,7 @@
             <el-button plain type="success" size="mini" @click="handleAudit(scope.row, '已通过')" v-if="user.role !== 'STUDENT' && scope.row.status === '待审核'">通过</el-button>
             <el-button plain type="danger" size="mini" @click="handleAudit(scope.row, '已拒绝')" v-if="user.role !== 'STUDENT' && scope.row.status === '待审核'">不通过</el-button>
             <el-button plain type="warning" size="mini" @click="handleComplete(scope.row)" v-if="(user.role !== 'STUDENT' || (user.role === 'STUDENT' && scope.row.studentId === user.id)) && scope.row.completionStatus === '进行中'">结束使用</el-button>
-            <template v-if="user.role === 'STUDENT' && scope.row.completionStatus === '已完成' && scope.row.fixStatus === null">
+            <template v-if="user.role === 'STUDENT' && scope.row.completionStatus === '已完成' && scope.row.fixStatus === 0">
               <el-button plain type="danger" size="mini" @click="handleFix(scope.row, true)">需要报修</el-button>
               <el-button plain type="success" size="mini" @click="handleFix(scope.row, false)">无需报修</el-button>
             </template>

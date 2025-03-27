@@ -315,9 +315,11 @@ export default {
       this.pendingReserves = this.pendingReserves.filter(item => item.id !== id)
     },
     handleFix(id) {
-      // 处理报修，实际应用中应跳转到报修详情页或调用API
-      this.$message.success('已开始处理报修')
-      this.pendingFixes = this.pendingFixes.filter(item => item.id !== id)
+      // 跳转到报修记录页面
+      this.$router.push({
+        path: '/manager/fix',
+        query: { id: id }
+      })
     }
   }
 }
