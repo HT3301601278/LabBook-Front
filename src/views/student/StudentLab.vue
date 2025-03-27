@@ -113,7 +113,7 @@
 
 <script>
 import ModelViewer from '../common/ModelViewer.vue';
-import StudentReserveForm from '../student/StudentReserveForm.vue';
+import StudentReserveForm from './StudentReserveForm.vue';
 
 export default {
   name: "Lab",
@@ -172,7 +172,7 @@ export default {
         if (res.code === '200' && res.data && res.data.page) {
           this.tableData = res.data.page.list || []
           this.total = res.data.page.total || 0
-          
+
           // 检查是否有需要打开的实验室
           const labId = this.$route.query.labId
           if (labId) {

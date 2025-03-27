@@ -45,7 +45,7 @@
             <el-menu-item index="/notice" v-if="user.role === 'ADMIN'">公告信息</el-menu-item>
             <el-menu-item index="/type" v-if="user.role === 'ADMIN'">实验室分类</el-menu-item>
             <el-menu-item index="/lab" v-if="user.role !== 'STUDENT'">实验室信息</el-menu-item>
-            <el-menu-item index="/labStudent" v-else>实验室信息</el-menu-item>
+            <el-menu-item index="/studentLab" v-else>实验室信息</el-menu-item>
             <el-menu-item index="/reserve">预约记录</el-menu-item>
             <el-menu-item index="/fix">报修记录</el-menu-item>
             <el-menu-item index="/checks">检修记录</el-menu-item>

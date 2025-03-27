@@ -86,8 +86,8 @@
             </div>
             <div v-if="todayReserves.length > 0" class="timeline-container">
               <el-timeline>
-                <el-timeline-item 
-                  v-for="reserve in todayReserves" 
+                <el-timeline-item
+                  v-for="reserve in todayReserves"
                   :key="reserve.id"
                   :timestamp="reserve.startTime + ' - ' + reserve.endTime"
                   :type="getTimelineType(reserve.status)">
@@ -154,8 +154,8 @@
           <el-collapse v-model="activeTypes">
             <el-collapse-item v-for="type in labTypes" :key="type.id" :title="type.name" :name="type.id">
               <div class="lab-grid">
-                <div v-for="lab in type.labs" 
-                  :key="lab.id" 
+                <div v-for="lab in type.labs"
+                  :key="lab.id"
                   class="lab-grid-item"
                   :class="getStatusClass(lab.status)">
                   <div class="lab-grid-name">{{ lab.name }}</div>
@@ -175,8 +175,8 @@
             <div class="card-title">系统公告</div>
             <div class="notice-list">
               <el-timeline>
-                <el-timeline-item 
-                  v-for="notice in notices" 
+                <el-timeline-item
+                  v-for="notice in notices"
                   :key="notice.id"
                   :timestamp="notice.createTime ? notice.createTime.split('T')[0] : ''"
                   placement="top">
@@ -243,13 +243,13 @@ export default {
       }).then(res => {
         if (res.code === '200' && res.data) {
           this.stats.totalReserve = res.data.total
-          
+
           // 计算本月预约数
           const currentMonth = new Date().getMonth() + 1
           const currentYear = new Date().getFullYear()
           this.stats.monthReserve = res.data.list.filter(item => {
             const reserveDate = new Date(item.reserveStartTime)
-            return reserveDate.getMonth() + 1 === currentMonth && 
+            return reserveDate.getMonth() + 1 === currentMonth &&
                    reserveDate.getFullYear() === currentYear
           }).length
         }
@@ -336,7 +336,7 @@ export default {
           }).then(labRes => {
             if (labRes.code === '200' && labRes.data && labRes.data.page) {
               const labsMap = new Map(labRes.data.page.list.map(lab => [lab.id, lab]))
-              
+
               // 转换为数组并按使用频次降序排序，取前3个，同时添加实验室详细信息
               this.frequentLabs = Object.entries(labFrequency)
                 .sort(([, a], [, b]) => b.count - a.count)
@@ -348,7 +348,7 @@ export default {
                     labName: labDetail.labName,
                     startTime: labDetail.startTime || '未设置',
                     endTime: labDetail.endTime || '未设置',
-                    status: labDetail.usageStatus === '空闲中' ? '空闲' : 
+                    status: labDetail.usageStatus === '空闲中' ? '空闲' :
                            labDetail.usageStatus === '使用中' ? '使用中' : '已预约',
                     labadminId: labDetail.labadminId,
                     maxReservationHours: labDetail.maxReservationHours,
@@ -369,7 +369,7 @@ export default {
       }).then(res => {
         if (res.code === '200' && res.data && res.data.page) {
           const labs = res.data.page.list
-          
+
           // 更新实验室统计数据
           this.labStats.total = labs.length
           this.labStats.free = labs.filter(lab => lab.usageStatus === '空闲中').length
@@ -389,11 +389,11 @@ export default {
             typeMap.get(lab.typeId).labs.push({
               id: lab.id,
               name: lab.labName,
-              status: lab.usageStatus === '空闲中' ? '空闲' : 
+              status: lab.usageStatus === '空闲中' ? '空闲' :
                      lab.usageStatus === '使用中' ? '使用中' : '维护中'
             })
           })
-          
+
           // 转换为数组
           this.labTypes = Array.from(typeMap.values())
         }
@@ -425,7 +425,7 @@ export default {
     },
     goToReserve(labId) {
       this.$router.push({
-        path: '/labStudent',
+        path: '/studentLab',
         query: { labId: labId }
       })
       this.$message({
@@ -793,7 +793,7 @@ export default {
   .card-container {
     flex-direction: column;
   }
-  
+
   .glass-card {
     min-width: auto;
   }
