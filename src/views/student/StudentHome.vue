@@ -180,25 +180,6 @@
               </el-timeline>
             </div>
           </div>
-          <div class="glass-card">
-            <div class="card-title">预约通知</div>
-            <div v-if="notifications.length > 0" class="notification-list">
-              <div v-for="notification in notifications" :key="notification.id" class="notification-item">
-                <div class="notification-icon" :class="notification.type">
-                  <i :class="getNotificationIcon(notification.type)"></i>
-                </div>
-                <div class="notification-content">
-                  <div class="notification-title">{{ notification.title }}</div>
-                  <div class="notification-message">{{ notification.message }}</div>
-                  <div class="notification-time">{{ notification.time }}</div>
-                </div>
-              </div>
-            </div>
-            <div v-else class="empty-data">
-              <i class="el-icon-bell"></i>
-              <span>暂无通知</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -763,64 +744,6 @@ export default {
   font-size: 14px;
   color: #606266;
   line-height: 1.5;
-}
-
-.notification-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.notification-item {
-  display: flex;
-  padding: 10px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.notification-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 10px;
-}
-
-.notification-icon.success {
-  background-color: rgba(103, 194, 58, 0.1);
-  color: #67C23A;
-}
-
-.notification-icon.warning {
-  background-color: rgba(230, 162, 60, 0.1);
-  color: #E6A23C;
-}
-
-.notification-icon.error {
-  background-color: rgba(245, 108, 108, 0.1);
-  color: #F56C6C;
-}
-
-.notification-content {
-  flex: 1;
-}
-
-.notification-title {
-  font-weight: 500;
-  margin-bottom: 5px;
-}
-
-.notification-message {
-  font-size: 12px;
-  color: #606266;
-  margin-bottom: 5px;
-}
-
-.notification-time {
-  font-size: 12px;
-  color: #909399;
 }
 
 .empty-data {
