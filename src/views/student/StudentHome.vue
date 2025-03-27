@@ -819,4 +819,20 @@ export default {
   overflow-y: auto;
   max-height: 300px;
 }
+
+/* 自定义时间线节点样式 */
+:deep(.el-timeline-item__node) {
+  width: 8px !important;  /* 调整圆点大小 */
+  height: 8px !important;
+  left: 2px !important;  /* 微调位置以保持对齐 */
+}
+
+:deep(.el-timeline-item__node--normal) {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+:deep(.el-timeline-item__tail) {
+  left: 5px !important;  /* 调整竖线位置以对齐圆点 */
+}
 </style>
