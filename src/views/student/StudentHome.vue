@@ -113,8 +113,11 @@
             <div class="lab-list">
               <div v-for="lab in frequentLabs" :key="lab.id" class="lab-item">
                 <div class="lab-info">
-                  <div class="lab-name">{{ lab.name }}</div>
-                  <div class="lab-type">{{ lab.typeName }}</div>
+                  <div class="lab-name">{{ lab.labName }}</div>
+                  <div class="lab-time">
+                    <i class="el-icon-time"></i>
+                    {{ lab.startTime }} - {{ lab.endTime }}
+                  </div>
                 </div>
                 <div class="lab-status" :class="getStatusClass(lab.status)">
                   {{ lab.status }}
@@ -320,22 +323,38 @@ export default {
           allReserves.forEach(reserve => {
             labFrequency[reserve.labId] = labFrequency[reserve.labId] || {
               id: reserve.labId,
-              name: reserve.labName,
               count: 0
             }
             labFrequency[reserve.labId].count++
           })
 
-          // 转换为数组并按使用频次降序排序，取前3个
-          this.frequentLabs = Object.values(labFrequency)
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 3)
-            .map(lab => ({
-              id: lab.id,
-              name: lab.name,
-              typeName: '常用',
-              status: '空闲' // 这里需要从另一个API获取实验室实时状态
-            }))
+          // 获取实验室详细信息
+          this.$request.get('/lab/selectPage', {
+            params: {
+              pageNum: 1,
+              pageSize: 1000
+            }
+          }).then(labRes => {
+            if (labRes.code === '200' && labRes.data && labRes.data.page) {
+              const labsMap = new Map(labRes.data.page.list.map(lab => [lab.id, lab]))
+              
+              // 转换为数组并按使用频次降序排序，取前3个，同时添加实验室详细信息
+              this.frequentLabs = Object.entries(labFrequency)
+                .sort(([, a], [, b]) => b.count - a.count)
+                .slice(0, 3)
+                .map(([labId]) => {
+                  const labDetail = labsMap.get(Number(labId)) || {}
+                  return {
+                    id: labDetail.id,
+                    labName: labDetail.labName,
+                    startTime: labDetail.startTime || '未设置',
+                    endTime: labDetail.endTime || '未设置',
+                    status: labDetail.usageStatus === '空闲中' ? '空闲' : 
+                           labDetail.usageStatus === '使用中' ? '使用中' : '已预约'
+                  }
+                })
+            }
+          })
         }
       })
     },
@@ -830,5 +849,20 @@ export default {
 
 :deep(.el-timeline-item__tail) {
   left: 5px !important;  /* 调整竖线位置以对齐圆点 */
+}
+
+/* 快速通道实验室时间样式 */
+.lab-time {
+  font-size: 12px;
+  color: #606266;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.lab-time i {
+  font-size: 12px;
+  margin-right: 4px;
+  color: #909399;
 }
 </style>
