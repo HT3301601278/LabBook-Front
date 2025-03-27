@@ -51,34 +51,39 @@
         </div>
       </div>
 
-      <!-- 快速预约区 -->
+      <!-- 实验预约 -->
       <div class="dashboard-section">
-        <div class="section-title">快速预约</div>
-        <div class="card-container">
+        <div class="section-title">实验预约</div>
+        <div class="card-container reservation-cards">
+          <!-- 预约记录 -->
           <div class="glass-card">
-            <div class="card-title">我常用的实验室</div>
-            <div class="lab-list">
-              <div v-for="lab in frequentLabs" :key="lab.id" class="lab-item">
-                <div class="lab-info">
-                  <div class="lab-name">{{ lab.name }}</div>
-                  <div class="lab-type">{{ lab.typeName }}</div>
+            <div class="card-title">
+              <i class="el-icon-calendar"></i>
+              预约记录
+            </div>
+            <div v-if="recentReserves.length > 0" class="reserve-list">
+              <div v-for="reserve in recentReserves" :key="reserve.id" class="reserve-item">
+                <div class="reserve-info">
+                  <div class="reserve-lab">{{ reserve.labName }}</div>
+                  <div class="reserve-time">{{ reserve.date }} {{ reserve.startTime }}-{{ reserve.endTime }}</div>
                 </div>
-                <div class="lab-status" :class="getStatusClass(lab.status)">
-                  {{ lab.status }}
+                <div class="reserve-status" :class="getReserveStatusClass(reserve.status)">
+                  {{ reserve.status }}
                 </div>
-                <el-button size="mini" type="primary" @click="goToReserve(lab.id)" :disabled="lab.status !== '空闲'">预约</el-button>
               </div>
             </div>
+            <div v-else class="empty-data">
+              <i class="el-icon-document"></i>
+              <span>暂无预约记录</span>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <!-- 我的预约中心 -->
-      <div class="dashboard-section">
-        <div class="section-title">我的预约中心</div>
-        <div class="card-container">
+          <!-- 今日预约 -->
           <div class="glass-card">
-            <div class="card-title">今日预约</div>
+            <div class="card-title">
+              <i class="el-icon-date"></i>
+              今日安排
+            </div>
             <div v-if="todayReserves.length > 0" class="timeline-container">
               <el-timeline>
                 <el-timeline-item 
@@ -98,22 +103,24 @@
               <span>今日暂无预约</span>
             </div>
           </div>
+
+          <!-- 快速通道 -->
           <div class="glass-card">
-            <div class="card-title">近期预约列表</div>
-            <div v-if="recentReserves.length > 0" class="reserve-list">
-              <div v-for="reserve in recentReserves" :key="reserve.id" class="reserve-item">
-                <div class="reserve-info">
-                  <div class="reserve-lab">{{ reserve.labName }}</div>
-                  <div class="reserve-time">{{ reserve.date }} {{ reserve.startTime }}-{{ reserve.endTime }}</div>
-                </div>
-                <div class="reserve-status" :class="getReserveStatusClass(reserve.status)">
-                  {{ reserve.status }}
-                </div>
-              </div>
+            <div class="card-title">
+              <i class="el-icon-timer"></i>
+              快速通道
             </div>
-            <div v-else class="empty-data">
-              <i class="el-icon-document"></i>
-              <span>暂无预约记录</span>
+            <div class="lab-list">
+              <div v-for="lab in frequentLabs" :key="lab.id" class="lab-item">
+                <div class="lab-info">
+                  <div class="lab-name">{{ lab.name }}</div>
+                  <div class="lab-type">{{ lab.typeName }}</div>
+                </div>
+                <div class="lab-status" :class="getStatusClass(lab.status)">
+                  {{ lab.status }}
+                </div>
+                <el-button size="mini" type="primary" @click="goToReserve(lab.id)" :disabled="lab.status !== '空闲'">预约</el-button>
+              </div>
             </div>
           </div>
         </div>
@@ -769,5 +776,47 @@ export default {
   .glass-card {
     min-width: auto;
   }
+}
+
+/* 预约卡片特殊样式 */
+.reservation-cards {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #2c3e50;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 10px;
+}
+
+.card-title i {
+  margin-right: 8px;
+  font-size: 18px;
+  color: #409EFF;
+}
+
+/* 响应式布局优化 */
+@media (max-width: 1200px) {
+  .reservation-cards {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .reservation-cards {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* 调整卡片内容区域的高度 */
+.timeline-container, .lab-list, .reserve-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 300px;
 }
 </style>
