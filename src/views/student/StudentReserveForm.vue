@@ -3,7 +3,7 @@
     <el-dialog title="预约实验室" :visible.sync="visible" width="40%" :close-on-click-modal="false" destroy-on-close :append-to-body="true">
       <el-form label-width="100px" style="padding-right: 50px" :model="form" :rules="rules" ref="formRef">
         <el-form-item label="实验室信息" v-if="form.labName">
-          <div>{{ form.labName }} - {{ form.descr }}</div>
+          <div>{{ form.labName }} - {{ form.location }}</div>
         </el-form-item>
         <el-form-item prop="reserveStartTime" label="开始时间">
           <el-date-picker
@@ -59,19 +59,19 @@ export default {
       if (endTime <= startTime) {
         return callback(new Error('结束时间必须大于开始时间'));
       }
-      
+
       // 计算时间差（毫秒）
       const diffMs = endTime - startTime;
       const diffHours = diffMs / (1000 * 60 * 60);
-      
+
       // 检查是否超过最大预约时长
       if (diffHours > this.maxHours) {
         return callback(new Error(`预约时长不能超过${this.maxHours}小时`));
       }
-      
+
       callback();
     };
-    
+
     return {
       form: {
         labId: '',
@@ -80,7 +80,7 @@ export default {
         reserveStartTime: '',
         reserveEndTime: '',
         labName: '',
-        descr: ''
+        location: ''
       },
       rules: {
         reserveStartTime: [
@@ -114,8 +114,8 @@ export default {
           this.form.labId = val.id;
           this.form.labadminId = val.labadminId;
           this.form.studentId = this.user.id;
-          this.form.labName = val.name;
-          this.form.descr = val.descr;
+          this.form.labName = val.labName;
+          this.form.location = val.location;
           this.maxHours = val.maxReservationHours || 4;
         }
       },
@@ -135,7 +135,7 @@ export default {
             status: '待审核',
             dostatus: '待审核'
           };
-          
+
           this.$request.post('/reserve/add', data).then(res => {
             if (res.code === '200') {
               this.$message.success('预约申请提交成功，等待管理员审核');
@@ -161,7 +161,7 @@ export default {
   flex-direction: column;
   margin: 0 !important;
   position: absolute;
-  top: 30%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
   max-height: 90%;

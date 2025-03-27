@@ -68,7 +68,7 @@
                 </div>
                 <div class="reserve-button">
                   <el-button type="primary" size="mini" @click="openReserveForm(item)"
-                    :disabled="item.usageStatus === '使用中' || item.usageStatus === '已预约'"
+                    :disabled="item.usageStatus === '已预约'"
                     :type="item.usageStatus === '已预约' ? 'info' : 'primary'">
                     {{ item.usageStatus === '已预约' ? '已预约' : '预约' }}
                   </el-button>
@@ -113,7 +113,7 @@
 
 <script>
 import ModelViewer from '../common/ModelViewer.vue';
-import StudentReserveForm from '../student/StudentReserveForm.vue';
+import StudentReserveForm from './StudentReserveForm.vue';
 
 export default {
   name: "Lab",
@@ -172,6 +172,19 @@ export default {
         if (res.code === '200' && res.data && res.data.page) {
           this.tableData = res.data.page.list || []
           this.total = res.data.page.total || 0
+
+          // 检查是否有需要打开的实验室
+          const labId = this.$route.query.labId
+          if (labId) {
+            const lab = this.tableData.find(item => item.id === Number(labId))
+            if (lab) {
+              if (lab.usageStatus === '空闲中') {
+                this.openReserveForm(lab)
+              } else {
+                this.$message.warning('该实验室当前不可预约')
+              }
+            }
+          }
         } else {
           this.$message.error(res.msg || '获取数据失败')
         }
