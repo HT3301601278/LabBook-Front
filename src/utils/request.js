@@ -4,7 +4,7 @@ import {Message} from 'element-ui'
 
 // 创建可一个新的axios对象
 const request = axios.create({
-    baseURL: '',   // 不需要baseURL，直接使用相对路径
+    baseURL: 'http://localhost:8080',   // 设置baseURL为后端8080端口
     timeout: 30000     // 30s请求超时
 })
 

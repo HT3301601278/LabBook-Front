@@ -2,17 +2,7 @@ const { defineConfig } = require('@vue/cli-service')
 module.exports = defineConfig({
   transpileDependencies: true,
   devServer: {
-    port: 8081,
-    host: '0.0.0.0',
-    client: {
-      webSocketURL: 'ws://0.0.0.0:8081/ws'
-    },
-    proxy: {
-      '/': {
-        target: 'http://localhost:8080',  // 后端服务器地址
-        changeOrigin: true
-      }
-    }
+    port: 8081
   },
   chainWebpack: config =>{
     config.plugin('html')

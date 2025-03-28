@@ -64,8 +64,8 @@
               </el-input>
             </el-form-item>
             <el-form-item prop="college">
-              <el-select 
-                v-model="form.college" 
+              <el-select
+                v-model="form.college"
                 placeholder="请选择学院"
                 @change="handleCollegeChange"
                 @focus="handleFocus"
@@ -80,8 +80,8 @@
               </el-select>
             </el-form-item>
             <el-form-item prop="major">
-              <el-select 
-                v-model="form.major" 
+              <el-select
+                v-model="form.major"
                 placeholder="请选择专业"
                 @focus="handleFocus"
                 @blur="handleBlur"
@@ -171,7 +171,7 @@ export default {
     return {
       activeField: null,
       buttonHovered: false,
-      form: { 
+      form: {
         role: 'STUDENT',
         username: '',
         password: '',
@@ -352,7 +352,7 @@ export default {
     handleFocus(event) {
       // 记录当前激活的输入框
       this.activeField = event.target
-      
+
       // 添加焦点动画
       const formItem = event.target.closest('.el-form-item')
       if (formItem) {
@@ -425,18 +425,18 @@ export default {
           // 添加按钮加载动画
           const loginBtn = document.querySelector('.login-button')
           loginBtn.classList.add('loading')
-          
+
           // 验证通过
           this.$request.post('/register', this.form).then(res => {
             loginBtn.classList.remove('loading')
             if (res.code === '200') {
               // 添加成功动画
               this.showSuccessAnimation()
-              
+
               // 延迟跳转，让动画有时间显示
               setTimeout(() => {
                 this.$router.push('/login')  // 跳转登录页面
-                this.$message.success('注册成功')
+                this.$message.success('注册成功，请等待审核')
               }, 800)
             } else {
               // 添加失败动画
@@ -794,21 +794,21 @@ export default {
   .login-box {
     padding: 25px 20px;
   }
-  
+
   .form-row {
     flex-direction: column;
     gap: 0;
   }
-  
+
   .logo {
     width: 60px;
     height: 60px;
   }
-  
+
   .login-header h2 {
     font-size: 20px;
   }
-  
+
   .subtitle {
     font-size: 14px;
   }
