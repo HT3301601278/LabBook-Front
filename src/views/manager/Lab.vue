@@ -111,7 +111,8 @@
                     :action="$baseUrl + '/files/upload'"
                     :on-success="handleManualSuccess"
                     :file-list="manualFileList"
-                    :limit="1">
+                    :limit="1"
+                    :before-upload="beforeManualUpload">
                   <el-button size="small" type="primary" icon="el-icon-upload">上传手册</el-button>
                   <div slot="tip" class="el-upload__tip">支持 PDF 格式文件</div>
                 </el-upload>
@@ -135,9 +136,10 @@
                     :action="$baseUrl + '/files/upload'"
                     :on-success="handleModelSuccess"
                     :file-list="modelFileList"
-                    :limit="1">
+                    :limit="1"
+                    :before-upload="beforeModelUpload">
                   <el-button size="small" type="primary" icon="el-icon-upload">上传模型</el-button>
-                  <div slot="tip" class="el-upload__tip">支持 3D 模型文件</div>
+                  <div slot="tip" class="el-upload__tip">支持 .glb 格式文件</div>
                 </el-upload>
               </div>
               <div v-if="form.modelFile" class="file-info">
@@ -384,6 +386,22 @@ export default {
       } else {
         this.$message.warning('没有可查看的3D模型')
       }
+    },
+    beforeManualUpload(file) {
+      const isPDF = file.type === 'application/pdf'
+      if (!isPDF) {
+        this.$message.error('使用手册只能上传 PDF 格式的文件!')
+        return false
+      }
+      return true
+    },
+    beforeModelUpload(file) {
+      const isJLB = file.name.endsWith('.glb')
+      if (!isJLB) {
+        this.$message.error('3D模型只能上传 .glb 格式的文件!')
+        return false
+      }
+      return true
     }
   }
 }
