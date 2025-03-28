@@ -4,8 +4,8 @@ import {Message} from 'element-ui'
 
 // 创建可一个新的axios对象
 const request = axios.create({
-    baseURL: process.env.VUE_APP_BASEURL,   // 后端的接口地址  ip:port
-    timeout: 30000                          // 30s请求超时
+    baseURL: '',   // 不需要baseURL，直接使用相对路径
+    timeout: 30000     // 30s请求超时
 })
 
 // 添加标志位，用于防止重复显示 toast
