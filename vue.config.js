@@ -3,6 +3,10 @@ module.exports = defineConfig({
   transpileDependencies: true,
   devServer: {
     port: 8081,
+    host: 'localhost',
+    client: {
+      webSocketURL: 'ws://localhost:8081/ws'
+    },
     proxy: {
       '/': {
         target: 'http://localhost:8080',  // 后端服务器地址
