@@ -3,9 +3,9 @@ module.exports = defineConfig({
   transpileDependencies: true,
   devServer: {
     port: 8081,
-    host: 'localhost',
+    host: '0.0.0.0',
     client: {
-      webSocketURL: 'ws://localhost:8081/ws'
+      webSocketURL: 'ws://0.0.0.0:8081/ws'
     },
     proxy: {
       '/': {
