@@ -276,9 +276,14 @@ export default {
             y: this.captchaData.y
           });
 
+          console.log("验证响应:", response.data);
+
           if (response.data.success) {
             this.verified = true;
-            this.$emit('success');
+            // 在验证成功时，将验证状态保存到captchaData中，使用同一个token进行后续登录
+            this.captchaData.verified = true;
+            // 发送成功事件，并传递验证码token和状态
+            this.$emit('success', this.captchaData.capthatoken);
           } else {
             this.verifyFailed = true;
             this.$emit('fail');
@@ -334,6 +339,12 @@ export default {
     },
     async refreshCaptcha() {
       await this.initCaptcha();
+    },
+    /**
+     * 获取当前验证码token
+     */
+    getCaptchaToken() {
+      return this.captchaData && this.captchaData.capthatoken ? this.captchaData.capthatoken : null;
     }
   }
 };

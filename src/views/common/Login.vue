@@ -266,7 +266,8 @@ export default {
     this.form = {
       username: '',
       password: '',
-      role: ''
+      role: '',
+      capthatoken: ''
     }
   },
   mounted() {
@@ -275,28 +276,61 @@ export default {
     script.setAttribute('src', 'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js')
     script.onload = this.initParticles
     document.head.appendChild(script)
+    
+    // 添加监听验证码刷新的逻辑
+    this.$nextTick(() => {
+      if (this.$refs.slideCaptcha) {
+        const originalRefresh = this.$refs.slideCaptcha.refreshCaptcha;
+        this.$refs.slideCaptcha.refreshCaptcha = async () => {
+          await originalRefresh.call(this.$refs.slideCaptcha);
+          this.captchaVerified = false;
+          this.form.capthatoken = '';
+        };
+      }
+    })
   },
   methods: {
-    handleCaptchaSuccess() {
+    handleCaptchaSuccess(capthatoken) {
       this.captchaVerified = true
       this.$message.success('验证成功')
+      // 直接使用传递来的验证码token
+      this.form.capthatoken = capthatoken
     },
     
     handleCaptchaFail() {
       this.captchaVerified = false
       this.$message.error('验证失败，请重试')
+      // 清除验证码token
+      this.form.capthatoken = null
     },
     
     login() {
       this.$refs['formRef'].validate((valid) => {
         if (valid) {
-          if (!this.captchaVerified) {
+          if (!this.captchaVerified || !this.form.capthatoken) {
             this.$message.warning('请先完成滑动验证')
+            return
+          }
+          
+          // 检查验证码组件的状态
+          if (this.$refs.slideCaptcha && !this.$refs.slideCaptcha.verified) {
+            this.$message.warning('验证码状态异常，请重新验证')
+            // 重置验证码
+            this.$refs.slideCaptcha.refreshCaptcha()
+            this.captchaVerified = false
+            this.form.capthatoken = ''
             return
           }
           
           const loginBtn = document.querySelector('.login-button')
           loginBtn.classList.add('loading')
+
+          // 打印登录请求信息，用于调试
+          console.log("登录请求:", {
+            username: this.form.username,
+            role: this.form.role,
+            capthatoken: this.form.capthatoken
+          })
 
           this.$request.post('/login', this.form).then(res => {
             loginBtn.classList.remove('loading')
@@ -306,6 +340,12 @@ export default {
               setTimeout(() => {
                 this.$router.push('/')
                 this.$message.success('登录成功')
+                // 成功后重置验证码
+                this.captchaVerified = false
+                this.form.capthatoken = ''
+                if (this.$refs.slideCaptcha) {
+                  this.$refs.slideCaptcha.refreshCaptcha()
+                }
               }, 800)
             } else {
               this.showErrorAnimation()
@@ -321,6 +361,7 @@ export default {
               if (this.$refs.slideCaptcha) {
                 this.$refs.slideCaptcha.refreshCaptcha()
                 this.captchaVerified = false
+                this.form.capthatoken = ''
               }
             }
           }).catch(() => {
@@ -330,6 +371,7 @@ export default {
             if (this.$refs.slideCaptcha) {
               this.$refs.slideCaptcha.refreshCaptcha()
               this.captchaVerified = false
+              this.form.capthatoken = ''
             }
           })
         }
