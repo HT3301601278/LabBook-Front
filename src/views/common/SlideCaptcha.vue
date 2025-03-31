@@ -7,8 +7,6 @@
       <div class="expansion-container" v-show="isExpanded">
         <div class="captcha-actions">
           <button class="refresh-button" @click="refreshCaptcha">刷新</button>
-          <div class="slider-text success-text" v-if="verified">验证成功</div>
-          <div class="slider-text error-text" v-if="verifyFailed">验证失败，请重试</div>
         </div>
         <div class="image-container" ref="imageContainer">
           <img :src="captchaData.originalImageBase64" class="original-image" />
