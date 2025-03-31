@@ -52,6 +52,11 @@
             :useRandomImage="true"
           ></slide-captcha>
         </el-form-item>
+        <div v-if="showResubmit" class="resubmit-section">
+          <el-button type="primary" @click="openResubmitDialog" class="resubmit-button">
+            重新提交注册信息
+          </el-button>
+        </div>
         <el-form-item>
           <el-button
             class="login-button"
@@ -61,11 +66,6 @@
             <span>登 录</span>
           </el-button>
         </el-form-item>
-        <div v-if="showResubmit" class="resubmit-section">
-          <el-button type="primary" @click="openResubmitDialog" class="resubmit-button">
-            重新提交注册信息
-          </el-button>
-        </div>
         <div class="register-link">
           还没有账号？<router-link to="/register" class="register-text">立即注册</router-link>
         </div>
@@ -802,7 +802,8 @@ export default {
 }
 
 .resubmit-section {
-  margin-top: 15px;
+  margin-top: 0;
+  margin-bottom: 15px;
   text-align: center;
 }
 
@@ -1097,7 +1098,7 @@ export default {
 }
 
 .captcha-item {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   position: relative;
 }
 
