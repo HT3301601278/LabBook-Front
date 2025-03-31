@@ -43,6 +43,15 @@
             <el-option label="学生" value="STUDENT" style="text-align: center"></el-option>
           </el-select>
         </el-form-item>
+        <el-form-item class="captcha-item">
+          <slide-captcha
+            ref="slideCaptcha"
+            @success="handleCaptchaSuccess"
+            @fail="handleCaptchaFail"
+            class="slide-captcha-container"
+            :useRandomImage="true"
+          ></slide-captcha>
+        </el-form-item>
         <el-form-item>
           <el-button
             class="login-button"
@@ -144,8 +153,13 @@
 </template>
 
 <script>
+import SlideCaptcha from '@/views/common/SlideCaptcha.vue'
+
 export default {
   name: "Login",
+  components: {
+    SlideCaptcha
+  },
   data() {
     return {
       form: {},
@@ -171,6 +185,7 @@ export default {
         phone: '',
         studentCardPhoto: ''
       },
+      captchaVerified: false,
       collegeToMajors: {
         '化学工程学院': [
           '化学工程与工艺',
@@ -262,9 +277,24 @@ export default {
     document.head.appendChild(script)
   },
   methods: {
+    handleCaptchaSuccess() {
+      this.captchaVerified = true
+      this.$message.success('验证成功')
+    },
+    
+    handleCaptchaFail() {
+      this.captchaVerified = false
+      this.$message.error('验证失败，请重试')
+    },
+    
     login() {
       this.$refs['formRef'].validate((valid) => {
         if (valid) {
+          if (!this.captchaVerified) {
+            this.$message.warning('请先完成滑动验证')
+            return
+          }
+          
           const loginBtn = document.querySelector('.login-button')
           loginBtn.classList.add('loading')
 
@@ -287,10 +317,20 @@ export default {
               } else {
                 this.$message.error(res.msg)
               }
+              // 重置验证码
+              if (this.$refs.slideCaptcha) {
+                this.$refs.slideCaptcha.refreshCaptcha()
+                this.captchaVerified = false
+              }
             }
           }).catch(() => {
             loginBtn.classList.remove('loading')
             this.showErrorAnimation()
+            // 重置验证码
+            if (this.$refs.slideCaptcha) {
+              this.$refs.slideCaptcha.refreshCaptcha()
+              this.captchaVerified = false
+            }
           })
         }
       })
@@ -1012,5 +1052,14 @@ export default {
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+.captcha-item {
+  margin-bottom: 20px;
+}
+
+.slide-captcha-container {
+  width: 100%;
+  margin: 0 auto;
 }
 </style>
