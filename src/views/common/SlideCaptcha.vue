@@ -81,19 +81,26 @@ export default {
       // 获取图片和滑块的宽度
       const imageWidth = this.imageWidth || 280;
       const jigsawWidth = this.captchaData.jigsawWidth * this.imageScale;
-
-      // 计算滑块最大可移动距离
-      const maxX = imageWidth - jigsawWidth;
-
-      // 计算滑块位置，确保从图片左边界开始，且能移动到右边界
-      const moveRatio = this.moveX / this.maxMoveDistance;
-      const left = moveRatio * maxX;
-
-      // 确保位置在有效范围内
-      const adjustedLeft = Math.max(0, Math.min(left, maxX));
       
-      // 添加15px的偏移来补偿滤镜效果带来的视觉差异
-      const topOffset = 15;
+      // 计算拼图块的中心位置应该在图片上的哪个位置
+      // 移动比例：滑块中心位置(moveX + 滑块宽度/2) / 滑动轨道总宽度
+      const sliderButtonWidth = 45; // 滑块宽度
+      const sliderCenterX = this.moveX + sliderButtonWidth / 2;
+      const moveRatio = sliderCenterX / this.sliderWidth;
+      
+      // 根据比例计算拼图块的中心应该在的位置
+      // 拼图块中心位置 = 图片宽度 * 移动比例
+      const jigsawCenterX = imageWidth * moveRatio;
+      
+      // 计算拼图块左侧的位置 = 中心位置 - 拼图块宽度/2
+      const left = jigsawCenterX - jigsawWidth / 2;
+      
+      // 确保位置在有效范围内
+      const maxLeft = imageWidth - jigsawWidth;
+      const adjustedLeft = Math.max(0, Math.min(left, maxLeft));
+      
+      // 添加20px的偏移来补偿滤镜效果带来的视觉差异
+      const topOffset = 20;
 
       return {
         left: adjustedLeft + 'px',
@@ -137,17 +144,26 @@ export default {
 
     updateImageDimensions() {
       if (this.$refs.imageContainer && !this.isImageSizeCalculated) {
+        // 获取滑动轨道宽度
+        if (this.$refs.sliderContainer) {
+          this.sliderWidth = this.$refs.sliderContainer.clientWidth;
+          // 设置图片容器宽度与滑动轨道宽度一致
+          this.$refs.imageContainer.style.width = `${this.sliderWidth}px`;
+        }
+        
         // 获取图片实际尺寸
         const imageElement = this.$refs.imageContainer.querySelector('.original-image');
         if (imageElement) {
           // 等待图片加载完成后再获取尺寸
           if (imageElement.complete) {
-            this.imageWidth = imageElement.clientWidth;
+            // 使图片宽度与滑动轨道宽度一致
+            this.imageWidth = this.sliderWidth;
             this.imageScale = this.imageWidth / this.captchaData.originalWidth;
             this.isImageSizeCalculated = true;
           } else {
             imageElement.onload = () => {
-              this.imageWidth = imageElement.clientWidth;
+              // 使图片宽度与滑动轨道宽度一致
+              this.imageWidth = this.sliderWidth;
               this.imageScale = this.imageWidth / this.captchaData.originalWidth;
               this.isImageSizeCalculated = true;
             };
@@ -196,10 +212,8 @@ export default {
             this.maxMoveDistance = this.sliderWidth - 40;
           }
 
-          // 如果已经展开，立即更新图片尺寸
-          if (this.isExpanded) {
-            this.updateImageDimensions();
-          }
+          // 无论是否展开，都先计算并设置图片尺寸
+          this.updateImageDimensions();
         });
       } catch (error) {
         console.error('加载验证码失败:', error);
@@ -253,18 +267,20 @@ export default {
       // 只要拖动了一定距离就尝试验证
       if (this.moveX > 10) {
         try {
-          // 计算拖动比例
-          const moveRatio = this.moveX / this.maxMoveDistance;
+          // 计算滑块中心的位置比例
+          const sliderButtonWidth = 45; // 滑块宽度
+          const sliderCenterX = this.moveX + sliderButtonWidth / 2;
+          const moveRatio = sliderCenterX / this.sliderWidth;
 
           // 获取原始图片信息
           const originalWidth = this.captchaData.originalWidth;
           const jigsawWidth = this.captchaData.jigsawWidth;
 
-          // 计算滑块在原始图片上可移动的最大距离
-          const maxOriginalX = originalWidth - jigsawWidth;
-
-          // 根据拖动比例计算原始图片上的实际x坐标
-          const actualX = Math.round(moveRatio * maxOriginalX);
+          // 根据比例计算拼图块中心在原始图片上的位置
+          const jigsawCenterX = originalWidth * moveRatio;
+          
+          // 计算拼图块左侧的位置 = 中心位置 - 拼图块宽度/2
+          const actualX = Math.round(jigsawCenterX - jigsawWidth / 2);
 
           if (actualX === null || isNaN(actualX)) {
             throw new Error("无效的X坐标");
@@ -414,14 +430,14 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0;
+  margin: 0 auto;
 }
 
 .original-image {
   display: block;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
   margin: 0;
   padding: 0;
 }
