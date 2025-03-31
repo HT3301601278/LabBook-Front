@@ -93,10 +93,13 @@ export default {
 
       // 确保位置在有效范围内
       const adjustedLeft = Math.max(0, Math.min(left, maxX));
+      
+      // 添加15px的偏移来补偿滤镜效果带来的视觉差异
+      const topOffset = 15;
 
       return {
         left: adjustedLeft + 'px',
-        top: (this.captchaData.y * this.imageScale) + 'px',
+        top: (this.captchaData.y * this.imageScale + topOffset) + 'px',
         width: jigsawWidth + 'px',
         height: (this.captchaData.jigsawHeight * this.imageScale) + 'px',
         display: 'block'
@@ -340,25 +343,28 @@ export default {
 
 <style scoped>
 .slide-captcha {
-  width: 300px;
+  width: 100%;
   margin: 0 auto;
-  border-radius: 4px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
   background-color: #fff;
   position: relative;
   transition: all 0.3s ease;
   box-sizing: border-box;
+  overflow: visible;
+  margin-top: 0;
 }
 
 .slide-captcha.expanded {
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 20px rgba(64, 158, 255, 0.15);
   z-index: 100;
 }
 
 .loading {
   text-align: center;
   padding: 20px;
-  color: #999;
+  color: #909399;
+  font-size: 14px;
 }
 
 .captcha-container {
@@ -372,12 +378,20 @@ export default {
   width: 100%;
   bottom: 100%;
   left: 0;
-  z-index: 101;
+  z-index: 1000;
   background-color: #fff;
-  border-radius: 4px 4px 0 0;
-  box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.15);
   box-sizing: border-box;
   padding: 0;
+  animation: fadeIn 0.3s ease;
+  transform: translateY(0);
+  margin-bottom: 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .image-container {
@@ -386,15 +400,18 @@ export default {
   overflow: hidden;
   padding: 0;
   box-sizing: border-box;
-  max-height: 280px;
+  height: 200px;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 0;
 }
 
 .original-image {
   display: block;
-  width: 100%;
-  height: auto;
   max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   margin: 0;
   padding: 0;
@@ -408,7 +425,6 @@ export default {
   pointer-events: none;
   margin: 0;
   padding: 0;
-  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.3));
 }
 
 .jigsaw-image {
@@ -417,7 +433,6 @@ export default {
   user-select: none;
   object-fit: contain;
   background-color: transparent;
-  filter: brightness(1.05) contrast(1.05);
 }
 
 .slider-wrapper {
@@ -433,17 +448,33 @@ export default {
 
 .slider-track {
   position: relative;
-  height: 40px;
-  border-radius: 20px;
-  background-color: #f5f5f5;
+  height: 45px;
+  border-radius: 8px;
+  background-color: #f5f7fa;
   overflow: visible;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+}
+
+.slider-track::before {
+  content: "向右滑动完成验证";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #909399;
+  font-size: 14px;
+  white-space: nowrap;
+  z-index: 0;
+  opacity: 0.8;
+  pointer-events: none;
 }
 
 .slider-mask {
   position: absolute;
   height: 100%;
-  border-radius: 20px;
-  background-color: #d1e9fa;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #d1e9fa 0%, #a8d8ff 100%);
   left: 0;
   transition: none;
   z-index: 1;
@@ -452,34 +483,43 @@ export default {
 
 .slider-button {
   position: absolute;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #1890ff;
+  width: 45px;
+  height: 45px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #409EFF 0%, #3a8ee6 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   cursor: pointer;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
   user-select: none;
   touch-action: none;
   transform: translateX(0);
   top: 0;
   left: 0;
   z-index: 10;
+  transition: background 0.3s, box-shadow 0.3s, transform 0.3s;
+}
+
+.slider-button:hover {
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.5);
 }
 
 .slider-button-success {
-  background-color: #52c41a;
+  background: linear-gradient(135deg, #52c41a 0%, #49ad17 100%);
+  box-shadow: 0 2px 8px rgba(82, 196, 26, 0.3);
 }
 
 .slider-button-error {
-  background-color: #f5222d;
+  background: linear-gradient(135deg, #f5222d 0%, #e01e2b 100%);
+  box-shadow: 0 2px 8px rgba(245, 34, 45, 0.3);
 }
 
 .slider-icon {
   font-size: 18px;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .success-icon, .error-icon {
@@ -489,8 +529,9 @@ export default {
 .slider-text {
   text-align: center;
   margin-top: 8px;
-  color: #666;
+  color: #606266;
   font-size: 14px;
+  font-weight: 500;
 }
 
 .success-text {
@@ -505,22 +546,34 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  background-color: #f5f5f5;
-  border-radius: 4px 4px 0 0;
+  padding: 12px 15px;
+  background: linear-gradient(to right, #f8f9fa, #f0f2f5);
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid #ebeef5;
   margin-bottom: 0;
 }
 
 .refresh-button {
-  background-color: #1890ff;
+  background: linear-gradient(135deg, #409EFF 0%, #3a8ee6 100%);
   color: white;
   border: none;
   padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s;
+  box-shadow: 0 2px 5px rgba(64, 158, 255, 0.2);
 }
 
 .refresh-button:hover {
-  background-color: #40a9ff;
+  background: linear-gradient(135deg, #3a8ee6 0%, #409EFF 100%);
+  box-shadow: 0 4px 8px rgba(64, 158, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.refresh-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(64, 158, 255, 0.2);
 }
 </style>

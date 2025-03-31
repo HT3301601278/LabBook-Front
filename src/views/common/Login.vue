@@ -1056,6 +1056,7 @@ export default {
 
 .captcha-item {
   margin-bottom: 20px;
+  position: relative;
 }
 
 .slide-captcha-container {
