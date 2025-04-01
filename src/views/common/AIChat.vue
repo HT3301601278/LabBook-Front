@@ -140,8 +140,53 @@ export default {
           .replace(/}/g, '')
           .replace(/```text\n/g, '')
           .replace(/```/g, '');
+        
+        // 解析Markdown
+        formattedContent = this.parseMarkdown(formattedContent);
       }
       return formattedContent;
+    },
+    parseMarkdown(text) {
+      // 转义HTML特殊字符
+      text = text.replace(/&/g, '&amp;')
+                 .replace(/</g, '&lt;')
+                 .replace(/>/g, '&gt;')
+                 .replace(/"/g, '&quot;')
+                 .replace(/'/g, '&#039;');
+
+      // 处理标题
+      text = text.replace(/^##### (.*$)/gm, '<h5>$1</h5>')
+                 .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
+                 .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+                 .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                 .replace(/^# (.*$)/gm, '<h1>$1</h1>');
+
+      // 处理粗体
+      text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                 .replace(/__(.*?)__/g, '<strong>$1</strong>');
+
+      // 处理斜体
+      text = text.replace(/\*(.*?)\*/g, '<em>$1</em>')
+                 .replace(/_(.*?)_/g, '<em>$1</em>');
+
+      // 处理代码块
+      text = text.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+                 .replace(/`([^`]+)`/g, '<code>$1</code>');
+
+      // 处理列表
+      text = text.replace(/^\s*\d+\. (.*$)/gm, '<ol><li>$1</li></ol>')
+                 .replace(/^\s*[-*+] (.*$)/gm, '<ul><li>$1</li></ul>');
+
+      // 处理链接
+      text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+
+      // 处理引用
+      text = text.replace(/^\> (.*$)/gm, '<blockquote>$1</blockquote>');
+
+      // 处理换行
+      text = text.replace(/\n/g, '<br>');
+
+      return text;
     },
     getCurrentTime() {
       const now = new Date();
@@ -494,6 +539,72 @@ export default {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   max-width: 100%;
   word-break: break-word;
+}
+
+/* 添加Markdown样式 */
+.message-text h1,
+.message-text h2,
+.message-text h3,
+.message-text h4,
+.message-text h5 {
+  margin: 10px 0;
+  color: #1e3a8a;
+}
+
+.message-text h1 { font-size: 1.5em; }
+.message-text h2 { font-size: 1.3em; }
+.message-text h3 { font-size: 1.1em; }
+.message-text h4 { font-size: 1em; }
+.message-text h5 { font-size: 0.9em; }
+
+.message-text code {
+  background-color: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.message-text pre {
+  background-color: #f8fafc;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.message-text pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+.message-text blockquote {
+  border-left: 3px solid #cbd5e1;
+  margin: 10px 0;
+  padding-left: 10px;
+  color: #64748b;
+}
+
+.message-text ul,
+.message-text ol {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.message-text a {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.message-text a:hover {
+  text-decoration: underline;
+}
+
+.message-text strong {
+  font-weight: 600;
+  color: #1e3a8a;
+}
+
+.message-text em {
+  font-style: italic;
 }
 
 .assistant .message-text {
