@@ -2,7 +2,7 @@
   <div>
     <div class="search">
       <el-input placeholder="请输入报修说明" style="width: 200px" v-model="description"></el-input>
-      <el-input placeholder="请输入报修人" style="width: 200px; margin-left: 10px" v-model="studentName"></el-input>
+      <el-input v-if="user.role !== 'STUDENT'" placeholder="请输入报修人" style="width: 200px; margin-left: 10px" v-model="studentName"></el-input>
       <el-input placeholder="请输入实验室" style="width: 200px; margin-left: 10px" v-model="labName"></el-input>
       <el-select v-model="status" placeholder="请选择处理状态" style="width: 200px; margin-left: 10px">
         <el-option label="待处理" value="待处理"></el-option>
