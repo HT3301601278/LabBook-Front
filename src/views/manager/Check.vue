@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="search">
-      <el-input placeholder="请输入检修人姓名" style="width: 200px" v-model="inspectorName"></el-input>
       <el-input placeholder="请输入检修内容" style="width: 200px; margin-left: 10px" v-model="content"></el-input>
+      <el-input placeholder="请输入检修人姓名" style="width: 200px" v-model="inspectorName"></el-input>
       <el-input placeholder="请输入检修部门" style="width: 200px; margin-left: 10px" v-model="department"></el-input>
       <el-button type="info" plain style="margin-left: 10px" @click="load(1)">查询</el-button>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
