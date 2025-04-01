@@ -78,7 +78,7 @@ export default {
       messages: [],
       defaultAvatar: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
       botAvatar: require("@/assets/imgs/deepseek.svg"),
-      apiKey: "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",
+      apiKey: "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",
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
       isResizing: false,
       initialWidth: 0,
@@ -203,10 +203,6 @@ export default {
           body: JSON.stringify({
             "model": "deepseek/deepseek-r1-zero:free",
             "messages": [
-              {
-                "role": "system",
-                "content": "请只回答用户最新的问题，不要重复之前的回答内容。"
-              },
               ...this.chatHistory
             ]
           })
@@ -222,16 +218,23 @@ export default {
           let botResponse = message.content;
           const reasoning = message.reasoning;
           
-          // 处理boxed格式的内容
-          if (botResponse && botResponse.includes("\\boxed{")) {
+          // 保存原始回复内容（包含\boxed{}格式）到聊天历史
+          this.chatHistory.push({
+            role: "assistant",
+            content: botResponse
+          });
+          
+          // 处理boxed格式的内容用于显示
+          let displayResponse = botResponse;
+          if (displayResponse && displayResponse.includes("\\boxed{")) {
             // 提取boxed内容
-            const boxedMatch = botResponse.match(/\\boxed{([\s\S]*?)}/);
+            const boxedMatch = displayResponse.match(/\\boxed{([\s\S]*?)}/);
             if (boxedMatch && boxedMatch[1]) {
-              botResponse = boxedMatch[1].trim();
+              displayResponse = boxedMatch[1].trim();
             } else {
               // 如果匹配失败但仍以\\boxed{开头，使用原有逻辑
-              if (botResponse.startsWith("\\boxed{")) {
-                botResponse = botResponse
+              if (displayResponse.startsWith("\\boxed{")) {
+                displayResponse = displayResponse
                   .replace(/^\\boxed{\n?/, "")
                   .replace(/}$/, "");
               }
@@ -240,16 +243,50 @@ export default {
           
           // 如果有reasoning，使用reasoning作为思考内容
           if (reasoning) {
-            this.addBotMessage(botResponse, reasoning, thinkingTime);
+            // 使用处理后的回复内容添加到消息显示列表
+            this.messages.push({
+              role: "assistant",
+              content: displayResponse,
+              thoughts: reasoning,
+              thinkingTime: thinkingTime,
+              showThoughts: false,
+              time: this.getCurrentTime()
+            });
           } else {
-            this.addBotMessage(botResponse);
+            // 使用处理后的回复内容添加到消息显示列表
+            this.messages.push({
+              role: "assistant",
+              content: displayResponse,
+              time: this.getCurrentTime()
+            });
           }
+          this.scrollToBottom();
         } else {
-          this.addBotMessage("抱歉，我无法获取回复。请稍后再试。");
+          const errorMsg = "抱歉，我无法获取回复。请稍后再试。";
+          this.messages.push({
+            role: "assistant",
+            content: errorMsg,
+            time: this.getCurrentTime()
+          });
+          this.chatHistory.push({
+            role: "assistant",
+            content: errorMsg
+          });
+          this.scrollToBottom();
         }
       } catch (error) {
         console.error("AI聊天错误:", error);
-        this.addBotMessage("连接出错，请检查网络连接或API配置。");
+        const errorMsg = "连接出错，请检查网络连接或API配置。";
+        this.messages.push({
+          role: "assistant",
+          content: errorMsg,
+          time: this.getCurrentTime()
+        });
+        this.chatHistory.push({
+          role: "assistant",
+          content: errorMsg
+        });
+        this.scrollToBottom();
       } finally {
         this.isTyping = false;
       }
