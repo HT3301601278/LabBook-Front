@@ -1,48 +1,55 @@
 <template>
-  <div class="ai-chat-container" v-if="visible" :class="{'minimized': isMinimized, 'resizing': isResizing}" ref="chatContainer">
-    <div class="resize-handle" v-if="!isMinimized" @mousedown="startResize"></div>
-    <div class="ai-chat-header">
-      <div class="ai-chat-title">
-        <img src="../../assets/imgs/deepseek.svg" class="chat-icon" />
-        <span>智能助手</span>
+  <div>
+    <!-- 完整聊天窗口 -->
+    <div class="ai-chat-container" v-if="visible && !isMinimized" :class="{'resizing': isResizing}" ref="chatContainer">
+      <div class="resize-handle" @mousedown="startResize"></div>
+      <div class="ai-chat-header">
+        <div class="ai-chat-title">
+          <img src="../../assets/imgs/deepseek.svg" class="chat-icon" />
+          <span>智能助手</span>
+        </div>
+        <div class="ai-chat-actions">
+          <el-button type="text" icon="el-icon-minus" @click="minimize"></el-button>
+          <el-button type="text" icon="el-icon-close" @click="close"></el-button>
+        </div>
       </div>
-      <div class="ai-chat-actions">
-        <el-button type="text" icon="el-icon-minus" @click="minimize" v-if="!isMinimized"></el-button>
-        <el-button type="text" icon="el-icon-plus" @click="restore" v-else></el-button>
-        <el-button type="text" icon="el-icon-close" @click="close"></el-button>
+      <div class="ai-chat-body">
+        <div class="ai-chat-messages" ref="messagesContainer">
+          <div v-for="(message, index) in messages" :key="index" :class="['message', message.role]">
+            <div class="message-avatar">
+              <img :src="message.role === 'user' ? (user.avatar || defaultAvatar) : botAvatar" />
+            </div>
+            <div class="message-content">
+              <template v-if="message.role === 'assistant' && message.thoughts">
+                <div class="thoughts-toggle" @click="toggleThoughts(index)">
+                  <i :class="['toggle-icon', message.showThoughts ? 'el-icon-arrow-down' : 'el-icon-arrow-right']"></i>
+                  <span>已深度思考（用时 {{ message.thinkingTime || '?' }} 秒）</span>
+                </div>
+                <div class="message-thoughts" v-if="message.showThoughts">{{ message.thoughts }}</div>
+              </template>
+              <div class="message-text" v-html="formatMessage(message.content)"></div>
+              <div class="message-time">{{ message.time }}</div>
+            </div>
+          </div>
+          <div class="ai-typing" v-if="isTyping">AI正在思考...</div>
+        </div>
+        <div class="ai-chat-input">
+          <el-input
+            type="textarea"
+            v-model="userInput"
+            placeholder="请输入您的问题..."
+            :rows="2"
+            resize="none"
+            @keyup.enter.native.exact="sendMessage"
+          ></el-input>
+          <el-button type="primary" icon="el-icon-s-promotion" @click="sendMessage" :loading="isTyping">发送</el-button>
+        </div>
       </div>
     </div>
-    <div class="ai-chat-body" v-show="!isMinimized">
-      <div class="ai-chat-messages" ref="messagesContainer">
-        <div v-for="(message, index) in messages" :key="index" :class="['message', message.role]">
-          <div class="message-avatar">
-            <img :src="message.role === 'user' ? (user.avatar || defaultAvatar) : botAvatar" />
-          </div>
-          <div class="message-content">
-            <template v-if="message.role === 'assistant' && message.thoughts">
-              <div class="thoughts-toggle" @click="toggleThoughts(index)">
-                <i :class="['toggle-icon', message.showThoughts ? 'el-icon-arrow-down' : 'el-icon-arrow-right']"></i>
-                <span>已深度思考（用时 {{ message.thinkingTime || '?' }} 秒）</span>
-              </div>
-              <div class="message-thoughts" v-if="message.showThoughts">{{ message.thoughts }}</div>
-            </template>
-            <div class="message-text" v-html="formatMessage(message.content)"></div>
-            <div class="message-time">{{ message.time }}</div>
-          </div>
-        </div>
-        <div class="ai-typing" v-if="isTyping">AI正在思考...</div>
-      </div>
-      <div class="ai-chat-input">
-        <el-input
-          type="textarea"
-          v-model="userInput"
-          placeholder="请输入您的问题..."
-          :rows="2"
-          resize="none"
-          @keyup.enter.native.exact="sendMessage"
-        ></el-input>
-        <el-button type="primary" icon="el-icon-s-promotion" @click="sendMessage" :loading="isTyping">发送</el-button>
-      </div>
+
+    <!-- 最小化为小球，使用独立的DOM元素，不复用聊天窗口 -->
+    <div v-if="visible && isMinimized" class="ai-chat-bubble" @click="restore">
+      <img src="../../assets/imgs/deepseek.svg" alt="AI助手" />
     </div>
   </div>
 </template>
@@ -87,10 +94,22 @@ export default {
       this.visible = false;
     },
     minimize() {
+      // 在最小化之前清除所有可能影响小球样式的内联样式
       this.isMinimized = true;
+      // 确保在下一个渲染周期完成后，聊天窗口的样式被完全清除
+      this.$nextTick(() => {
+        if (this.$refs.chatContainer) {
+          // 重置可能影响样式的属性
+          this.$refs.chatContainer.style = null;
+        }
+      });
     },
     restore() {
       this.isMinimized = false;
+      // 恢复后确保滚动到消息底部
+      this.$nextTick(() => {
+        this.scrollToBottom();
+      });
     },
     formatMessage(content) {
       // 首先移除markdown代码块标记
@@ -306,6 +325,7 @@ export default {
   max-width: 80vw; /* 最大宽度为视口宽度的80% */
   max-height: 80vh; /* 最大高度为视口高度的80% */
   transform-origin: bottom right;
+  animation: fade-in 0.25s ease;
 }
 
 .ai-chat-header {
@@ -540,11 +560,6 @@ export default {
 
 /* 调整最小化状态时的样式 */
 .ai-chat-container.minimized {
-  height: auto !important;
-  width: 380px !important;
-}
-
-.ai-chat-container.minimized .resize-handle {
   display: none;
 }
 
@@ -589,5 +604,74 @@ export default {
   white-space: pre-wrap;
   line-height: 1.5;
   animation: fadeIn 0.3s ease;
+}
+
+/* 小球样式 - 确保没有继承属性 */
+.ai-chat-bubble {
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  width: 60px !important;
+  height: 60px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  z-index: 9999 !important;
+  transition: transform 0.3s, box-shadow 0.3s !important;
+  animation: bubble-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  
+  /* 重置可能影响的属性 */
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  min-width: auto !important;
+  min-height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  border: none !important;
+  overflow: visible !important;
+  resize: none !important;
+}
+
+/* 小球内图标样式 */
+.ai-chat-bubble img {
+  width: 48px !important;
+  height: 48px !important;
+  filter: brightness(0) invert(1) !important; /* 使图标反色为白色 */
+  object-fit: contain !important;
+}
+
+/* 确保小球悬停效果正常工作 */
+.ai-chat-bubble:hover {
+  transform: scale(1.1) !important;
+  box-shadow: 0 6px 16px rgba(30, 58, 138, 0.4) !important;
+}
+
+/* 添加气泡动画 */
+@keyframes bubble-in {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 窗口显示隐藏动画 */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
