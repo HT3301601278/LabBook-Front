@@ -55,6 +55,9 @@
 </template>
 
 <script>
+import katex from 'katex';
+import 'katex/dist/katex.min.css'; // 导入KaTeX样式
+
 export default {
   name: "AIChat",
   data() {
@@ -114,11 +117,121 @@ export default {
     formatMessage(content) {
       // 首先移除markdown和text代码块标记
       content = content.replace(/^```(markdown|text)\n/i, '').replace(/```$/, '');
+      content = content.replace(/```\n?/g, ''); // 移除所有剩余的代码块标记
       
+      // 使用正则表达式预处理内容，将普通希腊字母文本转换为LaTeX格式
+      // 这将把单独的Unicode希腊字母如 θ, α 等转换为LaTeX格式 \theta, \alpha
+      const greekLettersMap = {
+        'α': '\\alpha', 'β': '\\beta', 'γ': '\\gamma', 'δ': '\\delta', 'ε': '\\epsilon', 
+        'ζ': '\\zeta', 'η': '\\eta', 'θ': '\\theta', 'ι': '\\iota', 'κ': '\\kappa', 
+        'λ': '\\lambda', 'μ': '\\mu', 'ν': '\\nu', 'ξ': '\\xi', 'ο': '\\omicron', 
+        'π': '\\pi', 'ρ': '\\rho', 'σ': '\\sigma', 'τ': '\\tau', 'υ': '\\upsilon', 
+        'φ': '\\phi', 'χ': '\\chi', 'ψ': '\\psi', 'ω': '\\omega',
+        'Α': '\\Alpha', 'Β': '\\Beta', 'Γ': '\\Gamma', 'Δ': '\\Delta', 'Ε': '\\Epsilon', 
+        'Ζ': '\\Zeta', 'Η': '\\Eta', 'Θ': '\\Theta', 'Ι': '\\Iota', 'Κ': '\\Kappa', 
+        'Λ': '\\Lambda', 'Μ': '\\Mu', 'Ν': '\\Nu', 'Ξ': '\\Xi', 'Ο': '\\Omicron', 
+        'Π': '\\Pi', 'Ρ': '\\Rho', 'Σ': '\\Sigma', 'Τ': '\\Tau', 'Υ': '\\Upsilon', 
+        'Φ': '\\Phi', 'Χ': '\\Chi', 'Ψ': '\\Psi', 'Ω': '\\Omega'
+      };
+      
+      // 查找单独的希腊字母，前后有空格或标点的情况
+      Object.keys(greekLettersMap).forEach(letter => {
+        const regex = new RegExp(`(^|\\s|\\()${letter}($|\\s|\\)|\\.|\\,)`, 'g');
+        content = content.replace(regex, (match, p1, p2) => {
+          return `${p1}\\(${greekLettersMap[letter]}\\)${p2}`;
+        });
+      });
+      
+      // 处理双美元符号LaTeX公式 - 匹配$$ ... $$，支持多行
+      content = content.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
+        try {
+          return katex.renderToString(formula.trim(), {
+            throwOnError: false,
+            displayMode: true
+          });
+        } catch (e) {
+          console.error('KaTeX双美元符号公式渲染错误:', e);
+          return match; // 出错时返回原始文本
+        }
+      });
+      
+      // 处理单美元符号LaTeX公式 - 匹配$ ... $（但排除可能是价格的情况）
+      content = content.replace(/\$([^$\n]+?)\$/g, (match, formula) => {
+        // 排除明显是价格的情况，如$50
+        if (/^\s*\d+(\.\d+)?\s*$/.test(formula)) {
+          return match;
+        }
+        try {
+          return katex.renderToString(formula.trim(), {
+            throwOnError: false,
+            displayMode: false
+          });
+        } catch (e) {
+          console.error('KaTeX单美元符号公式渲染错误:', e);
+          return match; // 出错时返回原始文本
+        }
+      });
+      
+      // 处理内联LaTeX公式 - 匹配\( ... \)
+      content = content.replace(/\\\(([\s\S]*?)\\\)/g, (match, formula) => {
+        try {
+          return katex.renderToString(formula.trim(), {
+            throwOnError: false,
+            displayMode: false
+          });
+        } catch (e) {
+          console.error('KaTeX内联公式渲染错误:', e);
+          return match; // 出错时返回原始文本
+        }
+      });
+      
+      // 处理块级LaTeX公式 - 匹配\[ ... \]
+      content = content.replace(/\\\[([\s\S]*?)\\\]/g, (match, formula) => {
+        try {
+          return katex.renderToString(formula.trim(), {
+            throwOnError: false,
+            displayMode: true
+          });
+        } catch (e) {
+          console.error('KaTeX块级公式渲染错误:', e);
+          return match; // 出错时返回原始文本
+        }
+      });
+      
+      // 处理数学环境 - 匹配\begin{math} ... \end{math}
+      content = content.replace(/\\begin\{math\}([\s\S]*?)\\end\{math\}/g, (match, formula) => {
+        try {
+          return katex.renderToString(formula.trim(), {
+            throwOnError: false,
+            displayMode: false
+          });
+        } catch (e) {
+          console.error('KaTeX数学环境渲染错误:', e);
+          return match; // 出错时返回原始文本
+        }
+      });
+      
+      // 处理展示数学环境 - 匹配\begin{displaymath} ... \end{displaymath}
+      content = content.replace(/\\begin\{displaymath\}([\s\S]*?)\\end\{displaymath\}/g, (match, formula) => {
+        try {
+          return katex.renderToString(formula.trim(), {
+            throwOnError: false,
+            displayMode: true
+          });
+        } catch (e) {
+          console.error('KaTeX展示数学环境渲染错误:', e);
+          return match; // 出错时返回原始文本
+        }
+      });
+      
+      // 剩下的Markdown处理
       // 处理markdown标题
-      content = content.replace(/### (.*?)$/gm, '<h3>$1</h3>');
-      content = content.replace(/## (.*?)$/gm, '<h2>$1</h2>');
-      content = content.replace(/# (.*?)$/gm, '<h1>$1</h1>');
+      content = content.replace(/^###### (.*?)$/gm, '<h6>$1</h6>');
+      content = content.replace(/^##### (.*?)$/gm, '<h5>$1</h5>');
+      content = content.replace(/^#### (.*?)$/gm, '<h4>$1</h4>');
+      content = content.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+      content = content.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+      content = content.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
       
       // 处理无序列表
       content = content.replace(/^- (.*?)$/gm, '<li>$1</li>');
@@ -668,5 +781,24 @@ export default {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* 确保KaTeX公式与周围文本对齐 */
+.katex-display {
+  margin: 1em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* 防止公式溢出容器 */
+.katex-display > .katex {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* 使内联公式与文本对齐 */
+.katex {
+  font-size: 1.1em;
 }
 </style>
