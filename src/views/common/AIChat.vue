@@ -139,7 +139,8 @@ export default {
           .replace(/\\boxed{/g, '')
           .replace(/}/g, '')
           .replace(/```text\n/g, '')
-          .replace(/```/g, '');
+          .replace(/```/g, '')
+          .replace(/\\\\/g, '\\'); // 将双反斜杠替换为单反斜杠
         
         // 解析Markdown
         formattedContent = this.parseMarkdown(formattedContent);
