@@ -112,8 +112,8 @@ export default {
       });
     },
     formatMessage(content) {
-      // 首先移除markdown代码块标记
-      content = content.replace(/^```markdown\n/, '').replace(/```$/, '');
+      // 首先移除markdown和text代码块标记
+      content = content.replace(/^```(markdown|text)\n/i, '').replace(/```$/, '');
       
       // 处理markdown标题
       content = content.replace(/### (.*?)$/gm, '<h3>$1</h3>');
@@ -294,11 +294,6 @@ export default {
       // 移除事件监听
       document.removeEventListener('mousemove', this.handleMouseMove);
       document.removeEventListener('mouseup', this.stopResize);
-      
-      // 调整完成后滚动到底部
-      this.$nextTick(() => {
-        this.scrollToBottom();
-      });
     }
   }
 };
