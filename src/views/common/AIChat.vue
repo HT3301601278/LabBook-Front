@@ -1,5 +1,6 @@
 <template>
-  <div class="ai-chat-container" v-if="visible">
+  <div class="ai-chat-container" v-if="visible" :class="{'minimized': isMinimized, 'resizing': isResizing}" ref="chatContainer">
+    <div class="resize-handle" v-if="!isMinimized" @mousedown="startResize"></div>
     <div class="ai-chat-header">
       <div class="ai-chat-title">
         <img src="../../assets/imgs/deepseek.svg" class="chat-icon" />
@@ -51,8 +52,13 @@ export default {
       messages: [],
       defaultAvatar: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
       botAvatar: require("@/assets/imgs/deepseek.svg"),
-      apiKey: process.env.VUE_APP_OPENROUTER_API_KEY || "",
-      user: JSON.parse(localStorage.getItem('labuser') || '{}')
+      apiKey: "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",
+      user: JSON.parse(localStorage.getItem('labuser') || '{}'),
+      isResizing: false,
+      initialWidth: 0,
+      initialHeight: 0,
+      initialX: 0,
+      initialY: 0
     };
   },
   watch: {
@@ -121,27 +127,44 @@ export default {
       this.isTyping = true;
 
       try {
+        // 准备发送给API的消息数组
+        const apiMessages = this.messages
+          .slice(0, this.messages.length - 1) // 排除刚刚添加的用户消息
+          .map(msg => ({
+            role: msg.role,
+            content: msg.content
+          }));
+        
+        // 添加最新的用户消息
+        apiMessages.push({
+          role: "user",
+          content: userMessage
+        });
+
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${this.apiKey}`,
-            "HTTP-Referer": window.location.origin,
-            "X-Title": "实验室预约系统",
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
             "model": "deepseek/deepseek-r1-zero:free",
-            "messages": this.messages.map(msg => ({
-              role: msg.role,
-              content: msg.content
-            }))
+            "messages": apiMessages
           })
         });
 
         const data = await response.json();
-
+        
         if (data.choices && data.choices.length > 0) {
-          const botResponse = data.choices[0].message.content;
+          let botResponse = data.choices[0].message.content;
+          
+          // 处理deepseek特殊格式的输出
+          if (botResponse.startsWith("\\boxed{```text")) {
+            botResponse = botResponse
+              .replace(/^\\boxed{```text\n/, "") // 移除开头的\boxed{```text
+              .replace(/```}$/, "");             // 移除结尾的```}
+          }
+          
           this.addBotMessage(botResponse);
         } else {
           this.addBotMessage("抱歉，我无法获取回复。请稍后再试。");
@@ -152,6 +175,66 @@ export default {
       } finally {
         this.isTyping = false;
       }
+    },
+    startResize(e) {
+      if (this.isMinimized) return;
+      
+      this.isResizing = true;
+      
+      // 直接引用DOM元素
+      const container = this.$refs.chatContainer;
+      
+      // 存储初始信息
+      this.initialWidth = container.offsetWidth;
+      this.initialHeight = container.offsetHeight;
+      this.initialX = e.clientX;
+      this.initialY = e.clientY;
+      
+      // 添加鼠标移动和鼠标释放事件监听
+      document.addEventListener('mousemove', this.handleMouseMove);
+      document.addEventListener('mouseup', this.stopResize);
+      
+      // 取消默认行为
+      e.preventDefault();
+    },
+    
+    handleMouseMove(e) {
+      if (!this.isResizing) return;
+      
+      // 使用requestAnimationFrame让动画更平滑
+      window.requestAnimationFrame(() => this.doResize(e));
+    },
+    
+    doResize(e) {
+      if (!this.isResizing) return;
+      
+      const container = this.$refs.chatContainer;
+      if (!container) return;
+      
+      // 计算鼠标移动的距离 - 反向计算使得拖动更直观
+      const dx = this.initialX - e.clientX;
+      const dy = this.initialY - e.clientY;
+      
+      // 直接计算新宽高
+      const newWidth = Math.min(Math.max(300, this.initialWidth + dx), window.innerWidth * 0.8);
+      const newHeight = Math.min(Math.max(400, this.initialHeight + dy), window.innerHeight * 0.8);
+      
+      // 直接设置样式，不经过计算
+      container.style.width = `${newWidth}px`;
+      container.style.height = `${newHeight}px`;
+    },
+    
+    stopResize() {
+      this.isResizing = false;
+      
+      // 移除事件监听
+      document.removeEventListener('mousemove', this.handleMouseMove);
+      document.removeEventListener('mouseup', this.stopResize);
+      
+      // 调整完成后滚动到底部
+      this.$nextTick(() => {
+        this.scrollToBottom();
+      });
     }
   }
 };
@@ -172,6 +255,12 @@ export default {
   overflow: hidden;
   border: 1px solid #e8e8e8;
   transition: all 0.3s ease;
+  resize: none; /* 移除默认的resize属性 */
+  min-width: 300px; /* 最小宽度 */
+  min-height: 400px; /* 最小高度 */
+  max-width: 80vw; /* 最大宽度为视口宽度的80% */
+  max-height: 80vh; /* 最大高度为视口高度的80% */
+  transform-origin: bottom right;
 }
 
 .ai-chat-header {
@@ -209,9 +298,12 @@ export default {
 }
 
 .ai-chat-body {
-  height: 450px;
+  height: auto; /* 从固定高度改为自适应 */
+  flex: 1; /* 填满剩余空间 */
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* 防止溢出 */
+  min-height: 200px; /* 最小高度 */
 }
 
 .ai-chat-messages {
@@ -326,6 +418,7 @@ export default {
   align-items: center;
   background-color: #fff;
   gap: 10px;
+  flex-shrink: 0; /* 防止输入区域被压缩 */
 }
 
 .ai-chat-input .el-textarea {
@@ -367,5 +460,44 @@ export default {
 
 .ai-chat-input .el-button:active {
   transform: translateY(0);
+}
+
+.ai-chat-container:after {
+  display: none;
+}
+
+/* 添加左上角的resize手柄 */
+.resize-handle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px; /* 增大点击区域 */
+  height: 20px; /* 增大点击区域 */
+  background: linear-gradient(315deg, transparent 50%, #3b82f6 50%);
+  border-top-left-radius: 12px;
+  cursor: nwse-resize;
+  z-index: 10;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.resize-handle:hover, .resizing .resize-handle {
+  opacity: 1;
+}
+
+/* 调整最小化状态时的样式 */
+.ai-chat-container.minimized {
+  height: auto !important;
+  width: 380px !important;
+}
+
+.ai-chat-container.minimized .resize-handle {
+  display: none;
+}
+
+/* 拖动时的样式 */
+.ai-chat-container.resizing {
+  transition: none; /* 拖动时取消过渡效果 */
+  user-select: none; /* 防止文本选择 */
 }
 </style>
