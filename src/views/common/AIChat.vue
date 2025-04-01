@@ -202,7 +202,13 @@ export default {
           },
           body: JSON.stringify({
             "model": "deepseek/deepseek-r1-zero:free",
-            "messages": this.chatHistory
+            "messages": [
+              {
+                "role": "system",
+                "content": "请只回答用户最新的问题，不要重复之前的回答内容。"
+              },
+              ...this.chatHistory
+            ]
           })
         });
 
@@ -216,11 +222,20 @@ export default {
           let botResponse = message.content;
           const reasoning = message.reasoning;
           
-          // 处理新的boxed格式
-          if (botResponse.startsWith("\\boxed{")) {
-            botResponse = botResponse
-              .replace(/^\\boxed{\n?/, "") // 移除开头的\boxed{
-              .replace(/}$/, "");          // 移除结尾的}
+          // 处理boxed格式的内容
+          if (botResponse && botResponse.includes("\\boxed{")) {
+            // 提取boxed内容
+            const boxedMatch = botResponse.match(/\\boxed{([\s\S]*?)}/);
+            if (boxedMatch && boxedMatch[1]) {
+              botResponse = boxedMatch[1].trim();
+            } else {
+              // 如果匹配失败但仍以\\boxed{开头，使用原有逻辑
+              if (botResponse.startsWith("\\boxed{")) {
+                botResponse = botResponse
+                  .replace(/^\\boxed{\n?/, "")
+                  .replace(/}$/, "");
+              }
+            }
           }
           
           // 如果有reasoning，使用reasoning作为思考内容
