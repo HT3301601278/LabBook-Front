@@ -132,8 +132,16 @@ export default {
       });
     },
     formatMessage(content) {
-      // 直接返回原始内容，不进行任何格式化
-      return content;
+      // 去掉\boxed{和}以及```text和```标记
+      let formattedContent = content;
+      if (formattedContent) {
+        formattedContent = formattedContent
+          .replace(/\\boxed{/g, '')
+          .replace(/}/g, '')
+          .replace(/```text\n/g, '')
+          .replace(/```/g, '');
+      }
+      return formattedContent;
     },
     getCurrentTime() {
       const now = new Date();
@@ -218,45 +226,28 @@ export default {
           let botResponse = message.content;
           const reasoning = message.reasoning;
           
-          // 保存原始回复内容（包含\boxed{}格式）到聊天历史
+          // 保存原始回复内容到聊天历史
           this.chatHistory.push({
             role: "assistant",
             content: botResponse
           });
           
-          // 处理boxed格式的内容用于显示
-          let displayResponse = botResponse;
-          if (displayResponse && displayResponse.includes("\\boxed{")) {
-            // 提取boxed内容
-            const boxedMatch = displayResponse.match(/\\boxed{([\s\S]*?)}/);
-            if (boxedMatch && boxedMatch[1]) {
-              displayResponse = boxedMatch[1].trim();
-            } else {
-              // 如果匹配失败但仍以\\boxed{开头，使用原有逻辑
-              if (displayResponse.startsWith("\\boxed{")) {
-                displayResponse = displayResponse
-                  .replace(/^\\boxed{\n?/, "")
-                  .replace(/}$/, "");
-              }
-            }
-          }
-          
           // 如果有reasoning，使用reasoning作为思考内容
           if (reasoning) {
-            // 使用处理后的回复内容添加到消息显示列表
+            // 直接使用原始回复内容添加到消息显示列表
             this.messages.push({
               role: "assistant",
-              content: displayResponse,
+              content: botResponse,
               thoughts: reasoning,
               thinkingTime: thinkingTime,
               showThoughts: false,
               time: this.getCurrentTime()
             });
           } else {
-            // 使用处理后的回复内容添加到消息显示列表
+            // 直接使用原始回复内容添加到消息显示列表
             this.messages.push({
               role: "assistant",
-              content: displayResponse,
+              content: botResponse,
               time: this.getCurrentTime()
             });
           }
