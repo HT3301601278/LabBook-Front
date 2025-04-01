@@ -19,6 +19,13 @@
             <img :src="message.role === 'user' ? (user.avatar || defaultAvatar) : botAvatar" />
           </div>
           <div class="message-content">
+            <template v-if="message.role === 'assistant' && message.thoughts">
+              <div class="thoughts-toggle" @click="toggleThoughts(index)">
+                <i :class="['toggle-icon', message.showThoughts ? 'el-icon-arrow-down' : 'el-icon-arrow-right']"></i>
+                <span>已深度思考（用时 {{ message.thinkingTime || '?' }} 秒）</span>
+              </div>
+              <div class="message-thoughts" v-if="message.showThoughts">{{ message.thoughts }}</div>
+            </template>
             <div class="message-text" v-html="formatMessage(message.content)"></div>
             <div class="message-time">{{ message.time }}</div>
           </div>
@@ -86,10 +93,36 @@ export default {
       this.isMinimized = false;
     },
     formatMessage(content) {
-      // 简单的文本格式化，可以处理换行和链接
-      return content
-        .replace(/\n/g, "<br>")
-        .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+      // 首先移除markdown代码块标记
+      content = content.replace(/^```markdown\n/, '').replace(/```$/, '');
+      
+      // 处理markdown标题
+      content = content.replace(/### (.*?)$/gm, '<h3>$1</h3>');
+      content = content.replace(/## (.*?)$/gm, '<h2>$1</h2>');
+      content = content.replace(/# (.*?)$/gm, '<h1>$1</h1>');
+      
+      // 处理无序列表
+      content = content.replace(/^- (.*?)$/gm, '<li>$1</li>');
+      content = content.replace(/^(\d+)\. (.*?)$/gm, '<li><strong>$1.</strong> $2</li>');
+      
+      // 将连续的<li>元素包装在<ul>中
+      content = content.replace(/(<li>.*?<\/li>)(?:\s*<li>)/gs, '$1<ul>');
+      content = content.replace(/(<\/li>\s*)(?!<li>|<ul>|<\/ul>)/gs, '$1</ul>');
+      
+      // 处理加粗文本
+      content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      
+      // 处理斜体文本
+      content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      
+      // 处理换行
+      content = content.replace(/\n/g, '<br>');
+      
+      // 处理链接
+      content = content.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
+      content = content.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank">$1</a>');
+      
+      return content;
     },
     getCurrentTime() {
       const now = new Date();
@@ -103,10 +136,13 @@ export default {
       });
       this.scrollToBottom();
     },
-    addBotMessage(content) {
+    addBotMessage(content, reasoning = null, thinkingTime = null) {
       this.messages.push({
         role: "assistant",
         content: content,
+        thoughts: reasoning,
+        thinkingTime: thinkingTime,
+        showThoughts: false,
         time: this.getCurrentTime()
       });
       this.scrollToBottom();
@@ -118,6 +154,11 @@ export default {
         }
       });
     },
+    toggleThoughts(index) {
+      if (this.messages[index] && this.messages[index].thoughts) {
+        this.$set(this.messages[index], 'showThoughts', !this.messages[index].showThoughts);
+      }
+    },
     async sendMessage() {
       if (!this.userInput.trim()) return;
 
@@ -125,21 +166,15 @@ export default {
       this.addUserMessage(userMessage);
       this.userInput = "";
       this.isTyping = true;
+      
+      const startTime = new Date();
 
       try {
-        // 准备发送给API的消息数组
-        const apiMessages = this.messages
-          .slice(0, this.messages.length - 1) // 排除刚刚添加的用户消息
-          .map(msg => ({
-            role: msg.role,
-            content: msg.content
-          }));
-        
-        // 添加最新的用户消息
-        apiMessages.push({
+        // 只发送当前问题，不包含历史对话
+        const apiMessages = [{
           role: "user",
           content: userMessage
-        });
+        }];
 
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
@@ -154,18 +189,28 @@ export default {
         });
 
         const data = await response.json();
+        const endTime = new Date();
+        const thinkingTime = Math.round((endTime - startTime) / 1000);
         
         if (data.choices && data.choices.length > 0) {
-          let botResponse = data.choices[0].message.content;
+          const choice = data.choices[0];
+          const message = choice.message;
+          let botResponse = message.content;
+          const reasoning = message.reasoning;
           
-          // 处理deepseek特殊格式的输出
-          if (botResponse.startsWith("\\boxed{```text")) {
+          // 处理新的boxed格式
+          if (botResponse.startsWith("\\boxed{")) {
             botResponse = botResponse
-              .replace(/^\\boxed{```text\n/, "") // 移除开头的\boxed{```text
-              .replace(/```}$/, "");             // 移除结尾的```}
+              .replace(/^\\boxed{\n?/, "") // 移除开头的\boxed{
+              .replace(/}$/, "");          // 移除结尾的}
           }
           
-          this.addBotMessage(botResponse);
+          // 如果有reasoning，使用reasoning作为思考内容
+          if (reasoning) {
+            this.addBotMessage(botResponse, reasoning, thinkingTime);
+          } else {
+            this.addBotMessage(botResponse);
+          }
         } else {
           this.addBotMessage("抱歉，我无法获取回复。请稍后再试。");
         }
@@ -432,6 +477,14 @@ export default {
   resize: none;
   transition: all 0.3s;
   line-height: 1.5;
+  color: #000000;
+  font-size: 14px;
+  font-weight: 750;  /* 增加文字粗细 */
+}
+
+.ai-chat-input .el-textarea >>> .el-textarea__inner::placeholder {
+  color: #94a3b8;
+  font-weight: 400;  /* 保持占位符文字正常粗细 */
 }
 
 .ai-chat-input .el-textarea >>> .el-textarea__inner:focus {
@@ -499,5 +552,42 @@ export default {
 .ai-chat-container.resizing {
   transition: none; /* 拖动时取消过渡效果 */
   user-select: none; /* 防止文本选择 */
+}
+
+.thoughts-toggle {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  background-color: #f1f5f9;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #64748b;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.thoughts-toggle:hover {
+  background-color: #e2e8f0;
+}
+
+.toggle-icon {
+  margin-right: 5px;
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+.message-thoughts {
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background-color: #f8fafc;
+  border-left: 2px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #64748b;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  animation: fadeIn 0.3s ease;
 }
 </style>
