@@ -15,6 +15,7 @@
       </div>
 
       <div class="manager-header-right">
+        <img src="@/assets/imgs/deepseek.svg" class="deepseek-icon" @click="openAIChat" />
         <el-dropdown placement="bottom">
           <div class="avatar">
             <img :src="user.avatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'" />
@@ -116,6 +117,9 @@ export default {
     logout() {
       localStorage.removeItem('labuser')
       this.$router.push('/login')
+    },
+    openAIChat() {
+      this.$aiChat.show()
     }
   }
 }
