@@ -28,7 +28,18 @@
                 <div class="message-thoughts" v-if="message.showThoughts">{{ message.thoughts }}</div>
               </template>
               <div class="message-text" v-html="formatMessage(message.content)"></div>
-              <div class="message-time">{{ message.time }}</div>
+              <div class="message-footer">
+                <div class="message-time">{{ message.time }}</div>
+                <div class="message-actions">
+                  <el-tooltip 
+                    :content="message.role === 'assistant' ? '复制为Markdown' : '复制文本'" 
+                    placement="top" 
+                    :open-delay="500"
+                  >
+                    <el-button type="text" icon="el-icon-document-copy" size="mini" @click="copyMessage(message)"></el-button>
+                  </el-tooltip>
+                </div>
+              </div>
             </div>
           </div>
           <div class="ai-typing" v-if="isTyping">AI正在思考...</div>
@@ -407,6 +418,35 @@ export default {
       // 移除事件监听
       document.removeEventListener('mousemove', this.handleMouseMove);
       document.removeEventListener('mouseup', this.stopResize);
+    },
+    copyMessage(message) {
+      let textToCopy = message.content;
+      
+      // 如果是AI回复，保持其原始markdown格式
+      // 用户消息直接使用文本内容
+      
+      // 创建一个临时文本区域来执行复制
+      const textArea = document.createElement('textarea');
+      textArea.value = textToCopy;
+      document.body.appendChild(textArea);
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        this.$message({
+          message: message.role === 'assistant' ? 'Markdown格式已复制到剪贴板' : '文本已复制到剪贴板',
+          type: 'success',
+          duration: 1500
+        });
+      } catch (err) {
+        this.$message({
+          message: '复制失败',
+          type: 'error',
+          duration: 1500
+        });
+      } finally {
+        document.body.removeChild(textArea);
+      }
     }
   }
 };
@@ -551,11 +591,45 @@ export default {
   color: white;
 }
 
+.message-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
 .message-time {
   font-size: 11px;
   color: #94a3b8;
-  margin-top: 4px;
   font-weight: 500;
+}
+
+.message-actions {
+  display: flex;
+  align-items: center;
+}
+
+.message-actions .el-button {
+  padding: 0;
+  margin-left: 5px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.message-actions .el-button:hover {
+  opacity: 1;
+  color: #3b82f6;
+}
+
+.message:hover .message-actions {
+  visibility: visible;
+  opacity: 1;
+}
+
+.message .message-actions {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
 .ai-typing {
