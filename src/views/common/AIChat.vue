@@ -15,7 +15,7 @@
       <div class="ai-chat-messages" ref="messagesContainer">
         <div v-for="(message, index) in messages" :key="index" :class="['message', message.role]">
           <div class="message-avatar">
-            <img :src="message.role === 'user' ? userAvatar : botAvatar" />
+            <img :src="message.role === 'user' ? (user.avatar || defaultAvatar) : botAvatar" />
           </div>
           <div class="message-content">
             <div class="message-text" v-html="formatMessage(message.content)"></div>
@@ -49,10 +49,19 @@ export default {
       userInput: "",
       isTyping: false,
       messages: [],
-      userAvatar: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
+      defaultAvatar: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
       botAvatar: require("@/assets/imgs/deepseek.svg"),
-      apiKey: process.env.VUE_APP_OPENROUTER_API_KEY || ""
+      apiKey: process.env.VUE_APP_OPENROUTER_API_KEY || "",
+      user: JSON.parse(localStorage.getItem('labuser') || '{}')
     };
+  },
+  watch: {
+    'localStorage.labuser': {
+      handler() {
+        this.user = JSON.parse(localStorage.getItem('labuser') || '{}');
+      },
+      deep: true
+    }
   },
   methods: {
     show() {
@@ -153,23 +162,24 @@ export default {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 360px;
+  width: 380px;
   background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
   z-index: 9999;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid #eaeaea;
+  border: 1px solid #e8e8e8;
+  transition: all 0.3s ease;
 }
 
 .ai-chat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  background: #1e3a8a;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
   color: white;
   cursor: pointer;
 }
@@ -182,19 +192,24 @@ export default {
 }
 
 .chat-icon {
-  width: 20px;
-  height: 20px;
-  margin-right: 8px;
+  width: 22px;
+  height: 22px;
+  margin-right: 10px;
   filter: brightness(0) invert(1); /* 将SVG图标转为白色 */
 }
 
 .ai-chat-actions .el-button {
   color: white;
   padding: 0 5px;
+  transition: transform 0.2s;
+}
+
+.ai-chat-actions .el-button:hover {
+  transform: scale(1.1);
 }
 
 .ai-chat-body {
-  height: 400px;
+  height: 450px;
   display: flex;
   flex-direction: column;
 }
@@ -202,22 +217,30 @@ export default {
 .ai-chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
-  background-color: #f5f7fa;
+  padding: 18px;
+  background-color: #f8fafc;
+  scroll-behavior: smooth;
 }
 
 .message {
   display: flex;
-  margin-bottom: 12px;
-  max-width: 90%;
+  margin-bottom: 16px;
+  max-width: 85%;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .message-avatar img {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   margin-right: 10px;
   object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .user {
@@ -240,45 +263,109 @@ export default {
 }
 
 .message-text {
-  padding: 10px 14px;
-  border-radius: 12px;
+  padding: 12px 16px;
+  border-radius: 18px;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
   background-color: white;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  max-width: 100%;
+  word-break: break-word;
+}
+
+.assistant .message-text {
+  border-top-left-radius: 4px;
+  background-color: #f0f4ff;
+  color: #333;
+  border-left: 3px solid #cbd5e1;
 }
 
 .user .message-text {
-  background-color: #1e3a8a;
+  border-top-right-radius: 4px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   color: white;
 }
 
 .message-time {
-  font-size: 12px;
-  color: #999;
+  font-size: 11px;
+  color: #94a3b8;
   margin-top: 4px;
+  font-weight: 500;
 }
 
 .ai-typing {
   font-size: 13px;
-  color: #666;
+  color: #64748b;
   font-style: italic;
   padding: 8px 16px;
+  display: flex;
+  align-items: center;
+}
+
+.ai-typing:before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  background-color: #3b82f6;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0.5; }
 }
 
 .ai-chat-input {
-  padding: 12px;
-  border-top: 1px solid #eaeaea;
+  padding: 14px;
+  border-top: 1px solid #e8e8e8;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  background-color: #fff;
+  gap: 10px;
 }
 
 .ai-chat-input .el-textarea {
   flex: 1;
-  margin-right: 10px;
+}
+
+.ai-chat-input .el-textarea >>> .el-textarea__inner {
+  border-radius: 18px;
+  padding: 8px 14px;
+  border-color: #e2e8f0;
+  resize: none;
+  transition: all 0.3s;
+  line-height: 1.5;
+}
+
+.ai-chat-input .el-textarea >>> .el-textarea__inner:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
 }
 
 .ai-chat-input .el-button {
+  border-radius: 12px;
   height: 40px;
+  min-width: 40px;
+  padding: 0 15px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  border: none;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-chat-input .el-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+}
+
+.ai-chat-input .el-button:active {
+  transform: translateY(0);
 }
 </style>
