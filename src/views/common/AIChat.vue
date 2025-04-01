@@ -9,6 +9,7 @@
           <span>智能助手</span>
         </div>
         <div class="ai-chat-actions">
+          <el-button type="text" icon="el-icon-delete" @click="clearChat" title="清空聊天"></el-button>
           <el-button type="text" icon="el-icon-minus" @click="minimize"></el-button>
           <el-button type="text" icon="el-icon-close" @click="close"></el-button>
         </div>
@@ -66,9 +67,6 @@
 </template>
 
 <script>
-import katex from 'katex';
-import 'katex/dist/katex.min.css'; // 导入KaTeX样式
-
 export default {
   name: "AIChat",
   data() {
@@ -86,7 +84,8 @@ export default {
       initialWidth: 0,
       initialHeight: 0,
       initialX: 0,
-      initialY: 0
+      initialY: 0,
+      chatHistory: []
     };
   },
   watch: {
@@ -107,6 +106,13 @@ export default {
     close() {
       this.visible = false;
     },
+    clearChat() {
+      // 清空聊天历史
+      this.messages = [];
+      this.chatHistory = [];
+      // 添加欢迎消息
+      this.addBotMessage("聊天已清空。有什么可以帮助您的吗？");
+    },
     minimize() {
       // 在最小化之前清除所有可能影响小球样式的内联样式
       this.isMinimized = true;
@@ -126,145 +132,7 @@ export default {
       });
     },
     formatMessage(content) {
-      // 首先移除markdown和text代码块标记
-      content = content.replace(/^```(markdown|text)\n/i, '').replace(/```$/, '');
-      content = content.replace(/```\n?/g, ''); // 移除所有剩余的代码块标记
-      
-      // 使用正则表达式预处理内容，将普通希腊字母文本转换为LaTeX格式
-      // 这将把单独的Unicode希腊字母如 θ, α 等转换为LaTeX格式 \theta, \alpha
-      const greekLettersMap = {
-        'α': '\\alpha', 'β': '\\beta', 'γ': '\\gamma', 'δ': '\\delta', 'ε': '\\epsilon', 
-        'ζ': '\\zeta', 'η': '\\eta', 'θ': '\\theta', 'ι': '\\iota', 'κ': '\\kappa', 
-        'λ': '\\lambda', 'μ': '\\mu', 'ν': '\\nu', 'ξ': '\\xi', 'ο': '\\omicron', 
-        'π': '\\pi', 'ρ': '\\rho', 'σ': '\\sigma', 'τ': '\\tau', 'υ': '\\upsilon', 
-        'φ': '\\phi', 'χ': '\\chi', 'ψ': '\\psi', 'ω': '\\omega',
-        'Α': '\\Alpha', 'Β': '\\Beta', 'Γ': '\\Gamma', 'Δ': '\\Delta', 'Ε': '\\Epsilon', 
-        'Ζ': '\\Zeta', 'Η': '\\Eta', 'Θ': '\\Theta', 'Ι': '\\Iota', 'Κ': '\\Kappa', 
-        'Λ': '\\Lambda', 'Μ': '\\Mu', 'Ν': '\\Nu', 'Ξ': '\\Xi', 'Ο': '\\Omicron', 
-        'Π': '\\Pi', 'Ρ': '\\Rho', 'Σ': '\\Sigma', 'Τ': '\\Tau', 'Υ': '\\Upsilon', 
-        'Φ': '\\Phi', 'Χ': '\\Chi', 'Ψ': '\\Psi', 'Ω': '\\Omega'
-      };
-      
-      // 查找单独的希腊字母，前后有空格或标点的情况
-      Object.keys(greekLettersMap).forEach(letter => {
-        const regex = new RegExp(`(^|\\s|\\()${letter}($|\\s|\\)|\\.|\\,)`, 'g');
-        content = content.replace(regex, (match, p1, p2) => {
-          return `${p1}\\(${greekLettersMap[letter]}\\)${p2}`;
-        });
-      });
-      
-      // 处理双美元符号LaTeX公式 - 匹配$$ ... $$，支持多行
-      content = content.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
-        try {
-          return katex.renderToString(formula.trim(), {
-            throwOnError: false,
-            displayMode: true
-          });
-        } catch (e) {
-          console.error('KaTeX双美元符号公式渲染错误:', e);
-          return match; // 出错时返回原始文本
-        }
-      });
-      
-      // 处理单美元符号LaTeX公式 - 匹配$ ... $（但排除可能是价格的情况）
-      content = content.replace(/\$([^$\n]+?)\$/g, (match, formula) => {
-        // 排除明显是价格的情况，如$50
-        if (/^\s*\d+(\.\d+)?\s*$/.test(formula)) {
-          return match;
-        }
-        try {
-          return katex.renderToString(formula.trim(), {
-            throwOnError: false,
-            displayMode: false
-          });
-        } catch (e) {
-          console.error('KaTeX单美元符号公式渲染错误:', e);
-          return match; // 出错时返回原始文本
-        }
-      });
-      
-      // 处理内联LaTeX公式 - 匹配\( ... \)
-      content = content.replace(/\\\(([\s\S]*?)\\\)/g, (match, formula) => {
-        try {
-          return katex.renderToString(formula.trim(), {
-            throwOnError: false,
-            displayMode: false
-          });
-        } catch (e) {
-          console.error('KaTeX内联公式渲染错误:', e);
-          return match; // 出错时返回原始文本
-        }
-      });
-      
-      // 处理块级LaTeX公式 - 匹配\[ ... \]
-      content = content.replace(/\\\[([\s\S]*?)\\\]/g, (match, formula) => {
-        try {
-          return katex.renderToString(formula.trim(), {
-            throwOnError: false,
-            displayMode: true
-          });
-        } catch (e) {
-          console.error('KaTeX块级公式渲染错误:', e);
-          return match; // 出错时返回原始文本
-        }
-      });
-      
-      // 处理数学环境 - 匹配\begin{math} ... \end{math}
-      content = content.replace(/\\begin\{math\}([\s\S]*?)\\end\{math\}/g, (match, formula) => {
-        try {
-          return katex.renderToString(formula.trim(), {
-            throwOnError: false,
-            displayMode: false
-          });
-        } catch (e) {
-          console.error('KaTeX数学环境渲染错误:', e);
-          return match; // 出错时返回原始文本
-        }
-      });
-      
-      // 处理展示数学环境 - 匹配\begin{displaymath} ... \end{displaymath}
-      content = content.replace(/\\begin\{displaymath\}([\s\S]*?)\\end\{displaymath\}/g, (match, formula) => {
-        try {
-          return katex.renderToString(formula.trim(), {
-            throwOnError: false,
-            displayMode: true
-          });
-        } catch (e) {
-          console.error('KaTeX展示数学环境渲染错误:', e);
-          return match; // 出错时返回原始文本
-        }
-      });
-      
-      // 剩下的Markdown处理
-      // 处理markdown标题
-      content = content.replace(/^###### (.*?)$/gm, '<h6>$1</h6>');
-      content = content.replace(/^##### (.*?)$/gm, '<h5>$1</h5>');
-      content = content.replace(/^#### (.*?)$/gm, '<h4>$1</h4>');
-      content = content.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
-      content = content.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
-      content = content.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
-      
-      // 处理无序列表
-      content = content.replace(/^- (.*?)$/gm, '<li>$1</li>');
-      content = content.replace(/^(\d+)\. (.*?)$/gm, '<li><strong>$1.</strong> $2</li>');
-      
-      // 将连续的<li>元素包装在<ul>中
-      content = content.replace(/(<li>.*?<\/li>)(?:\s*<li>)/gs, '$1<ul>');
-      content = content.replace(/(<\/li>\s*)(?!<li>|<ul>|<\/ul>)/gs, '$1</ul>');
-      
-      // 处理加粗文本
-      content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      
-      // 处理斜体文本
-      content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
-      
-      // 处理换行
-      content = content.replace(/\n/g, '<br>');
-      
-      // 处理链接
-      content = content.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
-      content = content.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank">$1</a>');
-      
+      // 直接返回原始内容，不进行任何格式化
       return content;
     },
     getCurrentTime() {
@@ -272,21 +140,33 @@ export default {
       return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     },
     addUserMessage(content) {
-      this.messages.push({
+      const userMessage = {
         role: "user",
         content: content,
         time: this.getCurrentTime()
+      };
+      this.messages.push(userMessage);
+      // 将用户消息添加到API历史记录
+      this.chatHistory.push({
+        role: "user",
+        content: content
       });
       this.scrollToBottom();
     },
     addBotMessage(content, reasoning = null, thinkingTime = null) {
-      this.messages.push({
+      const botMessage = {
         role: "assistant",
         content: content,
         thoughts: reasoning,
         thinkingTime: thinkingTime,
         showThoughts: false,
         time: this.getCurrentTime()
+      };
+      this.messages.push(botMessage);
+      // 将AI回复添加到API历史记录
+      this.chatHistory.push({
+        role: "assistant",
+        content: content
       });
       this.scrollToBottom();
     },
@@ -313,12 +193,7 @@ export default {
       const startTime = new Date();
 
       try {
-        // 只发送当前问题，不包含历史对话
-        const apiMessages = [{
-          role: "user",
-          content: userMessage
-        }];
-
+        // 使用历史对话记录
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -327,7 +202,7 @@ export default {
           },
           body: JSON.stringify({
             "model": "deepseek/deepseek-r1-zero:free",
-            "messages": apiMessages
+            "messages": this.chatHistory
           })
         });
 
@@ -855,24 +730,5 @@ export default {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* 确保KaTeX公式与周围文本对齐 */
-.katex-display {
-  margin: 1em 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-}
-
-/* 防止公式溢出容器 */
-.katex-display > .katex {
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-}
-
-/* 使内联公式与文本对齐 */
-.katex {
-  font-size: 1.1em;
 }
 </style>
