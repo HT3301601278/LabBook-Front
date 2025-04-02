@@ -78,14 +78,19 @@ export default {
       messages: [],
       defaultAvatar: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
       botAvatar: require("@/assets/imgs/deepseek.svg"),
-      apiKey: "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",
+      apiKey: "sk-0893b211cd1c44448a5d14723273205b",
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
       isResizing: false,
       initialWidth: 0,
       initialHeight: 0,
       initialX: 0,
       initialY: 0,
-      chatHistory: []
+      chatHistory: [
+        {
+          role: "system",
+          content: "你是一个智能助手"
+        }
+      ]
     };
   },
   watch: {
@@ -109,7 +114,12 @@ export default {
     clearChat() {
       // 清空聊天历史
       this.messages = [];
-      this.chatHistory = [];
+      this.chatHistory = [
+        {
+          role: "system",
+          content: "你是一个智能助手"
+        }
+      ];
       // 添加欢迎消息
       this.addBotMessage("聊天已清空。有什么可以帮助您的吗？");
     },
@@ -217,11 +227,13 @@ export default {
         time: this.getCurrentTime()
       };
       this.messages.push(botMessage);
-      // 将AI回复添加到API历史记录
-      this.chatHistory.push({
-        role: "assistant",
-        content: content
-      });
+      // 将AI回复添加到API历史记录（如果不是欢迎消息）
+      if (this.chatHistory.length > 1 || this.chatHistory[0].role !== "system") {
+        this.chatHistory.push({
+          role: "assistant",
+          content: content
+        });
+      }
       this.scrollToBottom();
     },
     scrollToBottom() {
@@ -247,18 +259,17 @@ export default {
       const startTime = new Date();
 
       try {
-        // 使用历史对话记录
-        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        // 使用新的API和请求格式
+        const response = await fetch("https://api.deepseek.com/chat/completions", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${this.apiKey}`,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            "model": "deepseek/deepseek-r1-zero:free",
-            "messages": [
-              ...this.chatHistory
-            ]
+            "model": "deepseek-reasoner",
+            "messages": this.chatHistory,
+            "stream": false
           })
         });
 
@@ -270,7 +281,8 @@ export default {
           const choice = data.choices[0];
           const message = choice.message;
           let botResponse = message.content;
-          const reasoning = message.reasoning;
+          // 更新思考过程字段名称
+          const reasoning = message.reasoning_content;
           
           // 保存原始回复内容到聊天历史
           this.chatHistory.push({
@@ -278,7 +290,7 @@ export default {
             content: botResponse
           });
           
-          // 如果有reasoning，使用reasoning作为思考内容
+          // 如果有思考过程，则显示
           if (reasoning) {
             // 直接使用原始回复内容添加到消息显示列表
             this.messages.push({
