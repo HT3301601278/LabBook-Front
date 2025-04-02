@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="ai-chat-body">
-        <div class="ai-chat-messages" ref="messagesContainer" @scroll="checkScrollPosition">
+        <div class="ai-chat-messages" ref="messagesContainer" @scroll="checkScrollPosition" @wheel="handleWheel">
           <div v-for="(message, index) in messages" :key="index" :class="['message', message.role]">
             <div class="message-avatar">
               <img :src="message.role === 'user' ? (user.avatar || defaultAvatar) : botAvatar" />
@@ -622,6 +622,20 @@ export default {
           container.scrollTop = currentScrollTop;
         }
       });
+    },
+    handleWheel(e) {
+      const container = this.$refs.messagesContainer;
+      if (!container) return;
+      
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isAtTop = scrollTop === 0;
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 5;
+      
+      // 如果容器已经滚动到顶部且继续向上滚动，或者已经滚动到底部且继续向下滚动，则阻止事件传播
+      if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
     }
   }
 };
