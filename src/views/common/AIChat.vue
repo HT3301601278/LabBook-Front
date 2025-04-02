@@ -28,7 +28,8 @@
                 </div>
                 <div class="message-thoughts" v-if="message.showThoughts">{{ message.thoughts }}</div>
               </template>
-              <div class="message-text">{{ message.content }}</div>
+              <div class="message-text" v-if="!message.hasMarkdown">{{ message.content }}</div>
+              <content-renderer v-else :rawContent="message.content" class="message-markdown"></content-renderer>
               <div class="message-footer">
                 <div class="message-time">{{ message.time }}</div>
                 <div class="message-actions">
@@ -67,8 +68,13 @@
 </template>
 
 <script>
+import ContentRenderer from './ContentRenderer.vue';
+
 export default {
   name: "AIChat",
+  components: {
+    ContentRenderer
+  },
   data() {
     return {
       visible: false,
@@ -155,6 +161,7 @@ export default {
       const userMessage = {
         role: "user",
         content: content,
+        hasMarkdown: false, // 用户消息一般不含Markdown
         time: this.getCurrentTime()
       };
       this.messages.push(userMessage);
@@ -166,12 +173,16 @@ export default {
       this.scrollToBottom();
     },
     addBotMessage(content, reasoning = null, thinkingTime = null) {
+      // 检查内容是否包含Markdown或LaTeX格式
+      const hasMarkdown = this.checkForMarkdown(content);
+      
       const botMessage = {
         role: "assistant",
         content: content,
         thoughts: reasoning,
         thinkingTime: thinkingTime,
         showThoughts: false,
+        hasMarkdown: hasMarkdown, // 添加标记是否包含Markdown
         time: this.getCurrentTime()
       };
       this.messages.push(botMessage);
@@ -183,6 +194,29 @@ export default {
         });
       }
       this.scrollToBottom();
+    },
+    // 检查文本是否包含Markdown或LaTeX格式
+    checkForMarkdown(text) {
+      // 检查常见的Markdown语法
+      const markdownPatterns = [
+        /#{1,6}\s+.+/,           // 标题
+        /\*\*.+\*\*/,            // 粗体
+        /\*.+\*/,                // 斜体
+        /\[.+\]\(.+\)/,          // 链接
+        /!\[.+\]\(.+\)/,         // 图片
+        /```[\s\S]*?```/,        // 代码块
+        /`[^`]+`/,               // 行内代码
+        /^\s*>\s+.+/m,           // 引用
+        /^\s*[-*+]\s+.+/m,       // 无序列表
+        /^\s*\d+\.\s+.+/m,       // 有序列表
+        /\|\s*[^|]+\s*\|/,       // 表格
+        /\$\$.+\$\$/s,           // LaTeX块公式
+        /\$.+\$/,                // LaTeX行内公式
+        /\\begin\{.+?\}[\s\S]*?\\end\{.+?\}/  // LaTeX环境
+      ];
+
+      // 检查文本是否匹配任一模式
+      return markdownPatterns.some(pattern => pattern.test(text));
     },
     scrollToBottom() {
       this.$nextTick(() => {
@@ -238,6 +272,9 @@ export default {
             content: botResponse
           });
           
+          // 检查内容是否包含Markdown或LaTeX
+          const hasMarkdown = this.checkForMarkdown(botResponse);
+          
           // 如果有思考过程，则显示
           if (reasoning) {
             // 直接使用原始回复内容添加到消息显示列表
@@ -247,6 +284,7 @@ export default {
               thoughts: reasoning,
               thinkingTime: thinkingTime,
               showThoughts: false,
+              hasMarkdown: hasMarkdown,
               time: this.getCurrentTime()
             });
           } else {
@@ -254,6 +292,7 @@ export default {
             this.messages.push({
               role: "assistant",
               content: botResponse,
+              hasMarkdown: hasMarkdown,
               time: this.getCurrentTime()
             });
           }
@@ -263,6 +302,7 @@ export default {
           this.messages.push({
             role: "assistant",
             content: errorMsg,
+            hasMarkdown: false,
             time: this.getCurrentTime()
           });
           this.chatHistory.push({
@@ -277,6 +317,7 @@ export default {
         this.messages.push({
           role: "assistant",
           content: errorMsg,
+          hasMarkdown: false,
           time: this.getCurrentTime()
         });
         this.chatHistory.push({
@@ -500,6 +541,49 @@ export default {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   max-width: 100%;
   word-break: break-word;
+}
+
+/* ContentRenderer相关样式 */
+.message-markdown {
+  width: 100%;
+}
+
+.message-markdown >>> .content-renderer {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 18px;
+  background-color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.assistant .message-markdown >>> .content-renderer {
+  border-top-left-radius: 4px;
+  background-color: #f0f4ff;
+  color: #333;
+  border-left: 3px solid #cbd5e1;
+}
+
+.user .message-markdown >>> .content-renderer {
+  border-top-right-radius: 4px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+}
+
+.user .message-markdown >>> .rendered-content {
+  color: white;
+}
+
+.message-markdown >>> .rendered-content {
+  margin: 0;
+  padding: 0;
+}
+
+.message-markdown >>> .rendered-content pre {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.user .message-markdown >>> .rendered-content pre {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .assistant .message-text {
