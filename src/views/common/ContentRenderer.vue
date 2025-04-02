@@ -7,7 +7,6 @@
 </template>
 
 <script>
-import Vue from 'vue';
 import MarkdownIt from 'markdown-it';
 import Katex from 'katex';
 import 'katex/dist/katex.min.css';
@@ -40,20 +39,20 @@ export default {
   computed: {
     renderedContent() {
       if (!this.content) return '';
-      
+
       // 处理LaTeX内容
       let processedContent = this.content;
-      
+
       // 替换双反斜杠为单反斜杠
       processedContent = processedContent.replace(/\\\\/g, '\\');
-      
+
       // 处理boxed环境
       processedContent = processedContent.replace(/\\boxed\{([\s\S]*?)\}/g, '<div class="boxed">$1</div>');
-      
+
       // 处理显示公式 $$ ... $$
       processedContent = processedContent.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
         try {
-          return Katex.renderToString(formula.trim(), { 
+          return Katex.renderToString(formula.trim(), {
             displayMode: true,
             throwOnError: false,
             trust: true
@@ -63,11 +62,11 @@ export default {
           return `<div class="math-error">LaTeX显示公式渲染错误: ${e.message}</div>`;
         }
       });
-      
+
       // 处理行内公式 $ ... $
       processedContent = processedContent.replace(/\$((?!\$)[\s\S]*?)\$/g, (match, formula) => {
         try {
-          return Katex.renderToString(formula.trim(), { 
+          return Katex.renderToString(formula.trim(), {
             displayMode: false,
             throwOnError: false,
             trust: true
@@ -77,11 +76,11 @@ export default {
           return `<span class="math-error">LaTeX行内公式渲染错误: ${e.message}</span>`;
         }
       });
-      
+
       // 处理 \( ... \) 和 \[ ... \] 格式的公式
       processedContent = processedContent.replace(/\\\(([\s\S]*?)\\\)/g, (match, formula) => {
         try {
-          return Katex.renderToString(formula.trim(), { 
+          return Katex.renderToString(formula.trim(), {
             displayMode: false,
             throwOnError: false,
             trust: true
@@ -91,10 +90,10 @@ export default {
           return `<span class="math-error">LaTeX行内公式渲染错误: ${e.message}</span>`;
         }
       });
-      
+
       processedContent = processedContent.replace(/\\\[([\s\S]*?)\\\]/g, (match, formula) => {
         try {
-          return Katex.renderToString(formula.trim(), { 
+          return Katex.renderToString(formula.trim(), {
             displayMode: true,
             throwOnError: false,
             trust: true
@@ -104,7 +103,7 @@ export default {
           return `<div class="math-error">LaTeX显示公式渲染错误: ${e.message}</div>`;
         }
       });
-      
+
       // 渲染Markdown内容
       return this.md.render(processedContent);
     }
@@ -143,16 +142,16 @@ export default {
   methods: {
     async loadContent() {
       if (!this.jsonFile) return;
-      
+
       this.loading = true;
       this.error = null;
-      
+
       try {
         const response = await fetch(`/json/${this.jsonFile}`);
         if (!response.ok) {
           throw new Error(`HTTP错误! 状态码: ${response.status}`);
         }
-        
+
         const data = await response.json();
         if (data && data.content) {
           this.content = data.content;
@@ -304,4 +303,4 @@ export default {
 .user .message-markdown .rendered-content {
   color: white;
 }
-</style> 
+</style>

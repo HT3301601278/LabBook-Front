@@ -33,9 +33,9 @@
               <div class="message-footer">
                 <div class="message-time">{{ message.time }}</div>
                 <div class="message-actions">
-                  <el-tooltip 
-                    :content="message.role === 'assistant' ? '复制为Markdown' : '复制文本'" 
-                    placement="top" 
+                  <el-tooltip
+                    :content="message.role === 'assistant' ? '复制为Markdown' : '复制文本'"
+                    placement="top"
                     :open-delay="500"
                   >
                     <el-button type="text" icon="el-icon-document-copy" size="mini" @click="copyMessage(message)"></el-button>
@@ -175,7 +175,7 @@ export default {
     addBotMessage(content, reasoning = null, thinkingTime = null) {
       // 检查内容是否包含Markdown或LaTeX格式
       const hasMarkdown = this.checkForMarkdown(content);
-      
+
       const botMessage = {
         role: "assistant",
         content: content,
@@ -237,7 +237,7 @@ export default {
       this.addUserMessage(userMessage);
       this.userInput = "";
       this.isTyping = true;
-      
+
       const startTime = new Date();
 
       try {
@@ -258,23 +258,23 @@ export default {
         const data = await response.json();
         const endTime = new Date();
         const thinkingTime = Math.round((endTime - startTime) / 1000);
-        
+
         if (data.choices && data.choices.length > 0) {
           const choice = data.choices[0];
           const message = choice.message;
           let botResponse = message.content;
           // 更新思考过程字段名称
           const reasoning = message.reasoning_content;
-          
+
           // 保存原始回复内容到聊天历史
           this.chatHistory.push({
             role: "assistant",
             content: botResponse
           });
-          
+
           // 检查内容是否包含Markdown或LaTeX
           const hasMarkdown = this.checkForMarkdown(botResponse);
-          
+
           // 如果有思考过程，则显示
           if (reasoning) {
             // 直接使用原始回复内容添加到消息显示列表
@@ -331,71 +331,71 @@ export default {
     },
     startResize(e) {
       if (this.isMinimized) return;
-      
+
       this.isResizing = true;
-      
+
       // 直接引用DOM元素
       const container = this.$refs.chatContainer;
-      
+
       // 存储初始信息
       this.initialWidth = container.offsetWidth;
       this.initialHeight = container.offsetHeight;
       this.initialX = e.clientX;
       this.initialY = e.clientY;
-      
+
       // 添加鼠标移动和鼠标释放事件监听
       document.addEventListener('mousemove', this.handleMouseMove);
       document.addEventListener('mouseup', this.stopResize);
-      
+
       // 取消默认行为
       e.preventDefault();
     },
-    
+
     handleMouseMove(e) {
       if (!this.isResizing) return;
-      
+
       // 使用requestAnimationFrame让动画更平滑
       window.requestAnimationFrame(() => this.doResize(e));
     },
-    
+
     doResize(e) {
       if (!this.isResizing) return;
-      
+
       const container = this.$refs.chatContainer;
       if (!container) return;
-      
+
       // 计算鼠标移动的距离 - 反向计算使得拖动更直观
       const dx = this.initialX - e.clientX;
       const dy = this.initialY - e.clientY;
-      
+
       // 直接计算新宽高
       const newWidth = Math.min(Math.max(300, this.initialWidth + dx), window.innerWidth * 0.8);
       const newHeight = Math.min(Math.max(400, this.initialHeight + dy), window.innerHeight * 0.8);
-      
+
       // 直接设置样式，不经过计算
       container.style.width = `${newWidth}px`;
       container.style.height = `${newHeight}px`;
     },
-    
+
     stopResize() {
       this.isResizing = false;
-      
+
       // 移除事件监听
       document.removeEventListener('mousemove', this.handleMouseMove);
       document.removeEventListener('mouseup', this.stopResize);
     },
     copyMessage(message) {
       let textToCopy = message.content;
-      
+
       // 如果是AI回复，保持其原始markdown格式
       // 用户消息直接使用文本内容
-      
+
       // 创建一个临时文本区域来执行复制
       const textArea = document.createElement('textarea');
       textArea.value = textToCopy;
       document.body.appendChild(textArea);
       textArea.select();
-      
+
       try {
         document.execCommand('copy');
         this.$message({
@@ -815,7 +815,7 @@ export default {
   z-index: 9999 !important;
   transition: transform 0.3s, box-shadow 0.3s !important;
   animation: bubble-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-  
+
   /* 重置可能影响的属性 */
   margin: 0 !important;
   padding: 0 !important;
@@ -867,4 +867,3 @@ export default {
   }
 }
 </style>
-
