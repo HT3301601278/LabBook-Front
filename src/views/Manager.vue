@@ -115,6 +115,7 @@ export default {
       }
     },
     logout() {
+      this.$aiChat.close()
       localStorage.removeItem('labuser')
       this.$router.push('/login')
     },
