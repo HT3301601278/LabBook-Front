@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="ai-chat-body">
-        <div class="ai-chat-messages" ref="messagesContainer">
+        <div class="ai-chat-messages" ref="messagesContainer" @scroll="checkScrollPosition">
           <div v-for="(message, index) in messages" :key="index" :class="['message', message.role]">
             <div class="message-avatar">
               <img :src="message.role === 'user' ? (user.avatar || defaultAvatar) : botAvatar" />
@@ -44,7 +44,32 @@
               </div>
             </div>
           </div>
-          <div class="ai-typing" v-if="isTyping">AI正在思考...</div>
+          <!-- 流式响应部分 -->
+          <div v-if="isTyping" :class="['message', 'assistant']">
+            <div class="message-avatar">
+              <img :src="botAvatar" />
+            </div>
+            <div class="message-content">
+              <!-- 思考内容流式显示 -->
+              <template v-if="streamingThoughts">
+                <div class="thoughts-toggle" @click="toggleStreamingThoughts">
+                  <i :class="['toggle-icon', showStreamingThoughts ? 'el-icon-arrow-down' : 'el-icon-arrow-right']"></i>
+                  <span>{{ isReceivingThoughts ? '正在深度思考...' : '查看思考过程' }}</span>
+                </div>
+                <div class="message-thoughts" v-if="showStreamingThoughts">{{ streamingThoughts }}</div>
+              </template>
+              <!-- 正文内容流式显示 -->
+              <div class="message-text" v-if="!checkForMarkdown(streamingContent)">{{ streamingContent }}</div>
+              <content-renderer v-else :rawContent="streamingContent" class="message-markdown"></content-renderer>
+              <div class="message-footer">
+                <div class="message-time">{{ getCurrentTime() }}</div>
+              </div>
+            </div>
+          </div>
+          <!-- 添加滚动到底部按钮 -->
+          <div v-if="showScrollButton" class="scroll-to-bottom" @click="scrollToBottom">
+            <i class="el-icon-arrow-down"></i>
+          </div>
         </div>
         <div class="ai-chat-input">
           <el-input
@@ -54,6 +79,7 @@
             :rows="2"
             resize="none"
             @keyup.enter.native.exact="sendMessage"
+            :disabled="isTyping"
           ></el-input>
           <el-button type="primary" icon="el-icon-s-promotion" @click="sendMessage" :loading="isTyping">发送</el-button>
         </div>
@@ -69,6 +95,7 @@
 
 <script>
 import ContentRenderer from './ContentRenderer.vue';
+import { initRouterContext, writeToStream, closeStream } from '../../utils/streamHandler.js';
 
 export default {
   name: "AIChat",
@@ -96,7 +123,16 @@ export default {
           role: "system",
           content: "你是一个智能助手"
         }
-      ]
+      ],
+      // 新增：流式输出相关变量
+      streamingContent: "", 
+      streamingThoughts: "",
+      showStreamingThoughts: false,
+      // 新增：滚动按钮控制
+      showScrollButton: false,
+      isAtBottom: true,
+      isReceivingThoughts: true,
+      noThoughtCount: 0
     };
   },
   watch: {
@@ -186,13 +222,20 @@ export default {
         time: this.getCurrentTime()
       };
       this.messages.push(botMessage);
+      
       // 将AI回复添加到API历史记录（如果不是欢迎消息）
-      if (this.chatHistory.length > 1 || this.chatHistory[0].role !== "system") {
+      // 检查是否是系统消息或欢迎消息
+      const isWelcomeMessage = content.includes("您好！我是实验室预约系统的智能助手") || 
+                             content.includes("聊天已清空");
+      
+      // 只有当不是欢迎消息时，才添加到API历史中
+      if (!isWelcomeMessage) {
         this.chatHistory.push({
           role: "assistant",
           content: content
         });
       }
+      
       this.scrollToBottom();
     },
     // 检查文本是否包含Markdown或LaTeX格式
@@ -222,6 +265,8 @@ export default {
       this.$nextTick(() => {
         if (this.$refs.messagesContainer) {
           this.$refs.messagesContainer.scrollTop = this.$refs.messagesContainer.scrollHeight;
+          this.showScrollButton = false;
+          this.isAtBottom = true;
         }
       });
     },
@@ -230,105 +275,240 @@ export default {
         this.$set(this.messages[index], 'showThoughts', !this.messages[index].showThoughts);
       }
     },
+    toggleStreamingThoughts() {
+      this.showStreamingThoughts = !this.showStreamingThoughts;
+      
+      // 如果是展开思考内容，不要立即滚动，让用户可以控制
+      if (this.showStreamingThoughts) {
+        // 等待内容渲染后再检查是否需要调整滚动
+        this.$nextTick(() => {
+          // 仅检查状态，不自动滚动
+          this.checkScrollPosition();
+        });
+      }
+    },
     async sendMessage() {
-      if (!this.userInput.trim()) return;
+      if (!this.userInput.trim() || this.isTyping) return;
 
       const userMessage = this.userInput.trim();
       this.addUserMessage(userMessage);
       this.userInput = "";
       this.isTyping = true;
 
+      // 重置流式内容
+      this.streamingContent = "";
+      this.streamingThoughts = "";
+      this.showStreamingThoughts = false;
+      this.isReceivingThoughts = true;
+      this.noThoughtCount = 0;
+      
+      // 确保发送新消息时滚动到底部
+      this.scrollToBottom();
+
       const startTime = new Date();
 
       try {
-        // 使用新的API和请求格式
+        // 初始化路由上下文和流处理
+        initRouterContext();
+
+        // 清理chatHistory，确保所有内容都是有效的字符串
+        const cleanHistory = this.chatHistory.map(msg => {
+          return {
+            role: msg.role,
+            // 确保content是字符串并清理可能导致JSON解析错误的控制字符
+            content: String(msg.content).replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+          };
+        });
+
+        // 设置API参数
+        const apiParams = {
+          "model": "deepseek-reasoner",
+          "messages": cleanHistory,
+          "stream": true,  // 开启流式输出
+          "reasoning": true  // 开启深度思考模式
+        };
+
+        // 打印即将发送的请求体，用于调试
+        console.log("发送请求:", JSON.stringify(apiParams));
+
+        // 使用新的API和请求格式，并开启stream选项
         const response = await fetch("https://api.deepseek.com/chat/completions", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${this.apiKey}`,
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            "model": "deepseek-reasoner",
-            "messages": this.chatHistory,
-            "stream": false
-          })
+          body: JSON.stringify(apiParams)
         });
 
-        const data = await response.json();
-        const endTime = new Date();
-        const thinkingTime = Math.round((endTime - startTime) / 1000);
-
-        if (data.choices && data.choices.length > 0) {
-          const choice = data.choices[0];
-          const message = choice.message;
-          let botResponse = message.content;
-          // 更新思考过程字段名称
-          const reasoning = message.reasoning_content;
-
-          // 保存原始回复内容到聊天历史
-          this.chatHistory.push({
-            role: "assistant",
-            content: botResponse
-          });
-
-          // 检查内容是否包含Markdown或LaTeX
-          const hasMarkdown = this.checkForMarkdown(botResponse);
-
-          // 如果有思考过程，则显示
-          if (reasoning) {
-            // 直接使用原始回复内容添加到消息显示列表
-            this.messages.push({
-              role: "assistant",
-              content: botResponse,
-              thoughts: reasoning,
-              thinkingTime: thinkingTime,
-              showThoughts: false,
-              hasMarkdown: hasMarkdown,
-              time: this.getCurrentTime()
-            });
-          } else {
-            // 直接使用原始回复内容添加到消息显示列表
-            this.messages.push({
-              role: "assistant",
-              content: botResponse,
-              hasMarkdown: hasMarkdown,
-              time: this.getCurrentTime()
-            });
+        // 检查响应状态
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`API响应错误(${response.status}):`, errorText);
+          
+          let errorMsg = "连接出错，请检查网络连接或API配置。";
+          
+          if (response.status === 400) {
+            errorMsg = "请求格式错误，可能是历史消息格式不正确或长度超限。正在重置聊天...";
+            // 保留最后一条用户消息，重置历史
+            const lastUserMessage = this.chatHistory[this.chatHistory.length - 1];
+            this.chatHistory = [
+              {
+                role: "system",
+                content: "你是一个智能助手"
+              },
+              lastUserMessage
+            ];
           }
-          this.scrollToBottom();
-        } else {
-          const errorMsg = "抱歉，我无法获取回复。请稍后再试。";
-          this.messages.push({
-            role: "assistant",
-            content: errorMsg,
-            hasMarkdown: false,
-            time: this.getCurrentTime()
-          });
+          
+          throw new Error(errorMsg);
+        }
+
+        // 处理流式响应
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          const chunk = decoder.decode(value, { stream: true });
+          this.processChunk(chunk);
+          
+          // 滚动到底部，仅在初始时滚动一次
+          if (this.streamingContent.length <= 50) {
+            this.scrollToBottom();
+          }
+        }
+        
+        // 流结束，添加完整的回复消息
+        if (this.streamingContent) {
+          const endTime = new Date();
+          const thinkingTime = Math.round((endTime - startTime) / 1000);
+          
+          // 将流式回复作为一条正式消息添加
+          this.addBotMessage(
+            this.streamingContent, 
+            this.streamingThoughts, 
+            thinkingTime
+          );
+          
+          // 打印当前历史记录，用于调试
+          console.log("当前聊天历史:", JSON.stringify(this.chatHistory));
+        }
+        
+        // 关闭流
+        closeStream();
+        
+      } catch (error) {
+        console.error("AI聊天错误:", error);
+        const errorMsg = error.message || "连接出错，请检查网络连接或API配置。";
+        this.addBotMessage(errorMsg);
+        
+        // 如果不是欢迎消息类型的错误，才添加到历史
+        if (!errorMsg.includes("聊天已清空")) {
           this.chatHistory.push({
             role: "assistant",
             content: errorMsg
           });
-          this.scrollToBottom();
         }
-      } catch (error) {
-        console.error("AI聊天错误:", error);
-        const errorMsg = "连接出错，请检查网络连接或API配置。";
-        this.messages.push({
-          role: "assistant",
-          content: errorMsg,
-          hasMarkdown: false,
-          time: this.getCurrentTime()
-        });
-        this.chatHistory.push({
-          role: "assistant",
-          content: errorMsg
-        });
-        this.scrollToBottom();
+        
+        // 打印当前历史记录，用于调试
+        console.log("错误后聊天历史:", JSON.stringify(this.chatHistory));
       } finally {
         this.isTyping = false;
+        this.streamingContent = "";
+        this.streamingThoughts = "";
+        this.isReceivingThoughts = false;
+        this.noThoughtCount = 0;
       }
+
+      // 确保发送用户消息时初始滚动一次
+      this.scrollToBottom();
+      
+      // 允许用户自行决定是否滚动
+      this.checkScrollPosition();
     },
+    
+    // 处理API返回的数据块
+    processChunk(chunk) {
+      // 按行分割数据
+      const lines = chunk.split('\n').filter(line => line.trim().startsWith('data: '));
+      
+      let hasNewThoughts = false;
+      
+      // 如果没有找到任何以data:开头的行，可能是格式不正确
+      if (lines.length === 0 && chunk.trim()) {
+        console.error("收到非标准流式响应格式:", chunk.trim());
+        // 尝试从整个块中解析JSON
+        try {
+          const data = JSON.parse(chunk.trim());
+          if (data.error) {
+            console.error("API错误:", data.error);
+            throw new Error(`API错误: ${data.error.message || JSON.stringify(data.error)}`);
+          }
+        } catch (e) {
+          // 解析JSON失败，只记录错误
+          console.error("解析响应失败:", e);
+        }
+        return;
+      }
+      
+      for (const line of lines) {
+        try {
+          // 提取JSON数据
+          const jsonData = line.substring(6); // 去掉 "data: " 前缀
+          if (jsonData === '[DONE]') continue;
+          
+          const data = JSON.parse(jsonData);
+          
+          // 从delta中提取内容
+          if (data.choices && data.choices[0].delta) {
+            const delta = data.choices[0].delta;
+            
+            // 分别处理正式内容和思考内容
+            if (delta.content !== null && delta.content !== undefined) {
+              this.streamingContent += delta.content;
+              // 使用streamHandler向流写入正式内容
+              writeToStream(delta.content);
+            }
+            
+            if (delta.reasoning_content !== null && delta.reasoning_content !== undefined) {
+              // 更新思考内容但不触发自动滚动
+              this.streamingThoughts += delta.reasoning_content;
+              hasNewThoughts = true;
+              
+              // 只检查滚动状态，不执行滚动
+              this.$nextTick(() => {
+                this.checkScrollPosition();
+              });
+            }
+          }
+        } catch (e) {
+          console.error('解析数据错误:', e, line);
+        }
+      }
+      
+      // 如果至少30次处理没有新的思考内容，认为思考过程已结束
+      if (!hasNewThoughts && this.streamingThoughts) {
+        // 思考次数+1
+        this.noThoughtCount = (this.noThoughtCount || 0) + 1;
+        
+        // 超过30次没有新思考，认为思考过程已经结束
+        if (this.noThoughtCount > 30) {
+          this.isReceivingThoughts = false;
+        }
+      } else {
+        // 重置计数器
+        this.noThoughtCount = 0;
+        // 有新内容时，确保状态为接收中
+        this.isReceivingThoughts = true;
+      }
+      
+      // 只在内容变化时检查滚动状态，不执行滚动
+      this.checkScrollPosition();
+    },
+    
     startResize(e) {
       if (this.isMinimized) return;
 
@@ -412,6 +592,15 @@ export default {
       } finally {
         document.body.removeChild(textArea);
       }
+    },
+    checkScrollPosition() {
+      if (!this.$refs.messagesContainer) return;
+      
+      const container = this.$refs.messagesContainer;
+      const scrollBottom = container.scrollTop + container.clientHeight;
+      // 如果滚动位置距离底部超过100px，显示滚动按钮
+      this.isAtBottom = (container.scrollHeight - scrollBottom) < 100;
+      this.showScrollButton = !this.isAtBottom;
     }
   }
 };
@@ -691,7 +880,7 @@ export default {
   line-height: 1.5;
   color: #000000;
   font-size: 14px;
-  font-weight: 750;  /* 增加文字粗细 */
+  font-weight: 600;  /* 增加文字粗细 */
 }
 
 .ai-chat-input .el-textarea >>> .el-textarea__inner::placeholder {
@@ -864,6 +1053,46 @@ export default {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* 添加滚动到底部按钮样式 */
+.scroll-to-bottom {
+  position: absolute;
+  bottom: 80px; /* 放在输入框上方 */
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  transition: transform 0.2s, opacity 0.3s;
+  animation: bounce-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.scroll-to-bottom:hover {
+  transform: translateY(-3px);
+  background: rgba(30, 58, 138, 1);
+}
+
+.scroll-to-bottom i {
+  font-size: 20px;
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 </style>
