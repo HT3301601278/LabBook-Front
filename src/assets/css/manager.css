@@ -77,6 +77,18 @@
     padding-right: 20px;
 }
 
+.deepseek-icon {
+    width: 45px;
+    height: 45px;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.deepseek-icon:hover {
+    transform: scale(1.1);
+}
+
 .manager-header-right .avatar {
     display: flex;
     align-items: center;
