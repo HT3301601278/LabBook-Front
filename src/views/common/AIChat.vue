@@ -550,43 +550,30 @@ export default {
 
 .message-markdown >>> .content-renderer {
   margin: 0;
+  padding: 0;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.message-markdown >>> .rendered-content {
+  margin: 0;
   padding: 12px 16px;
   border-radius: 18px;
   background-color: white;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-word;
 }
 
-.assistant .message-markdown >>> .content-renderer {
+.assistant .message-text {
   border-top-left-radius: 4px;
   background-color: #f0f4ff;
   color: #333;
   border-left: 3px solid #cbd5e1;
 }
 
-.user .message-markdown >>> .content-renderer {
-  border-top-right-radius: 4px;
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-}
-
-.user .message-markdown >>> .rendered-content {
-  color: white;
-}
-
-.message-markdown >>> .rendered-content {
-  margin: 0;
-  padding: 0;
-}
-
-.message-markdown >>> .rendered-content pre {
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-}
-
-.user .message-markdown >>> .rendered-content pre {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.assistant .message-text {
+.assistant .message-markdown >>> .rendered-content {
   border-top-left-radius: 4px;
   background-color: #f0f4ff;
   color: #333;
@@ -597,6 +584,21 @@ export default {
   border-top-right-radius: 4px;
   background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   color: white;
+}
+
+.user .message-markdown >>> .rendered-content {
+  border-top-right-radius: 4px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: white;
+}
+
+.message-markdown >>> .rendered-content pre {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.user .message-markdown >>> .rendered-content pre {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .message-footer {
@@ -865,3 +867,4 @@ export default {
   }
 }
 </style>
+

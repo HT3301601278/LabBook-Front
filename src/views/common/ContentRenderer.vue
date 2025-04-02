@@ -172,11 +172,11 @@ export default {
 
 <style>
 .content-renderer {
-  margin: 20px;
-  padding: 20px;
-  border-radius: 8px;
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background-color: transparent;
+  box-shadow: none;
 }
 
 .rendered-content {
