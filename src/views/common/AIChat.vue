@@ -273,19 +273,21 @@ export default {
     toggleThoughts(index) {
       if (this.messages[index] && this.messages[index].thoughts) {
         this.$set(this.messages[index], 'showThoughts', !this.messages[index].showThoughts);
+        
+        // 展开历史思考内容时也不要自动滚动
+        this.$nextTick(() => {
+          this.checkScrollPosition();
+        });
       }
     },
     toggleStreamingThoughts() {
       this.showStreamingThoughts = !this.showStreamingThoughts;
       
-      // 如果是展开思考内容，不要立即滚动，让用户可以控制
-      if (this.showStreamingThoughts) {
-        // 等待内容渲染后再检查是否需要调整滚动
-        this.$nextTick(() => {
-          // 仅检查状态，不自动滚动
-          this.checkScrollPosition();
-        });
-      }
+      // 不论是展开还是折叠思考内容，都不要触发滚动
+      // 只需要更新滚动按钮的状态
+      this.$nextTick(() => {
+        this.checkScrollPosition();
+      });
     },
     async sendMessage() {
       if (!this.userInput.trim() || this.isTyping) return;
@@ -373,10 +375,15 @@ export default {
           if (done) break;
           
           const chunk = decoder.decode(value, { stream: true });
+          
+          // 记录是否是首次获取内容
+          const isFirstChunk = this.streamingContent.length === 0;
+          
+          // 处理数据块
           this.processChunk(chunk);
           
-          // 滚动到底部，仅在初始时滚动一次
-          if (this.streamingContent.length <= 50) {
+          // 只在首次获取内容时滚动到底部一次
+          if (isFirstChunk && this.streamingContent.length > 0) {
             this.scrollToBottom();
           }
         }
@@ -478,10 +485,9 @@ export default {
               this.streamingThoughts += delta.reasoning_content;
               hasNewThoughts = true;
               
-              // 只检查滚动状态，不执行滚动
-              this.$nextTick(() => {
-                this.checkScrollPosition();
-              });
+              // 移除所有可能导致自动滚动的代码
+              // 不再在更新思考内容时进行任何滚动操作
+              // 只更新思考内容，不影响滚动位置
             }
           }
         } catch (e) {
@@ -506,7 +512,10 @@ export default {
       }
       
       // 只在内容变化时检查滚动状态，不执行滚动
-      this.checkScrollPosition();
+      // 注意：这里只更新按钮状态，不执行实际滚动操作
+      this.$nextTick(() => {
+        this.checkScrollPosition();
+      });
     },
     
     startResize(e) {
@@ -596,11 +605,23 @@ export default {
     checkScrollPosition() {
       if (!this.$refs.messagesContainer) return;
       
+      // 保存当前滚动位置，以便稍后恢复
       const container = this.$refs.messagesContainer;
-      const scrollBottom = container.scrollTop + container.clientHeight;
+      const currentScrollTop = container.scrollTop;
+      
+      // 计算是否在底部
+      const scrollBottom = currentScrollTop + container.clientHeight;
       // 如果滚动位置距离底部超过100px，显示滚动按钮
       this.isAtBottom = (container.scrollHeight - scrollBottom) < 100;
       this.showScrollButton = !this.isAtBottom;
+      
+      // 恢复原来的滚动位置，防止因高度变化导致的自动滚动
+      this.$nextTick(() => {
+        // 仅当容器已渲染且高度变化时才需要恢复滚动位置
+        if (container && container.scrollTop !== currentScrollTop) {
+          container.scrollTop = currentScrollTop;
+        }
+      });
     }
   }
 };
