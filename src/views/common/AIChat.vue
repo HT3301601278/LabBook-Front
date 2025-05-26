@@ -18,7 +18,7 @@
         <div class="ai-chat-messages" ref="messagesContainer" @scroll="checkScrollPosition" @wheel="handleWheel">
           <div v-for="(message, index) in messages" :key="index" :class="['message', message.role]">
             <div class="message-avatar">
-              <img :src="message.role === 'user' ? (user.avatar || defaultAvatar) : botAvatar" />
+              <img :src="getAvatar(message)" />
             </div>
             <div class="message-content">
               <template v-if="message.role === 'assistant' && message.thoughts">
@@ -47,7 +47,7 @@
           <!-- 流式响应部分 -->
           <div v-if="isTyping" :class="['message', 'assistant']">
             <div class="message-avatar">
-              <img :src="botAvatar" />
+              <img :src="getAvatar({role: 'assistant'})" />
             </div>
             <div class="message-content">
               <!-- 思考内容流式显示 -->
@@ -112,7 +112,7 @@ export default {
       defaultAvatar: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
       botAvatar: require("@/assets/imgs/deepseek.svg"),
       apiKey: "sk-0893b211cd1c44448a5d14723273205b",
-      user: JSON.parse(localStorage.getItem('labuser') || '{}'),
+      user: {},
       isResizing: false,
       initialWidth: 0,
       initialHeight: 0,
@@ -135,17 +135,57 @@ export default {
       noThoughtCount: 0
     };
   },
-  watch: {
-    'localStorage.labuser': {
-      handler() {
-        this.user = JSON.parse(localStorage.getItem('labuser') || '{}');
-      },
-      deep: true
-    }
+  created() {
+    // 组件创建时立即获取用户信息
+    this.updateUserInfo();
+    // 监听storage事件以捕获其他标签页中对localStorage的更改
+    window.addEventListener('storage', this.handleStorageChange);
+  },
+  mounted() {
+    // 组件挂载后再次更新用户信息，确保头像正确加载
+    this.updateUserInfo();
+  },
+  beforeDestroy() {
+    // 组件销毁前移除事件监听
+    window.removeEventListener('storage', this.handleStorageChange);
   },
   methods: {
+    // 新增方法：获取头像
+    getAvatar(message) {
+      if (message.role === 'user') {
+        // 如果用户有头像则使用用户头像，否则使用默认头像
+        return this.user && this.user.avatar ? this.user.avatar : this.defaultAvatar;
+      } else {
+        // 机器人头像
+        return this.botAvatar;
+      }
+    },
+    // 新增方法：更新用户信息
+    updateUserInfo() {
+      try {
+        const userData = localStorage.getItem('labuser');
+        if (userData) {
+          this.user = JSON.parse(userData);
+          console.log('用户信息已更新:', this.user);
+        } else {
+          this.user = {};
+          console.log('未找到用户信息');
+        }
+      } catch (e) {
+        console.error('解析用户信息出错:', e);
+        this.user = {};
+      }
+    },
+    // 新增方法：处理storage事件
+    handleStorageChange(e) {
+      if (e.key === 'labuser') {
+        this.updateUserInfo();
+      }
+    },
     show() {
       this.visible = true;
+      // 显示聊天窗口时更新用户信息
+      this.updateUserInfo();
       if (this.messages.length === 0) {
         this.addBotMessage("您好！我是实验室预约系统的智能助手，有什么可以帮助您的吗？");
       }
@@ -292,6 +332,9 @@ export default {
     async sendMessage() {
       if (!this.userInput.trim() || this.isTyping) return;
 
+      // 发送消息前更新用户信息，确保使用最新头像
+      this.updateUserInfo();
+      
       const userMessage = this.userInput.trim();
       this.addUserMessage(userMessage);
       this.userInput = "";
