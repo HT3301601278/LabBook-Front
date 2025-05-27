@@ -95,7 +95,7 @@
 
 <script>
 import ContentRenderer from './ContentRenderer.vue';
-import { initRouterContext, writeToStream, closeStream } from '../../utils/streamHandler.js';
+import {closeStream, initRouterContext, writeToStream} from '../../utils/streamHandler.js';
 
 export default {
   name: "AIChat",
@@ -125,7 +125,7 @@ export default {
         }
       ],
       // 新增：流式输出相关变量
-      streamingContent: "", 
+      streamingContent: "",
       streamingThoughts: "",
       showStreamingThoughts: false,
       // 新增：滚动按钮控制
@@ -262,12 +262,12 @@ export default {
         time: this.getCurrentTime()
       };
       this.messages.push(botMessage);
-      
+
       // 将AI回复添加到API历史记录（如果不是欢迎消息）
       // 检查是否是系统消息或欢迎消息
-      const isWelcomeMessage = content.includes("您好！我是实验室预约系统的智能助手") || 
+      const isWelcomeMessage = content.includes("您好！我是实验室预约系统的智能助手") ||
                              content.includes("聊天已清空");
-      
+
       // 只有当不是欢迎消息时，才添加到API历史中
       if (!isWelcomeMessage) {
         this.chatHistory.push({
@@ -275,7 +275,7 @@ export default {
           content: content
         });
       }
-      
+
       this.scrollToBottom();
     },
     // 检查文本是否包含Markdown或LaTeX格式
@@ -313,7 +313,7 @@ export default {
     toggleThoughts(index) {
       if (this.messages[index] && this.messages[index].thoughts) {
         this.$set(this.messages[index], 'showThoughts', !this.messages[index].showThoughts);
-        
+
         // 展开历史思考内容时也不要自动滚动
         this.$nextTick(() => {
           this.checkScrollPosition();
@@ -322,7 +322,7 @@ export default {
     },
     toggleStreamingThoughts() {
       this.showStreamingThoughts = !this.showStreamingThoughts;
-      
+
       // 不论是展开还是折叠思考内容，都不要触发滚动
       // 只需要更新滚动按钮的状态
       this.$nextTick(() => {
@@ -334,7 +334,7 @@ export default {
 
       // 发送消息前更新用户信息，确保使用最新头像
       this.updateUserInfo();
-      
+
       const userMessage = this.userInput.trim();
       this.addUserMessage(userMessage);
       this.userInput = "";
@@ -346,7 +346,7 @@ export default {
       this.showStreamingThoughts = false;
       this.isReceivingThoughts = true;
       this.noThoughtCount = 0;
-      
+
       // 确保发送新消息时滚动到底部
       this.scrollToBottom();
 
@@ -390,9 +390,9 @@ export default {
         if (!response.ok) {
           const errorText = await response.text();
           console.error(`API响应错误(${response.status}):`, errorText);
-          
+
           let errorMsg = "连接出错，请检查网络连接或API配置。";
-          
+
           if (response.status === 400) {
             errorMsg = "请求格式错误，可能是历史消息格式不正确或长度超限。正在重置聊天...";
             // 保留最后一条用户消息，重置历史
@@ -405,56 +405,56 @@ export default {
               lastUserMessage
             ];
           }
-          
+
           throw new Error(errorMsg);
         }
 
         // 处理流式响应
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          
+
           const chunk = decoder.decode(value, { stream: true });
-          
+
           // 记录是否是首次获取内容
           const isFirstChunk = this.streamingContent.length === 0;
-          
+
           // 处理数据块
           this.processChunk(chunk);
-          
+
           // 只在首次获取内容时滚动到底部一次
           if (isFirstChunk && this.streamingContent.length > 0) {
             this.scrollToBottom();
           }
         }
-        
+
         // 流结束，添加完整的回复消息
         if (this.streamingContent) {
           const endTime = new Date();
           const thinkingTime = Math.round((endTime - startTime) / 1000);
-          
+
           // 将流式回复作为一条正式消息添加
           this.addBotMessage(
-            this.streamingContent, 
-            this.streamingThoughts, 
+            this.streamingContent,
+            this.streamingThoughts,
             thinkingTime
           );
-          
+
           // 打印当前历史记录，用于调试
           console.log("当前聊天历史:", JSON.stringify(this.chatHistory));
         }
-        
+
         // 关闭流
         closeStream();
-        
+
       } catch (error) {
         console.error("AI聊天错误:", error);
         const errorMsg = error.message || "连接出错，请检查网络连接或API配置。";
         this.addBotMessage(errorMsg);
-        
+
         // 如果不是欢迎消息类型的错误，才添加到历史
         if (!errorMsg.includes("聊天已清空")) {
           this.chatHistory.push({
@@ -462,7 +462,7 @@ export default {
             content: errorMsg
           });
         }
-        
+
         // 打印当前历史记录，用于调试
         console.log("错误后聊天历史:", JSON.stringify(this.chatHistory));
       } finally {
@@ -475,18 +475,18 @@ export default {
 
       // 确保发送用户消息时初始滚动一次
       this.scrollToBottom();
-      
+
       // 允许用户自行决定是否滚动
       this.checkScrollPosition();
     },
-    
+
     // 处理API返回的数据块
     processChunk(chunk) {
       // 按行分割数据
       const lines = chunk.split('\n').filter(line => line.trim().startsWith('data: '));
-      
+
       let hasNewThoughts = false;
-      
+
       // 如果没有找到任何以data:开头的行，可能是格式不正确
       if (lines.length === 0 && chunk.trim()) {
         console.error("收到非标准流式响应格式:", chunk.trim());
@@ -503,31 +503,31 @@ export default {
         }
         return;
       }
-      
+
       for (const line of lines) {
         try {
           // 提取JSON数据
           const jsonData = line.substring(6); // 去掉 "data: " 前缀
           if (jsonData === '[DONE]') continue;
-          
+
           const data = JSON.parse(jsonData);
-          
+
           // 从delta中提取内容
           if (data.choices && data.choices[0].delta) {
             const delta = data.choices[0].delta;
-            
+
             // 分别处理正式内容和思考内容
             if (delta.content !== null && delta.content !== undefined) {
               this.streamingContent += delta.content;
               // 使用streamHandler向流写入正式内容
               writeToStream(delta.content);
             }
-            
+
             if (delta.reasoning_content !== null && delta.reasoning_content !== undefined) {
               // 更新思考内容但不触发自动滚动
               this.streamingThoughts += delta.reasoning_content;
               hasNewThoughts = true;
-              
+
               // 移除所有可能导致自动滚动的代码
               // 不再在更新思考内容时进行任何滚动操作
               // 只更新思考内容，不影响滚动位置
@@ -537,12 +537,12 @@ export default {
           console.error('解析数据错误:', e, line);
         }
       }
-      
+
       // 如果至少30次处理没有新的思考内容，认为思考过程已结束
       if (!hasNewThoughts && this.streamingThoughts) {
         // 思考次数+1
         this.noThoughtCount = (this.noThoughtCount || 0) + 1;
-        
+
         // 超过30次没有新思考，认为思考过程已经结束
         if (this.noThoughtCount > 30) {
           this.isReceivingThoughts = false;
@@ -553,14 +553,14 @@ export default {
         // 有新内容时，确保状态为接收中
         this.isReceivingThoughts = true;
       }
-      
+
       // 只在内容变化时检查滚动状态，不执行滚动
       // 注意：这里只更新按钮状态，不执行实际滚动操作
       this.$nextTick(() => {
         this.checkScrollPosition();
       });
     },
-    
+
     startResize(e) {
       if (this.isMinimized) return;
 
@@ -647,17 +647,17 @@ export default {
     },
     checkScrollPosition() {
       if (!this.$refs.messagesContainer) return;
-      
+
       // 保存当前滚动位置，以便稍后恢复
       const container = this.$refs.messagesContainer;
       const currentScrollTop = container.scrollTop;
-      
+
       // 计算是否在底部
       const scrollBottom = currentScrollTop + container.clientHeight;
       // 如果滚动位置距离底部超过100px，显示滚动按钮
       this.isAtBottom = (container.scrollHeight - scrollBottom) < 100;
       this.showScrollButton = !this.isAtBottom;
-      
+
       // 恢复原来的滚动位置，防止因高度变化导致的自动滚动
       this.$nextTick(() => {
         // 仅当容器已渲染且高度变化时才需要恢复滚动位置
@@ -669,11 +669,11 @@ export default {
     handleWheel(e) {
       const container = this.$refs.messagesContainer;
       if (!container) return;
-      
+
       const { scrollTop, scrollHeight, clientHeight } = container;
       const isAtTop = scrollTop === 0;
       const isAtBottom = scrollTop + clientHeight >= scrollHeight - 5;
-      
+
       // 如果容器已经滚动到顶部且继续向上滚动，或者已经滚动到底部且继续向下滚动，则阻止事件传播
       if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
         e.preventDefault();
