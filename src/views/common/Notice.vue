@@ -76,7 +76,8 @@ export default {
       pageNum: 1,   // 当前的页码
       pageSize: 10,  // 每页显示的个数
       total: 0,
-      searchText: null,
+      title: null,
+      content: null,
       fromVisible: false,
       form: {},
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
@@ -161,8 +162,8 @@ export default {
         params: {
           pageNum: this.pageNum,
           pageSize: this.pageSize,
-          title: this.searchText,
-          content: this.searchText,
+          title: this.title,
+          content: this.content,
         }
       }).then(res => {
         this.tableData = res.data?.list
@@ -170,7 +171,8 @@ export default {
       })
     },
     reset() {
-      this.searchText = null
+      this.title = null
+      this.content = null
       this.load(1)
     },
     handleCurrentChange(pageNum) {
