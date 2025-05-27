@@ -9,8 +9,7 @@
     </div>
 
     <div class="table">
-      <el-table :data="tableData" stripe  @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" align="center"></el-table-column>
+      <el-table :data="tableData" stripe>
         <el-table-column prop="id" label="序号" width="80" align="center" sortable></el-table-column>
         <el-table-column prop="labName" label="实验室" min-width="10%" show-overflow-tooltip></el-table-column>
         <el-table-column prop="fixName" label="报修说明" min-width="25%" show-overflow-tooltip></el-table-column>
@@ -63,8 +62,7 @@ export default {
         department: [
           {required: true, message: '请输入检修部门', trigger: 'blur'},
         ]
-      },
-      ids: []
+      }
     }
   },
   created() {
@@ -101,26 +99,6 @@ export default {
     del(id) {   // 单个删除
       this.$confirm('您确定删除吗？', '确认删除', {type: "warning"}).then(response => {
         this.$request.delete('/checks/delete/' + id).then(res => {
-          if (res.code === '200') {   // 表示操作成功
-            this.$message.success('操作成功')
-            this.load(1)
-          } else {
-            this.$message.error(res.msg)  // 弹出错误的信息
-          }
-        })
-      }).catch(() => {
-      })
-    },
-    handleSelectionChange(rows) {   // 当前选中的所有的行数据
-      this.ids = rows.map(v => v.id)   //  [1,2]
-    },
-    delBatch() {   // 批量删除
-      if (!this.ids.length) {
-        this.$message.warning('请选择数据')
-        return
-      }
-      this.$confirm('您确定批量删除这些数据吗？', '确认删除', {type: "warning"}).then(response => {
-        this.$request.delete('/checks/delete/batch', {data: this.ids}).then(res => {
           if (res.code === '200') {   // 表示操作成功
             this.$message.success('操作成功')
             this.load(1)

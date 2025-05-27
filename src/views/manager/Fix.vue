@@ -14,8 +14,7 @@
     </div>
 
     <div class="table">
-      <el-table :data="tableData" stripe  @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" align="center"></el-table-column>
+      <el-table :data="tableData" stripe>
         <el-table-column prop="id" label="序号" width="80" align="center" sortable></el-table-column>
         <el-table-column prop="studentName" label="报修人" min-width="10%" show-overflow-tooltip></el-table-column>
         <el-table-column prop="description" label="报修说明" min-width="20%" show-overflow-tooltip></el-table-column>
@@ -123,7 +122,6 @@ export default {
           {required: true, message: '请选择处理时间', trigger: 'blur'},
         ],
       },
-      ids: [],
     }
   },
   created() {
@@ -153,9 +151,6 @@ export default {
         case '已完成': return 'success'
         default: return 'info'
       }
-    },
-    handleSelectionChange(rows) {   // 当前选中的所有的行数据
-      this.ids = rows.map(v => v.id)   //  [1,2]
     },
     submit() {
       this.$refs.formRef.validate((valid) => {
