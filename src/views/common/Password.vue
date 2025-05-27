@@ -5,20 +5,6 @@
         <h2 class="title">修改密码</h2>
       </div>
       <el-form ref="formRef" :model="user" :rules="rules" label-width="120px">
-        <div class="avatar-container">
-          <el-upload
-              class="avatar-uploader"
-              :action="$baseUrl + '/files/upload'"
-              :show-file-list="false"
-              :on-success="handleAvatarSuccess"
-          >
-            <img v-if="user.avatar" :src="user.avatar" class="avatar" />
-            <div v-else class="avatar-placeholder">
-              <i class="el-icon-plus"></i>
-              <span>上传头像</span>
-            </div>
-          </el-upload>
-        </div>
         <el-form-item label="原始密码" prop="password">
           <el-input show-password v-model="user.password" placeholder="请输入原始密码" prefix-icon="el-icon-lock"></el-input>
         </el-form-item>
@@ -76,9 +62,6 @@ export default {
       }
     }
   },
-  created() {
-
-  },
   methods: {
     update() {
       this.$refs.formRef.validate((valid) => {
@@ -95,10 +78,6 @@ export default {
           })
         }
       })
-    },
-    handleAvatarSuccess(response, file, fileList) {
-      // 把头像属性换成上传的图片的链接
-      this.$set(this.user, 'avatar', response.data)
     }
   }
 }
@@ -149,14 +128,6 @@ export default {
   color: #1d1d1f;
 }
 
-.avatar-container {
-  margin: 20px 0 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
-
 :deep(.el-form) {
   padding: 0 40px;
 }
@@ -178,42 +149,6 @@ export default {
 :deep(.el-input__inner:focus) {
   border-color: #409EFF;
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
-}
-
-:deep(.el-upload) {
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-:deep(.avatar-uploader .el-upload) {
-  border: 2px dashed #d9d9d9;
-  position: relative;
-  overflow: hidden;
-  border-radius: 50%;
-  background-color: #fafafa;
-  width: 120px;
-  height: 120px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-:deep(.avatar-uploader .el-upload:hover) {
-  border-color: #409EFF;
-  transform: scale(1.02);
-  box-shadow: 0 0 10px rgba(64, 158, 255, 0.3);
-}
-
-.avatar {
-  width: 100%;
-  height: 100%;
-  display: block;
-  border-radius: 50%;
-  object-fit: cover;
-  position: absolute;
-  top: 0;
-  left: 0;
 }
 
 .button-container {
