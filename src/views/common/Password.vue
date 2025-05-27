@@ -50,6 +50,16 @@ export default {
       }
     }
 
+    const validateNewPassword = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入新密码'))
+      } else if (value === this.user.password) {
+        callback(new Error('新密码不能与原密码相同'))
+      } else {
+        callback()
+      }
+    }
+
     return {
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
       rules: {
@@ -57,7 +67,8 @@ export default {
           { required: true, message: '请输入原始密码', trigger: 'blur' },
         ],
         newPassword: [
-          { required: true, message: '请输入新密码', trigger: 'blur' },
+          { required: true, trigger: 'blur' },
+          { validator: validateNewPassword, trigger: 'blur' }
         ],
         confirmPassword: [
           { validator: validatePassword, required: true, trigger: 'blur' },
