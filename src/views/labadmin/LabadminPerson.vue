@@ -11,6 +11,8 @@
               :action="$baseUrl + '/files/upload'"
               :show-file-list="false"
               :on-success="handleAvatarSuccess"
+              :before-upload="beforeAvatarUpload"
+              :accept="acceptTypes"
           >
             <img v-if="user.avatar" :src="user.avatar" class="avatar" />
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
@@ -47,7 +49,8 @@ export default {
   name: "LabadminPerson",
   data() {
     return {
-      user: JSON.parse(localStorage.getItem('labuser') || '{}')
+      user: JSON.parse(localStorage.getItem('labuser') || '{}'),
+      acceptTypes: '.jpg,.jpeg,.png,.gif' // 允许的文件类型
     }
   },
   created() {
@@ -74,6 +77,20 @@ export default {
     handleAvatarSuccess(response, file, fileList) {
       // 把user的头像属性换成上传的图片的链接
       this.$set(this.user, 'avatar', response.data)
+    },
+    beforeAvatarUpload(file) {
+      const isImage = file.type.startsWith('image/')
+      const isLt5M = file.size / 1024 / 1024 < 5
+
+      if (!isImage) {
+        this.$message.error('上传头像图片只能是图片格式!')
+        return false
+      }
+      if (!isLt5M) {
+        this.$message.error('上传头像图片大小不能超过 5MB!')
+        return false
+      }
+      return true
     },
   }
 }

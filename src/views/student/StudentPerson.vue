@@ -11,6 +11,8 @@
               :action="$baseUrl + '/files/upload'"
               :show-file-list="false"
               :on-success="handleAvatarSuccess"
+              :before-upload="beforeAvatarUpload"
+              :accept="acceptTypes"
           >
             <img v-if="user.avatar" :src="user.avatar" class="avatar" />
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
@@ -66,6 +68,8 @@
               :action="$baseUrl + '/files/upload'"
               :show-file-list="false"
               :on-success="handleStudentCardSuccess"
+              :before-upload="beforeStudentCardUpload"
+              :accept="acceptTypes"
             >
               <img v-if="user.studentCardPhoto" :src="user.studentCardPhoto" class="student-card-image" />
               <div v-else class="upload-placeholder">
@@ -90,6 +94,7 @@ export default {
   data() {
     return {
       user: JSON.parse(localStorage.getItem('labuser') || '{}'),
+      acceptTypes: '.jpg,.jpeg,.png,.gif', // 允许的文件类型
       // 学院和专业的映射关系
       collegeToMajors: {
         '化学工程学院': [
@@ -207,6 +212,34 @@ export default {
     handleStudentCardSuccess(response, file, fileList) {
       // 设置学生证照片链接
       this.$set(this.user, 'studentCardPhoto', response.data)
+    },
+    beforeAvatarUpload(file) {
+      const isImage = file.type.startsWith('image/')
+      const isLt5M = file.size / 1024 / 1024 < 5
+
+      if (!isImage) {
+        this.$message.error('上传头像图片只能是图片格式!')
+        return false
+      }
+      if (!isLt5M) {
+        this.$message.error('上传头像图片大小不能超过 5MB!')
+        return false
+      }
+      return true
+    },
+    beforeStudentCardUpload(file) {
+      const isImage = file.type.startsWith('image/')
+      const isLt5M = file.size / 1024 / 1024 < 5
+
+      if (!isImage) {
+        this.$message.error('上传学生证照片只能是图片格式!')
+        return false
+      }
+      if (!isLt5M) {
+        this.$message.error('上传学生证照片大小不能超过 5MB!')
+        return false
+      }
+      return true
     },
   }
 }
